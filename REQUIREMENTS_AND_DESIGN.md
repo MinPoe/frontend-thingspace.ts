@@ -87,49 +87,117 @@ NOTES: 5 most major use cases
 - Send chat message
 
 
+#### Use Case 1: [Create a Note]
 
+**Description**: App user is logged in and creates notes by filling in a chosen note template, adding or removing fields if necessary. After filling in the fields, the user can choose which workspace to place it in. 
 
-#### Use Case 1: [WRITE_USE_CASE_1_NAME_HERE]
-
-
-**Description**: ...
-
-
-**Primary actor(s)**: ...
+**Primary actor(s)**: User
    
 **Main success scenario**:
-1. ...
-2. ...
-
+1. User clicks the “Create Note” button 
+2. System displays available note templates or a default empty template
+3. User selects the note template they want to use 
+4. System displays the chosen note template
+5. User inputs all details of the note into the fields 
+6. User clicks “Create” button
+7. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message. 
 
 **Failure scenario(s)**:
-- 1a. ...
-    - 1a1. ...
-    - 1a2. ...
-
-
-- 1b. ...
-    - 1b1. ...
-    - 1b2. ...
-               
-- 2a. ...
-    - 2a1. ...
-    - 2a2. ...
-
-
-...
+- 7a. The note could not be created
+	- 7a1. System displays error message stating that the note could not be created as well as the reason for the failure (e.g. connection lost) 
 
 
 <a name="uc2"></a>
 
 
-#### Use Case 2: [WRITE_USE_CASE_2_NAME_HERE]
-...
+#### Use Case 2: [Search for Notes]
+
+**Description**: The user searches for a note that matches their inputted prompt, returning a list of matching notes
+
+**Primary actor(s)**: User
+   
+**Main success scenario**:
+1. User clicks the “Search for a Note” button
+2. System displays a text input field 
+3. User types in their query and clicks the “Search” button
+4. System fetches all the notes with matching keywords from the query and displays them after pagination  
+
+**Failure scenario(s)**:
+- 4a. No matching notes
+	- 4a1. System displays an error message stating there were no notes that matched the query provided.
+- 4b. Available notes not fetched
+	- 4b1. System displays an error message stating the error code and reason the fetch failed. 
+
+
+<a name="uc3"></a>
+
+#### Use Case 3: [Create A Note Template]
+
+**Description**: The user creates a note template by adding and deleting components to their desire (e.g. tags, custom fields). 
+
+**Primary actor(s)**: User
+   
+**Main success scenario**:
+1. User clicks the “Create Note Template” button
+2. System displays a default note template, along with buttons to create new fields or delete fields
+3. User customizes the note template to their desire 
+4. User clicks the “Create” confirmation button
+5. System saves the note template and displays a confirmation message
+
+**Failure scenario(s)**:
+- 5a. Creation of note template failed (server-side)
+	- 5a1. System displays error message stating the reason and tells the user to retry
+- 5b. Creation of note template failed (user-error)
+	- 5b1. System displays error message, pointing to areas in the template that the user may need to fix 
+
+
+<a name="uc4"></a>
+
+#### Use Case 4: [Create Workspace]
+
+**Description**: User creates a workspace, effectively becoming the workspace manager 
+
+**Primary actor(s)**: User
+   
+**Main success scenario**:
+1. User clicks the “Create Workspace” button
+2. System displays input fields needed to create a new workspace (e.g. name) 
+3. User fills in all the required fields 
+4. User clicks the “Create” confirmation button 
+5. System receives the input and creates the corresponding workspace
+6. System displays the newly created workspace to the user and sets the user as the Workspace Manager
+
+**Failure scenario(s)**:
+- 4a. Some of the required fields is not filled
+	- 4a1. Front End system displays error message and highlights the required fields in red where they have not been filled, prompting the user to fill them
+
+
+<a name="uc5"></a>
+
+
+#### Use Case 5: [Send a Chat Message]
+
+**Description**: User sends a chat message in the workspace’s chat forum. 
+
+**Primary actor(s)**: User or Workspace Manager
+   
+**Main success scenario**:
+1. User clicks into any of the workspaces they are in
+2. System displays workspace 
+3. User clicks the “Chat Forum” button
+4. System displays the workspace’s chat forum, showing the previous chats from different users as well as a text input field
+5. User types a chat message, and hits “Enter” to send it 
+6. System receives user’s textual input and displays the newly sent text at the bottom of the chat log (bottom = newest) 
+
+**Failure scenario(s)**:
+- 2a. User doesn’t belong to any workspace
+	- 2a1. System displays “Create a workspace” button, allowing for a user to create a workspace which is needed to send chats 
+- 6a. The message couldn’t be sent 
+	- 6a1. System displays error message indicating the error code and reason 
+	- 6a2. User tries to send the message again after fixing the error (ex. connection error)
 
 
 ### **3.6. Screen Mock-ups**
-
-
 
 
 ### **3.7. Non-Functional Requirements**
