@@ -15,10 +15,9 @@
 ## 2. Project Description
 
 
-[WRITE_PROJECT_DESCRIPTION_HERE]
-
-
----
+In short, we are aiming to create an application that would allow
+users to store all their (non-sensitive) information in one place andin a way that is easy to update, access and search. The app itself would not incorporate dedicated features such as notes, todo-lists etc. Instead one would be able to store information in a general note, which would be composed of numerous input fields: text, datetime etc. Users will be able to create templates for their own formats of notes and join workspaces where they can share their notes with other users.
+The target audience is the general public. If one has a large amount of different kinds of notes, todos or saved locations, they can use this app as a "general memory system" providing them one place to retrieve and update their entire collection of notes.
 
 
 ## 3. Requirements Specification
@@ -95,16 +94,18 @@ NOTES: 5 most major use cases
    
 **Main success scenario**:
 1. User clicks the “Create Note” button 
-2. System displays available note templates or a default empty template
-3. User selects the note template they want to use 
-4. System displays the chosen note template
-5. User inputs all details of the note into the fields 
-6. User clicks “Create” button
-7. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message. 
+2. System displays a default empty template (a text field plus tags), the user has an option to switch to other templates via a template menu (if such templates are available)
+3. User inputs all details of the note into the fields 
+4. User can add additional fields or remove fields from the template. If such an action would violate Non-functional requirement 1, user has no option to perform it in the app
+5. User clicks “Create” button
+6. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message. 
 
 **Failure scenario(s)**:
-- 7a. The note could not be created
-	- 7a1. System displays error message stating that the note could not be created as well as the reason for the failure (e.g. connection lost) 
+- 5a. All fields of the to-be-created notes are empty
+    - 5a1. system displays a warning message asking the user to confirm the note creation
+- 6a. The note could not be created
+	- 6a1. System displays error message stating that the note could not be created as well as the reason for the failure (e.g. connection lost) 
+
 
 
 <a name="uc2"></a>
@@ -120,27 +121,27 @@ NOTES: 5 most major use cases
 1. User clicks the “Search for a Note” button
 2. System displays a text input field 
 3. User types in their query and clicks the “Search” button
-4. System fetches all the notes with matching keywords from the query and displays them after pagination  
+4. System fetches a first page of notes with matching keywords from the query and displays them. In the background, the other pages of search result are completed  
 
 **Failure scenario(s)**:
 - 4a. No matching notes
 	- 4a1. System displays an error message stating there were no notes that matched the query provided.
 - 4b. Available notes not fetched
-	- 4b1. System displays an error message stating the error code and reason the fetch failed. 
+	- 4b1. System displays an error message stating the error code and reason the fetch failed, such as connection lost. 
 
 
 <a name="uc3"></a>
 
 #### Use Case 3: [Create A Note Template]
 
-**Description**: The user creates a note template by adding and deleting components to their desire (e.g. tags, custom fields). 
+**Description**: The user creates a note template by adding and deleting components to their desire (e.g. headers, text fields, attachments, links to other notes, datetimes). 
 
 **Primary actor(s)**: User
    
 **Main success scenario**:
 1. User clicks the “Create Note Template” button
 2. System displays a default note template, along with buttons to create new fields or delete fields
-3. User customizes the note template to their desire 
+3. User customizes the note template to their desire by adding/removing/setting default values/moving the input fields around the space available. The tag field is not removable, and users cannot add or remove input fields if they are reaching a quota. See non-functional requirement 1.
 4. User clicks the “Create” confirmation button
 5. System saves the note template and displays a confirmation message
 
@@ -162,14 +163,20 @@ NOTES: 5 most major use cases
 **Main success scenario**:
 1. User clicks the “Create Workspace” button
 2. System displays input fields needed to create a new workspace (e.g. name) 
-3. User fills in all the required fields 
-4. User clicks the “Create” confirmation button 
-5. System receives the input and creates the corresponding workspace
-6. System displays the newly created workspace to the user and sets the user as the Workspace Manager
+3. User fills in the required field: name
+4. A create button becomes available to the user
+5. User can add optional fields, such as description, initially invited accounts or profile picture
+6. User clicks the “Create” confirmation button 
+7. System receives the input and creates the corresponding workspace
+8. System displays the newly created workspace to the user and sets the user as the Workspace Manager
 
 **Failure scenario(s)**:
-- 4a. Some of the required fields is not filled
-	- 4a1. Front End system displays error message and highlights the required fields in red where they have not been filled, prompting the user to fill them
+- 3a. Workspace name entered by the user is already taken by another workspace
+	- 3a1. Front End system displays error message containing possible suggestions of similar but not claimed yet names and highlights the name field in red.
+- 5a. One of the invited email addresses is invalid.
+    - 5a1. The system highlights it in red with an error message and the user cannot create the workspace prior to removing or correcting the address
+- 5b. Could not upload the profile picture.
+    - 5b1. The system displays an error message stating the reason for failure and the profile picture is not updated.
 
 
 <a name="uc5"></a>
@@ -182,16 +189,20 @@ NOTES: 5 most major use cases
 **Primary actor(s)**: User or Workspace Manager
    
 **Main success scenario**:
-1. User clicks into any of the workspaces they are in
-2. System displays workspace 
-3. User clicks the “Chat Forum” button
-4. System displays the workspace’s chat forum, showing the previous chats from different users as well as a text input field
-5. User types a chat message, and hits “Enter” to send it 
-6. System receives user’s textual input and displays the newly sent text at the bottom of the chat log (bottom = newest) 
+1. User clicks into any of the workspaces they are in or a previous chat with another account
+- 1.1. A user can also start a conversation with a new account for which they will need to enter its associated email address in a separate form
+2. System displays the workspace/conversation
+3. User clicks the “Chat” button
+4. User is taken to an altered version of note creation screen with the default text field template that spans the lower portion of the screen, while the upper part displays previous messages on the chat. User can expand and contract the note creation part.
+5. User performs a note creation with the template of their liking
+6. System adds the note to the workspace/conversation and displays the notes with their content expanded and sorted as earliest at the bottom of the page. The chat notes have an additional tag "chat@<workspace_name>"
+7. Users in the workspace or the other user in the conversation receive a push notification that the message is sent.
 
 **Failure scenario(s)**:
-- 2a. User doesn’t belong to any workspace
-	- 2a1. System displays “Create a workspace” button, allowing for a user to create a workspace which is needed to send chats 
+- 1.1a. The email entered is invalid
+    -1.1a1. The system displays an appropriate error message and cannot proceed with creating the conversation before the email is corrected.
+- 2a. User does not belong to any workspace, nor has any conversations
+	- 2a1. System displays “Create a workspace” and "start a conversation" buttons, allowing for a user to create a workspace which is needed to send chats 
 - 6a. The message couldn’t be sent 
 	- 6a1. System displays error message indicating the error code and reason 
 	- 6a2. User tries to send the message again after fixing the error (ex. connection error)
