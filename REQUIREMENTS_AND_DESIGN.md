@@ -96,7 +96,7 @@ NOTES: 5 most major use cases
 1. User clicks the “Create Note” button 
 2. System displays a default empty template (a text field plus tags), the user has an option to switch to other templates via a template menu (if such templates are available)
 3. User inputs all details of the note into the fields 
-4. User can add additional fields or remove fields from the template. If such an action would violate Non-functional requirement 1, user has no option to perform it in the app
+4. User can add additional fields or remove fields from the template. If such an action would violate Non-functional requirement 1, user has no option to perform it in the app.
 5. User clicks “Create” button
 6. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message. 
 
