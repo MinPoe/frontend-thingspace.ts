@@ -36,8 +36,12 @@ The target audience is the general public. If one has a large amount of differen
 
 
 ### **3.3. Actors Description**
-1. **[User]**: The general user of the application. Can fully manage (CRUD + search + template creation)their own notes, and contribute to workspaces they are in by sending notes and chat messages, as well as inviting new members.
-2. **[Workspace Manager]**: Inherits from User. Has additional options to update and delete the workspaces they own. Can also ban users from their workspace(s).
+1. **[User]**: The general user of the application. Can fully manage (CRUD + search + template creation)their own notes. Can join and create workspaces.
+2. **[Workspace Member]** - can contribute to workspaces they are in by sending notes and chat messages, as well as inviting new members.
+3. **[Workspace Manager]**: Inherits from User. Has additional options to update and delete the workspaces they own. Can also ban users from their workspace(s).
+4. **[Google OAuth API]**: External service used  for authentication.
+5. **[Open AI API]**: Or equivalent. The role of the API would be to create vector embeddings for notes and search querries so that vector-based search algorithms, such as KNN, can be used. This is to enchance the search quality so that the user does not have to exactly match the text of the note in their prompt.
+6. **[Text-to-Speech API]**: Optional. Would be used as an alternative way to fill in any text field inside the application. If T2S gets implemented, then there will be a microphone icon next to every text field and the user would be able to press it and say, what they want filled in, instead of actually filling it in.
 
 
 ### **3.4. Use Case Description**
