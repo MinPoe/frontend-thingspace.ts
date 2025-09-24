@@ -236,38 +236,44 @@ NOTES: 5 most major use cases
 
 ## 4. Designs Specification
 ### **4.1. Main Components**
-1. **[WRITE_NAME_HERE]**
-    - **Purpose**: ...
-    - **Interfaces**:
-        1. ...
-            - **Purpose**: ...
-        2. ...
-2. ...
 
 
+1. **Users**
+    - **Purpose**: Manages all functionality relating to users, including creation, tracking metadata, etc. Users are a good component as each user must store some of their own data.
+     
+2. **Notes**
+    - **Purpose**: The notes component manages all note items. This includes creation, processing, and search retrieval. This functionality can be effectively bucketed together, and other components can interact with these notes, maintaining a separation of concerns. 
+
+
+3. **Workspaces**
+    - **Purpose**: The workspace contains its own general information, as well as a reference to member users and included notes. This component would be responsible for forwarding push notifications to member users, and the banning functionality. 
+
+
+4. **Templates**
+    - **Purpose**: Contains Template data plus handles the automatic generation of note creation forms from the template.
 
 
 ### **4.2. Databases**
 1. **[MongoDB]**
     - **Purpose**: Storing user data, their notes and the workspaces they are in. Since some of the note data can be customised, it does not have to follow exactly the same format. As such, a more flexible non-relational database like MongoDB is preferred over relational ones like MySQL.
-2. ...
-
-
+2. **[Vector database like FAISS or Pinecone (Optional)]**
+    - **Purpose**: We convert notes to vector embeddings in order to do vector similarity for search. For performance reasons, we may want to use a vector database. This is optional, however, and will depend on the performance of our app. 
 
 
 ### **4.3. External Modules**
-1. **[WRITE_NAME_HERE]**
-    - **Purpose**: ...
-2. ...
-
-
+1. **[OpenAI or equivalent]**
+    - **Purpose**: We will be using the OpenAI client to create vector embeddings of our notes. These embeddings will be used for KNN or similar for matching queries. This can be used alongside lexical matching algorithms like BM25. 
+Note: we may need to use a vector database like FAISS or Pinecone, but that's probably not necessary for a small scale application like ours. 
+2. **[OpenAI Whisper or equivalent (Optional)]**
+    - **Purpose**: As an optional functionality, we want to allow speech input for creating notes. We will use OpenAI Whisper or other speech to text models to do this. 
 
 
 ### **4.4. Frameworks**
-1. **[WRITE_NAME_HERE]**
-    - **Purpose**: ...
-    - **Reason**: ...
+1. **[Firebase]**
+    - **Purpose**: Push notification support
+    - **Reason**: Firebase is allowed for push notifications, and can significantly decrease complexity of implementing them. 
 2. ...
+
 
 
 
