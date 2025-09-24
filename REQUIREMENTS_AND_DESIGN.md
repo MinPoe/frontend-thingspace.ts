@@ -24,10 +24,10 @@ The target audience is the general public. If one has a large amount of differen
 
 
 ### **3.1. List of Features**
-1. **[Note Management]**: A user can create, update, read and delete their own notes as well as share it with other users and workspaces they are in.
-2. **[Note Retrieval]**: A user can search through their notes and filter through the notes they see by their tags and creation/last edit dates. The searching will be synonymic, which means cases when the user does not type exactly the content of the note would be handled and the note will still be displayed.
-3. **[Workspace Participation]**: A User can create workspaces in which case they become their managers. Inside a workspace, notes can be posted regularly or with a “chat” option that would send notifications to the users in the workspace. Notes in the workspace are visible to all Users who accepted the invitation. Naturally, the manager can update their workspace, or even delete it, as well as ban certain users.
-4. **[Format Customisation]**: Users would be able create and manage their own formats of notes, known as templates. These can include any combination of text, location and date fields, with the condition of at least one field. When creating a note, they would be able to start from the template of their own making.
+1. **[Manage Notes]**: A user can create, update, read and delete their own notes as well as share it with other users and workspaces they are in.
+2. **[Retrieve Notes]**: A user can search through their notes and filter through the notes they see by their tags and creation/last edit dates. The searching will be synonymic, which means cases when the user does not type exactly the content of the note would be handled and the note will still be displayed.
+3. **[Collaborate]**: A User can create workspaces in which case they become their managers. Inside a workspace, notes can be posted regularly or with a “chat” option that would send notifications to the users in the workspace. Notes in the workspace are visible to all Users who accepted the invitation. Naturally, the manager can update their workspace, or even delete it, as well as ban certain users.
+4. **[Customize Format]**: Users would be able create and manage their own formats of notes, known as templates. These can include any combination of text, location and date fields, with the condition of at least one field. When creating a note, they would be able to start from the template of their own making.
 
 
 ### **3.2. Use Case Diagram**
@@ -41,32 +41,33 @@ The target audience is the general public. If one has a large amount of differen
 
 
 ### **3.4. Use Case Description**
-- Use cases for feature 1: Note Management
+- Use cases for feature 1: Manage Notes
 1. **Create Note**: The user can create notes by filling in a chosen note template, adding or removing fields if necessary. They can then store this note in a chosen workspace.
 2. **Update Note**: Users can update their notes and change the title, description, and other data. 
 3. **Share Note**: Users can share their note to a selected workspace.
 4. **Delete Note**: Users can delete their selected note.
 
 
-- Use cases for feature 2: Note Retrieval
+- Use cases for feature 2: Retrieve Notes
 5. **Search Notes**: A user can search for notes matching a given prompt, and is provided with a list of notes.
 6. **Filter Notes**: After retrieving search results, a user can filter the results by certain tags and creation/last edit dates. 
 
 
-- Use cases for feature 3: Workspace Participation
+- Use cases for feature 3: Collaborate
 7. **Create Workspace**: A user can create a workspace and become the manager of it.
-8. **Invite to Workspace**: Any user that is part of a workspace can invite other users to the workspace
-9. **Send a Chat Message**: A user can send chat messages to other users or the workspaces that they are part of. A chat message is a new note that is sent with notification to the users involved.
-10. **Update Workspace**: The workspace manager can update workspace metadata, like title, descriptions, etc. 
-11. **Leave Workspace**: A user can leave any workspace that they are part of.
-12. **Delete Workspace**: The workspace manager can delete the workspace and all associated data
-13. **Ban users**: The workspace owner can ban a user, kicking them out and preventing them from joining in the future. 
+8. **Join Workspace**: A user can join the workspace they are invited to or reject the invitation
+9. **Invite to Workspace**: Any user that is part of a workspace can invite other users to the workspace
+10. **Send a Chat Message**: A user can send chat messages to other users or the workspaces that they are part of. A chat message is a new note that is sent with notification to the users involved.
+11. **Update Workspace**: The workspace manager can update workspace metadata, like title, descriptions, etc. 
+12. **Leave Workspace**: A user can leave any workspace that they are part of.
+13. **Delete Workspace**: The workspace manager can delete the workspace and all associated data
+14. **Ban users**: The workspace owner can ban a user, kicking them out and preventing them from joining in the future. 
 
 
-- Use cases for feature 4: Format Customization
-14. **Create Template**: A user can create a note template, consisting of components like title, tags, description(s), and custom fields like "Due date" for a note template. A note template can be created from an existing note or directly.
-15. **Update Template**: A user can update their templates, editing the components. 
-16. **Delete Template**: A user can delete their templates, and will not be able to use it for future notes. 
+- Use cases for feature 4: Customize Format
+15. **Create Template**: A user can create a note template, consisting of components like title, tags, description(s), and custom fields like "Due date" for a note template. A note template can be created from an existing note or directly.
+16. **Update Template**: A user can update their templates, editing the components. 
+17. **Delete Template**: A user can delete their templates, and will not be able to use it for future notes. 
 
 
 
@@ -78,12 +79,12 @@ The target audience is the general public. If one has a large amount of differen
 <a name="uc1"></a>
 
 
-NOTES: 5 most major use cases
+<!-- NOTES: 5 most major use cases
 - Create note
 - Search notes
 - Create note template
 - Create workspace (initial invites)
-- Send chat message
+- Send chat message -->
 
 
 #### Use Case 1: [Create a Note]
