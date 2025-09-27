@@ -214,7 +214,11 @@ The target audience is the general public. If one has a large amount of differen
 
 
 ### **3.6. Screen Mock-ups**
+![image info](./graphics/Home-Query.png)
 
+![image info](./graphics/Note-Template-Creation.png)
+
+![image info](./graphics/workspace-Creation-Chat-Screen.png)
 
 
 ### **3.7. Non-Functional Requirements**
@@ -283,7 +287,7 @@ Note: we may need to use a vector database like FAISS or Pinecone, but that's pr
     - **Reason**: Firebase is allowed for push notifications, and can significantly decrease complexity of implementing them. 
 
 **Libraries**:
-    1. **[Retrofit]**
+1. **[Retrofit]**
     - **Purpose**: Managing API calls and frontend-backend connection
     - **Reason**: Retrofit is already implemented in M1, and it is much neater to use interfaces created by it than making direct HTTP calls from the frontend.
 
