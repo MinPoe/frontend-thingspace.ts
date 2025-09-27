@@ -280,7 +280,11 @@ Note: we may need to use a vector database like FAISS or Pinecone, but that's pr
 1. **[Firebase]**
     - **Purpose**: Push notification support
     - **Reason**: Firebase is allowed for push notifications, and can significantly decrease complexity of implementing them. 
-2. ...
+
+**Libraries**:
+    1. **[Retrofit]**
+    - **Purpose**: Managing API calls and frontend-backend connections
+    - **Reason**: Retrofid is already implemented in M1, and it is much neater to use interfaces created by it than making direct HTTP calls from the frontend.
 
 
 
