@@ -101,7 +101,7 @@ The target audience is the general public. If one has a large amount of differen
 1. User clicks the “Create Note” button 
 2. System displays a default empty template (a text field plus tags), the user has an option to switch to other templates via a template menu (if such templates are available)
 3. User inputs all details of the note into the fields 
-4. User can add additional fields or remove fields from the template. If such an action would violate Non-functional requirement 1, user has no option to perform it in the app.
+4. User can add additional fields or remove fields from the template. User is physically unable to remove the tag field, or the only remaining content field in the template.
 5. User clicks “Create” button
 6. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message. 
 
@@ -146,7 +146,7 @@ The target audience is the general public. If one has a large amount of differen
 **Main success scenario**:
 1. User clicks the “Create Note Template” button
 2. System displays a default note template, along with buttons to create new fields or delete fields
-3. User customizes the note template to their desire by adding/removing/setting default values/moving the input fields around the space available. The tag field is not removable, and users cannot add or remove input fields if they are reaching a quota. See non-functional requirement 1.
+3. User customizes the note template to their desire by adding/removing/setting default values/moving the input fields around the space available. The tag field is not removable and there must be at least one content field in the message, else the user cannot remove fields.
 4. User clicks the “Create” confirmation button
 5. System saves the note template and displays a confirmation message
 
@@ -232,8 +232,8 @@ The target audience is the general public. If one has a large amount of differen
     Now this does not impair users from putting a larger amounts of data into the notes, as the text fields can be expanded similar to e.g. sections in VS Code. -->
 
 1. **[Feature Accessibility]**
-   - **[Description]**: Any workspace of conversation the user is a member of has to be accessible to the user with two clicks from the main screen.
-   - **Justification**: Several messaging/file sharing applications, such as Discord, have every conversation reachable with maximum of 2 clicks (Discord server - specific channel, or discord dms - particular chat; Whatsapp community - particular chat). The app will be feature-rich, however it should still be competitive wrt. usability.
+   - **[Description]**: Any workspace of conversation the user is a member of has to be accessible to the user within two clicks from the main screen.
+   - **Justification**: Several messaging/file sharing applications, such as Discord, have every conversation reachable with maximum of 2 clicks (Discord server - specific channel, or discord dms - particular chat; WhatsApp community - particular chat). The app will be feature-rich, however it should still be competitive wrt. usability.
 
 2. **[Searching Speed]**
    - **Description**: Producing a page of synonymic search result should last no longer than 5 seconds
