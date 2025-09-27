@@ -32,7 +32,7 @@ The target audience is the general public. If one has a large amount of differen
 
 ### **3.2. Use Case Diagram**
 
-
+![image info](./graphics/UseCaseD.jpg)
 
 
 ### **3.3. Actors Description**
@@ -287,8 +287,9 @@ Note: we may need to use a vector database like FAISS or Pinecone, but that's pr
 
 
 ### **4.5. Dependencies Diagram**
+![image info](./graphics/backendD.jpg)
 
-
+The dependency of Users on interfaces from other components is because user deletion. When a user gets deleted, Users have to notify all other modules to remove all notes, templates and workspaces associated only with the user being deleted and make the user no longer an active member of any workspace they were in.
 
 
 ### **4.6. Use Case Sequence Diagram (5 Most Major Use Cases)**
