@@ -101,7 +101,7 @@ The target audience is the general public. If one has a large amount of differen
 1. User clicks the “Create Note” button 
 2. System displays a default empty template (a text field plus tags), the user has an option to switch to other templates via a template menu (if such templates are available)
 3. User inputs all details of the note into the fields 
-4. User can add additional fields or remove fields from the template. User is physically unable to remove the tag field, or the only remaining content field in the template.
+4. User can add additional fields or remove fields from the template. User is physically unable to remove the tag field, or the only remaining content field in the note.
 5. User clicks “Create” button
 6. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message. 
 
@@ -146,7 +146,7 @@ The target audience is the general public. If one has a large amount of differen
 **Main success scenario**:
 1. User clicks the “Create Note Template” button
 2. System displays a default note template, along with buttons to create new fields or delete fields
-3. User customizes the note template to their desire by adding/removing/setting default values/moving the input fields around the space available. The tag field is not removable and there must be at least one content field in the message, else the user cannot remove fields.
+3. User customizes the note template to their desire by adding/removing/setting default values/moving the input fields around the space available. The tag field is not removable and there must be at least one content field in the template, else the user cannot remove fields.
 4. User clicks the “Create” confirmation button
 5. System saves the note template and displays a confirmation message
 
