@@ -216,6 +216,7 @@ The target audience is the general public. If one has a large amount of differen
 ### **3.6. Screen Mock-ups**
 
 
+
 ### **3.7. Non-Functional Requirements**
 <a name="nfr1"></a>
 
@@ -283,8 +284,8 @@ Note: we may need to use a vector database like FAISS or Pinecone, but that's pr
 
 **Libraries**:
     1. **[Retrofit]**
-    - **Purpose**: Managing API calls and frontend-backend connections
-    - **Reason**: Retrofid is already implemented in M1, and it is much neater to use interfaces created by it than making direct HTTP calls from the frontend.
+    - **Purpose**: Managing API calls and frontend-backend connection
+    - **Reason**: Retrofit is already implemented in M1, and it is much neater to use interfaces created by it than making direct HTTP calls from the frontend.
 
 
 
