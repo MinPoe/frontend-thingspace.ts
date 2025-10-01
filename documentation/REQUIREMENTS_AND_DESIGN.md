@@ -5,8 +5,8 @@
 
 
 | **Change Date**   | **Modified Sections** | **Rationale** |
+| 01.08.2025 | 3.3, 4.2, 4.3 | Removed all speech-to-text references. Made the Vector DB non-optional. This is because the docummentation has to be consistent and optional features are not a valid basis for requirements |
 | ----------------- | --------------------- | ------------- |
-| _Nothing to show_ |
 
 
 ---
@@ -41,7 +41,6 @@ The target audience is the general public. If one has a large amount of differen
 3. **[Workspace Manager]**: Inherits from User. Has additional options to update and delete the workspaces they own. Can also ban users from their workspace(s).
 4. **[Google OAuth API]**: External service used  for authentication.
 5. **[Open AI API]**: Or equivalent. The role of the API would be to create vector embeddings for notes and search querries so that vector-based search algorithms, such as KNN, can be used. This is to enchance the search quality so that the user does not have to exactly match the text of the note in their prompt.
-6. **[Text-to-Speech API]**: Optional. Would be used as an alternative way to fill in any text field inside the application. If T2S gets implemented, then there will be a microphone icon next to every text field and the user would be able to press it and say, what they want filled in, instead of actually filling it in.
 
 
 ### **3.4. Use Case Description**
@@ -269,16 +268,14 @@ The target audience is the general public. If one has a large amount of differen
 ### **4.2. Databases**
 1. **[MongoDB]**
     - **Purpose**: Storing user data, their notes and the workspaces they are in. Since some of the note data can be customised, it does not have to follow exactly the same format. As such, a more flexible non-relational database like MongoDB is preferred over relational ones like MySQL.
-2. **[Vector database like FAISS or Pinecone (Optional)]**
-    - **Purpose**: We convert notes to vector embeddings in order to do vector similarity for search. For performance reasons, we may want to use a vector database. This is optional, however, and will depend on the performance of our app. 
+2. **[Vector database like FAISS or Pinecone]**
+    - **Purpose**: We convert notes to vector embeddings in order to do vector similarity for search. For performance reasons, we may want to use a vector database.
 
 
 ### **4.3. External Modules**
 1. **[OpenAI or equivalent]**
     - **Purpose**: We will be using the OpenAI client to create vector embeddings of our notes. These embeddings will be used for KNN or similar for matching queries. This can be used alongside lexical matching algorithms like BM25. 
 Note: we may need to use a vector database like FAISS or Pinecone, but that's probably not necessary for a small scale application like ours. 
-2. **[OpenAI Whisper or equivalent (Optional)]**
-    - **Purpose**: As an optional functionality, we want to allow speech input for creating notes. We will use OpenAI Whisper or other speech to text models to do this. 
 
 
 ### **4.4. Frameworks**
