@@ -49,9 +49,9 @@ class AuthViewModel @Inject constructor(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
-        if (!_uiState.value.shouldSkipAuthCheck) {
+        //if (!_uiState.value.shouldSkipAuthCheck) {
             checkAuthenticationStatus()
-        }
+        //} //Better safe than sorry, we should always catch users with an empty bio
     }
 
     private fun checkAuthenticationStatus() {
@@ -169,31 +169,25 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun handleLogout() {
+    fun handleAccountDeletion() {
         viewModelScope.launch {
-            authRepository.clearToken()
+            authRepository.deleteUser()
             _uiState.value = AuthUiState(
                 isAuthenticated = false,
                 isCheckingAuth = false,
-                shouldSkipAuthCheck = true // Skip auth check after manual sign out
+                shouldSkipAuthCheck = false // Skip auth check after manual sign out? What if you sing up to another account which does NOT have bio completed ?!
             )
         }
     }
 
-    fun handleAccountDeletion() {
+    fun handleSignOut() {
         viewModelScope.launch {
-           
-            authRepository.deleteAccount()
-                
-            
             authRepository.clearToken()
             _uiState.value = AuthUiState(
                 isAuthenticated = false,
                 isCheckingAuth = false,
-                shouldSkipAuthCheck = true // Skip auth check after manual sign out
+                shouldSkipAuthCheck = false // Skip auth check after manual sign out? What if you sing up to another account which does NOT have bio completed ?!
             )
-             
-               
         }
     }
 

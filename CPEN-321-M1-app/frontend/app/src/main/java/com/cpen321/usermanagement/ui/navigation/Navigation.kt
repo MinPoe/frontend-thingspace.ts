@@ -178,7 +178,6 @@ private fun AppNavHost(
         composable(NavRoutes.MAIN) {
             MainScreen(
                 mainViewModel = mainViewModel,
-                profileViewModel = profileViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() }
             )
         }
@@ -191,7 +190,8 @@ private fun AppNavHost(
                     onBackClick = { navigationStateManager.navigateBack() },
                     onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
                     onManageHobbiesClick = { navigationStateManager.navigateToManageHobbies() },
-                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() }
+                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
+                    onSignOut = { navigationStateManager.handleSignOut() }
                 )
             )
         }

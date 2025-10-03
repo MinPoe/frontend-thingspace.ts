@@ -1,7 +1,6 @@
 version: '3'
-
 services:
-  mongo:
+  mogo:
     image: mongo:latest
     container_name: mongo_instance
     restart: always
@@ -10,24 +9,22 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - PORT=${PORT}
-    restart: always
-    container_name: cpen321_app
-    environment:
-      - PORT=${PORT}
-      - MONGODB_URI=${MONGODB_URI}
-      - JWT_SECRET=${JWT_SECRET}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-    ports:
-      - "${PORT}:${PORT}"
-    depends_on:
-      - mongo
-    command: npm start
+app:
+  build:
+    context:
+    dockerfile: dockerfile
+    args:
+    - PORT=${PORT}
+  restart: always
+  container_name: cpen321_app
+  environment:
+    - DB_URI=${DB_URI}
+    - PORT=${PORT}
+  ports:
+  - "${PORT}:${PORT}"
+  depends on:configs:
+  - mongo
+  command: npm start
 
 volumes:
-  mongo_data:
+  mono_data:

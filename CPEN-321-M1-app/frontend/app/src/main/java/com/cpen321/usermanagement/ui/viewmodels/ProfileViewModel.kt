@@ -148,9 +148,21 @@ class ProfileViewModel @Inject constructor(
 
     fun uploadProfilePicture(pictureUri: Uri) {
         viewModelScope.launch {
-            val currentUser = _uiState.value.user ?: return@launch
-            val updatedUser = currentUser.copy(profilePicture = pictureUri.toString())
-            _uiState.value = _uiState.value.copy(isLoadingPhoto = false, user= updatedUser, successMessage = "Profile picture updated successfully!")
+            val result = profileRepository.updatePhoto(profilePicture = pictureUri.toString())
+            if (result.isSuccess) {
+                val currentUser = _uiState.value.user ?: return@launch
+                val updatedUser = currentUser.copy(profilePicture = pictureUri.toString())
+                _uiState.value = _uiState.value.copy(isLoadingPhoto = false, user= updatedUser, successMessage = "Profile picture updated successfully!")
+            }else {
+                val error = result.exceptionOrNull()
+                Log.e(TAG, "Failed to update profile", error)
+                val errorMessage = error?.message ?: "Failed to update profile"
+                _uiState.value = _uiState.value.copy(
+                    isSavingProfile = false,
+                    errorMessage = errorMessage
+                )
+            }
+
         }
     }
 

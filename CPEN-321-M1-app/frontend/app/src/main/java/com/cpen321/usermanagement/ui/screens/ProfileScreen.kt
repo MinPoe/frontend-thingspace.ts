@@ -41,7 +41,6 @@ import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 
 private data class ProfileDialogState(
-    val showLogoutDialog: Boolean = false,
     val showDeleteDialog: Boolean = false
 )
 
@@ -49,21 +48,20 @@ data class ProfileScreenActions(
     val onBackClick: () -> Unit,
     val onManageProfileClick: () -> Unit,
     val onManageHobbiesClick: () -> Unit,
-    val onAccountDeleted: () -> Unit
+    val onAccountDeleted: () -> Unit,
+    val onSignOut: () -> Unit
 )
 
 private data class ProfileScreenCallbacks(
     val onBackClick: () -> Unit,
     val onManageProfileClick: () -> Unit,
     val onManageHobbiesClick: () -> Unit,
-    val onLogoutClick: () -> Unit,
-    val onLogoutDialogDismiss: () -> Unit,
-    val onLogoutDialogConfirm: () -> Unit,
     val onDeleteAccountClick: () -> Unit,
     val onDeleteDialogDismiss: () -> Unit,
     val onDeleteDialogConfirm: () -> Unit,
     val onSuccessMessageShown: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
+    val onSignOutClick: () -> Unit
 )
 
 @Composable
@@ -94,17 +92,6 @@ fun ProfileScreen(
             onBackClick = actions.onBackClick,
             onManageProfileClick = actions.onManageProfileClick,
             onManageHobbiesClick = actions.onManageHobbiesClick,
-            onLogoutClick = {
-                dialogState = dialogState.copy(showLogoutDialog = true)
-            },
-            onLogoutDialogDismiss = {
-                dialogState = dialogState.copy(showLogoutDialog = false)
-            },
-            onLogoutDialogConfirm = {
-                dialogState = dialogState.copy(showLogoutDialog = false)
-                authViewModel.handleLogout()
-                actions.onAccountDeleted()
-            },
             onDeleteAccountClick = {
                 dialogState = dialogState.copy(showDeleteDialog = true)
             },
@@ -117,7 +104,11 @@ fun ProfileScreen(
                 actions.onAccountDeleted()
             },
             onSuccessMessageShown = profileViewModel::clearSuccessMessage,
-            onErrorMessageShown = profileViewModel::clearError
+            onErrorMessageShown = profileViewModel::clearError,
+            onSignOutClick = {
+                authViewModel.handleSignOut()
+                actions.onSignOut()
+            }
         )
     )
 }
@@ -153,15 +144,8 @@ private fun ProfileContent(
             isLoading = uiState.isLoadingProfile,
             onManageProfileClick = callbacks.onManageProfileClick,
             onManageHobbiesClick = callbacks.onManageHobbiesClick,
-            onLogoutClick = callbacks.onLogoutClick,
-            onDeleteAccountClick = callbacks.onDeleteAccountClick
-        )
-    }
-
-    if (dialogState.showLogoutDialog) {
-        LogoutDialog(
-            onDismiss = callbacks.onLogoutDialogDismiss,
-            onConfirm = callbacks.onLogoutDialogConfirm
+            onDeleteAccountClick = callbacks.onDeleteAccountClick,
+            onSignOutClick = callbacks.onSignOutClick
         )
     }
 
@@ -206,8 +190,8 @@ private fun ProfileBody(
     isLoading: Boolean,
     onManageProfileClick: () -> Unit,
     onManageHobbiesClick: () -> Unit,
-    onLogoutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
+    onSignOutClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -226,8 +210,8 @@ private fun ProfileBody(
                 ProfileMenuItems(
                     onManageProfileClick = onManageProfileClick,
                     onManageHobbiesClick = onManageHobbiesClick,
-                    onLogoutClick = onLogoutClick,
-                    onDeleteAccountClick = onDeleteAccountClick
+                    onDeleteAccountClick = onDeleteAccountClick,
+                    onSignOutClick = onSignOutClick
                 )
             }
         }
@@ -238,8 +222,8 @@ private fun ProfileBody(
 private fun ProfileMenuItems(
     onManageProfileClick: () -> Unit,
     onManageHobbiesClick: () -> Unit,
-    onLogoutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
+    onSignOutClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -258,8 +242,8 @@ private fun ProfileMenuItems(
         )
 
         AccountSection(
-            onLogoutClick = onLogoutClick,
-            onDeleteAccountClick = onDeleteAccountClick
+            onDeleteAccountClick = onDeleteAccountClick,
+            onSignOutClick = onSignOutClick
         )
     }
 }
@@ -281,16 +265,16 @@ private fun ProfileSection(
 
 @Composable
 private fun AccountSection(
-    onLogoutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
+    onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(LocalSpacing.current.medium)
     ) {
-        LogoutButton(onClick = onLogoutClick)
         DeleteAccountButton(onClick = onDeleteAccountClick)
+        SignOutButton(onClick = onSignOutClick)
     }
 }
 
@@ -317,17 +301,6 @@ private fun ManageHobbiesButton(
 }
 
 @Composable
-private fun LogoutButton(
-    onClick: () -> Unit,
-) {
-    MenuButtonItem(
-        text = "Logout",
-        iconRes = R.drawable.ic_sign_out,
-        onClick = onClick,
-    )
-}
-
-@Composable
 private fun DeleteAccountButton(
     onClick: () -> Unit,
 ) {
@@ -339,26 +312,13 @@ private fun DeleteAccountButton(
 }
 
 @Composable
-private fun LogoutDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    modifier: Modifier = Modifier
+private fun SignOutButton(
+    onClick: () -> Unit,
 ) {
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = onDismiss,
-        title = {
-            LogoutDialogTitle()
-        },
-        text = {
-            LogoutDialogText()
-        },
-        confirmButton = {
-            LogoutDialogConfirmButton(onClick = onConfirm)
-        },
-        dismissButton = {
-            LogoutDialogDismissButton(onClick = onDismiss)
-        }
+    MenuButtonItem(
+        text = stringResource(R.string.sign_out),
+        iconRes = R.drawable.ic_sign_out,
+        onClick = onClick,
     )
 }
 
@@ -384,53 +344,6 @@ private fun DeleteAccountDialog(
             DeleteDialogDismissButton(onClick = onDismiss)
         }
     )
-}
-
-@Composable
-private fun LogoutDialogTitle(
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = "Logout",
-        style = MaterialTheme.typography.headlineSmall,
-        fontWeight = FontWeight.Bold,
-        modifier = modifier
-    )
-}
-
-@Composable
-private fun LogoutDialogText(
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = "Are you sure you want to logout?",
-        modifier = modifier
-    )
-}
-
-@Composable
-private fun LogoutDialogConfirmButton(
-    onClick: () -> Unit,
-) {
-    Button(
-        fullWidth = false,
-        onClick = onClick,
-    ) {
-        Text(stringResource(R.string.confirm))
-    }
-}
-
-@Composable
-private fun LogoutDialogDismissButton(
-    onClick: () -> Unit,
-) {
-    Button(
-        fullWidth = false,
-        type = "secondary",
-        onClick = onClick,
-    ) {
-        Text(stringResource(R.string.cancel))
-    }
 }
 
 @Composable

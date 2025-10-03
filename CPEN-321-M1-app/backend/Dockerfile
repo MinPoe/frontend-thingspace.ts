@@ -1,6 +1,6 @@
-ARG PORT=3000
+ARG PORT
 
-FROM node:20.6-alpine
+FROM node:2.6-alpine
 
 WORKDIR /app
 
@@ -10,6 +10,6 @@ RUN npm ci
 
 COPY . .
 
-EXPOSE ${PORT}
+EXPOSE $PORT
 
 CMD ["npm", "start"]

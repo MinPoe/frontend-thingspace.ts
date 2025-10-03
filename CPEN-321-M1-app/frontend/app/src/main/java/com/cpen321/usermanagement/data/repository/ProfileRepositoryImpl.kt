@@ -140,4 +140,34 @@ class ProfileRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun updatePhoto(profilePicture:String): Result<User> {
+        return try {
+            val updateRequest = UpdateProfileRequest(profilePicture = profilePicture)
+            val response = userInterface.updateProfile(
+                "", // Auth header is handled by interceptor
+                updateRequest
+            )
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.user)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch hobbies.")
+                Log.e(TAG, "Failed to get available hobbies: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while getting available hobbies", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while getting available hobbies", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while getting available hobbies", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while getting available hobbies: ${e.code()}", e)
+            Result.failure(e)
+        }
+    }
 }

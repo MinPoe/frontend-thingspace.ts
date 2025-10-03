@@ -446,17 +446,18 @@ private fun ProfileFields(
             enabled = false
         )
 
-        Row(Modifier.focusProperties { canFocus = true }) { 
-            OutlinedTextField(
-                value = data.bio,
-                onValueChange = data.onBioChange,
-                label = { Text(stringResource(R.string.bio)) },
-                placeholder = { Text(stringResource(R.string.bio_placeholder)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5
-            )
-        }
+        //Row(Modifier.focusProperties { canFocus = false }) {
+        OutlinedTextField(
+            value = data.bio,
+            onValueChange = data.onBioChange,
+            label = { Text(stringResource(R.string.bio)) },
+            placeholder = { Text(stringResource(R.string.bio_placeholder)) },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3,
+            maxLines = 5,
+            readOnly = false //Here a fix was conducted: Users SHOULD be able to edit their bio after account creation
+        )
+        //} //this modifier was also blocking bio editability, hence commented out
     }
 }
 

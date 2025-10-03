@@ -23,9 +23,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
-        buildConfigField("String", "IMAGE_BASE_URL", "\"http://10.0.2.2:3000/\"")
     }
 
     buildTypes {
@@ -48,7 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
+        buildConfig = true // need to build the app (no just sync)
     }
 }
 
@@ -75,10 +72,6 @@ dependencies {
     
     // Google Sign-In
     implementation(libs.play.services.auth)
-    
-    // Google Maps
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
     
     // HTTP client
     implementation(libs.retrofit)
