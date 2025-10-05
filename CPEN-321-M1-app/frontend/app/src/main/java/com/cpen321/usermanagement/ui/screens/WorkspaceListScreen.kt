@@ -28,16 +28,19 @@ import androidx.compose.foundation.layout.Column
 
 @Composable
 fun WorkspaceListScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onWorkspaceClick: (String)->Unit
 ) {
     WorkspaceListContent(
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        onWorkspaceClick = onWorkspaceClick
     )
 }
 
 @Composable
 private fun WorkspaceListContent(
     onBackClick: () -> Unit,
+    onWorkspaceClick: (String)->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -49,14 +52,14 @@ private fun WorkspaceListContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        WorkspaceListScreenBody(paddingValues = paddingValues, onBackClick = onBackClick)
+        WorkspaceListScreenBody(paddingValues = paddingValues, onWorkspaceClick = onWorkspaceClick)
     }
 }
 
 @Composable
 private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
-    onBackClick: ()->Unit,
+    onWorkspaceClick: (String)->Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -68,7 +71,7 @@ private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actu
         Button(
             fullWidth = true,
             enabled = true,
-        onClick = onBackClick, //TODO: Change later
+        onClick = {onWorkspaceClick("workspace dummy 1")}, //TODO: Change later
         ){
             val fontSizes = LocalFontSizes.current
             Text(
@@ -82,7 +85,7 @@ private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actu
         Button(
             fullWidth = true,
             enabled = true,
-            onClick = onBackClick, //TODO: Change later
+            onClick = {onWorkspaceClick("workspace dummy 2")}, //TODO: Change later
         ){
             val fontSizes = LocalFontSizes.current
             Text(
