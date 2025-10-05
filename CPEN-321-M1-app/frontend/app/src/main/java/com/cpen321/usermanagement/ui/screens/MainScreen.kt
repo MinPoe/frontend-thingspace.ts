@@ -70,7 +70,7 @@ private fun MainContent(
         },
         bottomBar = {
             //TODO: change attributes later
-            BottomBar(
+            MainBottomBar(
                 onCreateNoteClick = onProfileClick,
                 onWorkspacesClick = onProfileClick,
                 onTemplatesClick = onProfileClick,
@@ -187,7 +187,7 @@ private fun WelcomeMessage(
 }
 
 @Composable
-private fun BottomBar(
+private fun MainBottomBar(
     onCreateNoteClick: ()->Unit,
     onWorkspacesClick: ()-> Unit,
     onProfileClick: ()->Unit,
