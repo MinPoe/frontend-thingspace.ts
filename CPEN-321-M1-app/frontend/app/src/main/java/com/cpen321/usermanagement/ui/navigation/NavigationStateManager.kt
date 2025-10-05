@@ -23,6 +23,7 @@ sealed class NavigationEvent {
     object NavigateToWorkspaceList: NavigationEvent()
     data class NavigateToWorkspaceInterior(val workspace_name: String): NavigationEvent()
     data class NavigateToWorkspaceChat(val workspace_name: String): NavigationEvent()
+    data class NavigateToFilter(val workspace_name: String): NavigationEvent()
 }
 
 data class NavigationState(
@@ -168,6 +169,12 @@ class NavigationStateManager @Inject constructor() {
     fun navigateToWorkspaceChat(workspace_name: String){
         _navigationEvent.value = NavigationEvent.NavigateToWorkspaceChat(workspace_name)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_INTERIOR,
+            context_workspace = workspace_name)
+    }
+
+    fun navigateToFilter(workspace_name: String){
+        _navigationEvent.value = NavigationEvent.NavigateToFilter(workspace_name)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FILTER,
             context_workspace = workspace_name)
     }
 

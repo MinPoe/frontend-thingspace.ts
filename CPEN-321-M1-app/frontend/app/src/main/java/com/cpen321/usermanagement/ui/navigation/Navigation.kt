@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.screens.AuthScreen
+import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.LoadingScreen
 import com.cpen321.usermanagement.ui.screens.MainScreen
 import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
@@ -45,6 +46,7 @@ object NavRoutes {
     const val WORKSPACE_LIST = "workspace_list"
     const val WORKSPACE_INTERIOR = "workspace_interior"
     const val WORKSPACE_CHAT = "workspace_chat"
+    const val FILTER = "filter"
 }
 
 @Composable
@@ -175,6 +177,11 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToFilter -> {
+            navController.navigate(route = NavRoutes.FILTER)
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
@@ -219,7 +226,8 @@ private fun AppNavHost(
                 //TODO: change 'personal' to user id once we have access to
                 onNoteClick = {navigationStateManager.navigateToNote("personal") },
                 onTemplateClick = {navigationStateManager.navigateToTemplate("personal")},
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()}
+                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
+                onFilterClick = {navigationStateManager.navigateToFilter("personal")}
             )
         }
 
@@ -316,6 +324,13 @@ private fun AppNavHost(
                     //TODO: implement the default null value or raise error
                     context_workspace?.toString() ?: "no_workspace_info"
                 )}
+            )
+        }
+
+        composable(NavRoutes.FILTER){
+            FilterScreen(
+                onBackClick = {navigationStateManager.navigateBack()},
+                context_workspace = navigationStateManager.getContextWorkspace()
             )
         }
     }

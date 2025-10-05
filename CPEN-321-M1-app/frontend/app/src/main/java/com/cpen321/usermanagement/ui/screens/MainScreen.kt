@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement.ui.screens
 
+import Button
 import Icon
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,7 +40,8 @@ fun MainScreen(
     onProfileClick: () -> Unit,
     onNoteClick: () -> Unit,
     onTemplateClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit
+    onWorkspaceClick: () -> Unit,
+    onFilterClick: ()-> Unit
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -51,6 +53,7 @@ fun MainScreen(
         onNoteClick = onNoteClick,
         onTemplateClick = onTemplateClick,
         onWorkspaceClick = onWorkspaceClick,
+        onFilterClick = onFilterClick,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -63,6 +66,7 @@ private fun MainContent(
     onNoteClick: ()-> Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
+    onFilterClick: () -> Unit,
     onSuccessMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -87,7 +91,9 @@ private fun MainContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        MainBody(paddingValues = paddingValues)
+        MainBody(
+            paddingValues = paddingValues,
+            onFilterClick = onFilterClick)
     }
 }
 
@@ -168,6 +174,7 @@ private fun MainSnackbarHost(
 @Composable
 private fun MainBody(
     paddingValues: PaddingValues,
+    onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -177,9 +184,23 @@ private fun MainBody(
         contentAlignment = Alignment.Center
     ) {
         WelcomeMessage()
+        Button(
+            fullWidth = true,
+            enabled = true,
+            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
+            onClick = { onFilterClick() },
+        ) {
+            val fontSizes = LocalFontSizes.current
+            Text(
+                text = "filter",
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = fontSizes.extraLarge3,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = modifier
+            )
+        }
     }
 }
-
 @Composable
 private fun WelcomeMessage(
     modifier: Modifier = Modifier
