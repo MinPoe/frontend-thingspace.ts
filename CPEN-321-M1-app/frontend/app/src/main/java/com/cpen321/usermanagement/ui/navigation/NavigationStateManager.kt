@@ -20,6 +20,7 @@ sealed class NavigationEvent {
     object NoNavigation : NavigationEvent()
     object NavigateToNote : NavigationEvent()
     object NavigateToTemplate: NavigationEvent()
+    object NavigateToWorkspaceList: NavigationEvent()
 }
 
 data class NavigationState(
@@ -142,6 +143,11 @@ class NavigationStateManager @Inject constructor() {
     fun navigateToTemplate(){
         _navigationEvent.value = NavigationEvent.NavigateToTemplate
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE)
+    }
+
+    fun navigateToWorkspaceList(){
+        _navigationEvent.value = NavigationEvent.NavigateToWorkspaceList
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_LIST)
     }
 
     /**

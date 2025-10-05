@@ -31,13 +31,15 @@ import com.cpen321.usermanagement.ui.viewmodels.MainUiState
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.components.MainBottomBar
 
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
     onProfileClick: () -> Unit,
     onNoteClick: () -> Unit,
-    onTemplateClick: ()-> Unit
+    onTemplateClick: ()-> Unit,
+    onWorkspaceClick: () -> Unit
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -48,6 +50,7 @@ fun MainScreen(
         onProfileClick = onProfileClick,
         onNoteClick = onNoteClick,
         onTemplateClick = onTemplateClick,
+        onWorkspaceClick = onWorkspaceClick,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -59,6 +62,7 @@ private fun MainContent(
     onProfileClick: () -> Unit,
     onNoteClick: ()-> Unit,
     onTemplateClick: ()-> Unit,
+    onWorkspaceClick: () -> Unit,
     onSuccessMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -75,10 +79,9 @@ private fun MainContent(
             )
         },
         bottomBar = {
-            //TODO: change attributes later
             MainBottomBar(
                 onCreateNoteClick = onNoteClick,
-                onWorkspacesClick = onProfileClick,
+                onWorkspacesClick = onWorkspaceClick,
                 onTemplatesClick = onTemplateClick,
                 onProfileClick = onProfileClick,
                 modifier = modifier)
@@ -192,62 +195,3 @@ private fun WelcomeMessage(
     )
 }
 
-@Composable
-private fun MainBottomBar(
-    onCreateNoteClick: ()->Unit,
-    onWorkspacesClick: ()-> Unit,
-    onProfileClick: ()->Unit,
-    onTemplatesClick: ()->Unit,
-    modifier: Modifier = Modifier
-){
-    BottomAppBar(
-        actions = {ProfileActionButton(onClick = onProfileClick)
-                  NoteActionButton(onClick = onCreateNoteClick)
-                  TemplateActionButton(onClick = onTemplatesClick)},
-        modifier = modifier
-    )
-}
-
-@Composable
-private fun NoteActionButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        NoteIcon()
-    }
-}
-
-@Composable
-private fun NoteIcon() {
-    Icon(
-        name = R.drawable.ic_edit,
-    )
-}
-
-@Composable
-private fun TemplateActionButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        TemplateIcon()
-    }
-}
-
-@Composable
-private fun TemplateIcon() {
-    Icon(
-        name = R.drawable.ic_check, //TODO: change the icon to sth more meaningful
-    )
-}

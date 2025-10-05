@@ -22,6 +22,7 @@ import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
 import com.cpen321.usermanagement.ui.screens.TemplateScreen
+import com.cpen321.usermanagement.ui.screens.WorkspaceListScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
@@ -37,6 +38,7 @@ object NavRoutes {
     const val PROFILE_COMPLETION = "profile_completion"
     const val NOTE = "note"
     const val TEMPLATE = "template"
+    const val WORKSPACE_LIST = "workspace_list"
 }
 
 @Composable
@@ -152,6 +154,11 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToWorkspaceList ->{
+            navController.navigate(route = NavRoutes.WORKSPACE_LIST)
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
@@ -194,7 +201,8 @@ private fun AppNavHost(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 onNoteClick = {navigationStateManager.navigateToNote() },
-                onTemplateClick = {navigationStateManager.navigateToTemplate()}
+                onTemplateClick = {navigationStateManager.navigateToTemplate()},
+                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()}
             )
         }
 
@@ -234,6 +242,12 @@ private fun AppNavHost(
 
         composable(NavRoutes.TEMPLATE){
             TemplateScreen(
+                onBackClick = {navigationStateManager.navigateBack()}
+            )
+        }
+
+        composable(NavRoutes.WORKSPACE_LIST){
+            WorkspaceListScreen(
                 onBackClick = {navigationStateManager.navigateBack()}
             )
         }

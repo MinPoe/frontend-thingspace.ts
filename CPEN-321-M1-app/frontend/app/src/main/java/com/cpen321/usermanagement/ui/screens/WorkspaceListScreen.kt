@@ -25,16 +25,16 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.BackActionButton
 
 @Composable
-fun TemplateScreen(
+fun WorkspaceListScreen(
     onBackClick: () -> Unit
 ) {
-    TemplateContent(
+    WorkspaceListContent(
         onBackClick = onBackClick
     )
 }
 
 @Composable
-private fun TemplateContent(
+private fun WorkspaceListContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -42,17 +42,17 @@ private fun TemplateContent(
         modifier = modifier,
         bottomBar = {
             //TODO: change attributes later
-            TemplateBottomBar(
+            WorkspaceListBottomBar(
                 onBackClick = onBackClick,
                 modifier = modifier)
         }
     ) { paddingValues ->
-        TemplateScreenBody(paddingValues = paddingValues)
+        WorkspaceListScreenBody(paddingValues = paddingValues)
     }
 }
 
 @Composable
-private fun TemplateScreenBody( //TODO:for now copy of main, change to actual note adding
+private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier
 ) {
@@ -73,7 +73,7 @@ private fun WelcomeMessage(
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.bio_placeholder),
+        text = stringResource(R.string.bio),
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -82,7 +82,7 @@ private fun WelcomeMessage(
 }
 
 @Composable
-private fun TemplateBottomBar(
+private fun WorkspaceListBottomBar(
     onBackClick: ()->Unit,
     modifier: Modifier = Modifier
 ){
