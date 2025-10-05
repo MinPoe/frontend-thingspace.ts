@@ -78,7 +78,7 @@ private fun WorkspaceMessage(
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = context_workspace?.toString() ?: "No workspace info",
+        text = "filter "+(context_workspace?.toString() ?: "No workspace info"),
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
