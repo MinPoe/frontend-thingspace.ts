@@ -200,8 +200,9 @@ private fun AppNavHost(
             MainScreen(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
-                onNoteClick = {navigationStateManager.navigateToNote() },
-                onTemplateClick = {navigationStateManager.navigateToTemplate()},
+                //TODO: change 'personal' to user id once we have access to
+                onNoteClick = {navigationStateManager.navigateToNote("personal") },
+                onTemplateClick = {navigationStateManager.navigateToTemplate("personal")},
                 onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()}
             )
         }
@@ -236,7 +237,7 @@ private fun AppNavHost(
 
         composable(NavRoutes.NOTE ){
             NoteScreen(
-                onBackClick = {navigationStateManager.navigateBack()}
+                onBackClick = {navigationStateManager.navigateBack()},
             )
         }
 

@@ -18,8 +18,8 @@ sealed class NavigationEvent {
     object NavigateBack : NavigationEvent()
     object ClearBackStack : NavigationEvent()
     object NoNavigation : NavigationEvent()
-    object NavigateToNote : NavigationEvent()
-    object NavigateToTemplate: NavigationEvent()
+    data class NavigateToNote(val workspace_name: String): NavigationEvent()
+    data class NavigateToTemplate(val workspace_name: String): NavigationEvent()
     object NavigateToWorkspaceList: NavigationEvent()
 }
 
@@ -135,13 +135,13 @@ class NavigationStateManager @Inject constructor() {
             _navigationState.value.copy(currentRoute = NavRoutes.PROFILE_COMPLETION)
     }
 
-    fun navigateToNote(){
-        _navigationEvent.value = NavigationEvent.NavigateToNote
+    fun navigateToNote(workspace_name: String){
+        _navigationEvent.value = NavigationEvent.NavigateToNote(workspace_name)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE)
     }
 
-    fun navigateToTemplate(){
-        _navigationEvent.value = NavigationEvent.NavigateToTemplate
+    fun navigateToTemplate(workspace_name: String){
+        _navigationEvent.value = NavigationEvent.NavigateToTemplate(workspace_name)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE)
     }
 
