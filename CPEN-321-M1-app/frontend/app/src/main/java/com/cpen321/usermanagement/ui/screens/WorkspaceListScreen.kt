@@ -29,11 +29,13 @@ import androidx.compose.foundation.layout.Column
 @Composable
 fun WorkspaceListScreen(
     onBackClick: () -> Unit,
-    onWorkspaceClick: (String)->Unit
+    onWorkspaceClick: (String)->Unit,
+    onBackToMainClick: ()->Unit
 ) {
     WorkspaceListContent(
         onBackClick = onBackClick,
-        onWorkspaceClick = onWorkspaceClick
+        onWorkspaceClick = onWorkspaceClick,
+        onBackToMainClick = onBackToMainClick
     )
 }
 
@@ -41,6 +43,7 @@ fun WorkspaceListScreen(
 private fun WorkspaceListContent(
     onBackClick: () -> Unit,
     onWorkspaceClick: (String)->Unit,
+    onBackToMainClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -52,7 +55,11 @@ private fun WorkspaceListContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        WorkspaceListScreenBody(paddingValues = paddingValues, onWorkspaceClick = onWorkspaceClick)
+        WorkspaceListScreenBody(
+            paddingValues = paddingValues,
+            onWorkspaceClick = onWorkspaceClick,
+            onBackToMainClick = onBackToMainClick
+        )
     }
 }
 
@@ -60,6 +67,7 @@ private fun WorkspaceListContent(
 private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
     onWorkspaceClick: (String)->Unit,
+    onBackToMainClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -68,6 +76,21 @@ private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actu
             .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Button(
+            fullWidth = true,
+            enabled = true,
+            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
+            onClick = {onBackToMainClick()},
+        ){
+            val fontSizes = LocalFontSizes.current
+            Text(
+                text=stringResource(R.string.personal_workspace),
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = fontSizes.extraLarge3,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = modifier
+            )
+        }
         Button(
             fullWidth = true,
             enabled = true,

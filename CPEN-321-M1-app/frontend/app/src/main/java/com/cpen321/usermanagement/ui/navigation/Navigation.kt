@@ -263,7 +263,8 @@ private fun AppNavHost(
                 onBackClick = {navigationStateManager.navigateBack()},
                 onWorkspaceClick = {
                     workspace_name -> navigationStateManager.navigateToWorkspaceInterior(workspace_name)
-                }
+                },
+                onBackToMainClick = {navigationStateManager.navigateToMain()}
             )
         }
 
