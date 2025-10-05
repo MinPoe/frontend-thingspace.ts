@@ -311,7 +311,11 @@ private fun AppNavHost(
                     context_workspace?.toString() ?: "no_workspace_info"
                 )
                 },
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()}
+                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
+                onMainContentClick = {navigationStateManager.navigateToWorkspaceInterior(
+                    //TODO: implement the default null value or raise error
+                    context_workspace?.toString() ?: "no_workspace_info"
+                )}
             )
         }
     }

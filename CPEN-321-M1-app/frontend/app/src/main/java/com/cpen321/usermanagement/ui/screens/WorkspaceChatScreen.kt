@@ -1,7 +1,9 @@
 package com.cpen321.usermanagement.ui.screens
 
+import Button
 import Icon
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -31,14 +33,16 @@ fun WorkspaceChatScreen(
     onProfileClick: () -> Unit,
     onNoteClick: () -> Unit,
     onTemplateClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit
+    onWorkspaceClick: () -> Unit,
+    onMainContentClick: () -> Unit
 ) {
     WorkspaceChatContent(
         context_workspace = context_workspace,
         onProfileClick = onProfileClick,
         onNoteClick = onNoteClick,
         onTemplateClick = onTemplateClick,
-        onWorkspaceClick = onWorkspaceClick
+        onWorkspaceClick = onWorkspaceClick,
+        onMainContentClick = onMainContentClick
     )
 }
 
@@ -49,6 +53,7 @@ private fun WorkspaceChatContent(
     onNoteClick: () -> Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
+    onMainContentClick: ()-> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -63,7 +68,9 @@ private fun WorkspaceChatContent(
             )
         }
     ) { paddingValues ->
-        WorkspaceChatScreenBody(paddingValues = paddingValues, context_workspace = context_workspace)
+        WorkspaceChatScreenBody(paddingValues = paddingValues,
+            context_workspace = context_workspace,
+            onMainContentClick = onMainContentClick)
     }
 }
 
@@ -71,15 +78,31 @@ private fun WorkspaceChatContent(
 private fun WorkspaceChatScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
     context_workspace: String?,
+    onMainContentClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WorkspaceMessage(context_workspace)
+        Button(
+            fullWidth = true,
+            enabled = true,
+            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
+            onClick = {onMainContentClick()},
+        ){
+            val fontSizes = LocalFontSizes.current
+            Text(
+                text=stringResource(R.string.main_workspace_content),
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = fontSizes.extraLarge3,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = modifier
+            )
+        }
     }
 }
 
