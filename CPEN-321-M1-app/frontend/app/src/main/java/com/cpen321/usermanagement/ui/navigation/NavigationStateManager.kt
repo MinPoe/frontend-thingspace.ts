@@ -22,6 +22,7 @@ sealed class NavigationEvent {
     data class NavigateToTemplate(val workspace_name: String): NavigationEvent()
     object NavigateToWorkspaceList: NavigationEvent()
     data class NavigateToWorkspaceInterior(val workspace_name: String): NavigationEvent()
+    data class NavigateToWorkspaceChat(val workspace_name: String): NavigationEvent()
 }
 
 data class NavigationState(
@@ -160,6 +161,12 @@ class NavigationStateManager @Inject constructor() {
 
     fun navigateToWorkspaceInterior(workspace_name: String){
         _navigationEvent.value = NavigationEvent.NavigateToWorkspaceInterior(workspace_name)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_INTERIOR,
+            context_workspace = workspace_name)
+    }
+
+    fun navigateToWorkspaceChat(workspace_name: String){
+        _navigationEvent.value = NavigationEvent.NavigateToWorkspaceChat(workspace_name)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_INTERIOR,
             context_workspace = workspace_name)
     }

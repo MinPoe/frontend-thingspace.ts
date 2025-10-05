@@ -24,6 +24,7 @@ import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
 import com.cpen321.usermanagement.ui.screens.TemplateScreen
+import com.cpen321.usermanagement.ui.screens.WorkspaceChatScreen
 import com.cpen321.usermanagement.ui.screens.WorkspaceInteriorScreen
 import com.cpen321.usermanagement.ui.screens.WorkspaceListScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
@@ -43,6 +44,7 @@ object NavRoutes {
     const val TEMPLATE = "template"
     const val WORKSPACE_LIST = "workspace_list"
     const val WORKSPACE_INTERIOR = "workspace_interior"
+    const val WORKSPACE_CHAT = "workspace_chat"
 }
 
 @Composable
@@ -168,6 +170,11 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToWorkspaceChat -> {
+            navController.navigate(route = NavRoutes.WORKSPACE_CHAT)
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
@@ -271,6 +278,28 @@ private fun AppNavHost(
         composable(NavRoutes.WORKSPACE_INTERIOR){
             val context_workspace:String? = navigationStateManager.getContextWorkspace()
             WorkspaceInteriorScreen(
+                context_workspace = context_workspace,
+                onProfileClick = {navigationStateManager.navigateToProfile()},
+                onNoteClick = {navigationStateManager.navigateToNote(
+                    //TODO: implement the default null value or raise error
+                    context_workspace?.toString() ?: "no_workspace_info"
+                )},
+                onTemplateClick = {navigationStateManager.navigateToTemplate(
+                    //TODO: implement the default null value or raise error
+                    context_workspace?.toString() ?: "no_workspace_info"
+                )
+                },
+                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
+                onChatClick ={navigationStateManager.navigateToWorkspaceChat(
+                    //TODO: implement the default null value or raise error
+                    context_workspace?.toString() ?: "no_workspace_info"
+                )}
+            )
+        }
+
+        composable(NavRoutes.WORKSPACE_CHAT){
+            val context_workspace:String? = navigationStateManager.getContextWorkspace()
+            WorkspaceChatScreen(
                 context_workspace = context_workspace,
                 onProfileClick = {navigationStateManager.navigateToProfile()},
                 onNoteClick = {navigationStateManager.navigateToNote(

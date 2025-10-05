@@ -38,4 +38,6 @@
     <string name="workspace_dummy_1">Workspace 1</string>
     <string name="workspace_dummy_2">Workspace 2</string>
     <string name="personal_workspace">Personal Notes</string>
+    <string name="chat">chat</string>
+    <string name="main_workspace_content">main workspace content</string>
 </resources>

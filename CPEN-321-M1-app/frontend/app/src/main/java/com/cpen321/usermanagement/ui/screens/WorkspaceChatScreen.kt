@@ -1,9 +1,7 @@
 package com.cpen321.usermanagement.ui.screens
 
-import Button
 import Icon
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,32 +26,29 @@ import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 
 @Composable
-fun WorkspaceInteriorScreen(
+fun WorkspaceChatScreen(
     context_workspace: String?,
     onProfileClick: () -> Unit,
     onNoteClick: () -> Unit,
     onTemplateClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit,
-    onChatClick: () -> Unit
+    onWorkspaceClick: () -> Unit
 ) {
-    WorkspaceInteriorContent(
+    WorkspaceChatContent(
         context_workspace = context_workspace,
         onProfileClick = onProfileClick,
         onNoteClick = onNoteClick,
         onTemplateClick = onTemplateClick,
-        onWorkspaceClick = onWorkspaceClick,
-        onChatClick = onChatClick
+        onWorkspaceClick = onWorkspaceClick
     )
 }
 
 @Composable
-private fun WorkspaceInteriorContent(
+private fun WorkspaceChatContent(
     context_workspace: String?,
     onProfileClick: () -> Unit,
     onNoteClick: () -> Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
-    onChatClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -68,41 +63,23 @@ private fun WorkspaceInteriorContent(
             )
         }
     ) { paddingValues ->
-        WorkspaceInteriorScreenBody(paddingValues = paddingValues,
-            context_workspace = context_workspace,
-            onChatClick = onChatClick)
+        WorkspaceChatScreenBody(paddingValues = paddingValues, context_workspace = context_workspace)
     }
 }
 
 @Composable
-private fun WorkspaceInteriorScreenBody( //TODO:for now copy of main, change to actual note adding
+private fun WorkspaceChatScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
     context_workspace: String?,
-    onChatClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
         WorkspaceMessage(context_workspace)
-        Button(
-            fullWidth = true,
-            enabled = true,
-            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
-            onClick = {onChatClick()},
-        ){
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text=stringResource(R.string.chat),
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
-            )
-        }
     }
 }
 
