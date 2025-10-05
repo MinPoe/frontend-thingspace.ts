@@ -17,6 +17,7 @@ import com.cpen321.usermanagement.ui.screens.LoadingScreen
 import com.cpen321.usermanagement.ui.screens.MainScreen
 import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
 import com.cpen321.usermanagement.ui.screens.ManageProfileScreen
+import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
@@ -33,6 +34,7 @@ object NavRoutes {
     const val MANAGE_PROFILE = "manage_profile"
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
+    const val NOTE = "note"
 }
 
 @Composable
@@ -138,6 +140,11 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToNote -> {
+            navController.navigate(route = NavRoutes.NOTE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
@@ -178,7 +185,8 @@ private fun AppNavHost(
         composable(NavRoutes.MAIN) {
             MainScreen(
                 mainViewModel = mainViewModel,
-                onProfileClick = { navigationStateManager.navigateToProfile() }
+                onProfileClick = { navigationStateManager.navigateToProfile() },
+                onNoteClick = {navigationStateManager.navigateToNote() }
             )
         }
 
@@ -207,6 +215,12 @@ private fun AppNavHost(
             ManageHobbiesScreen(
                 profileViewModel = profileViewModel,
                 onBackClick = { navigationStateManager.navigateBack() }
+            )
+        }
+
+        composable(NavRoutes.NOTE ){
+            NoteScreen(
+                onBackClick = {navigationStateManager.navigateBack()}
             )
         }
     }

@@ -35,7 +35,8 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onNoteClick: () -> Unit
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -44,6 +45,7 @@ fun MainScreen(
         uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
+        onNoteClick = onNoteClick,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -53,6 +55,7 @@ private fun MainContent(
     uiState: MainUiState,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
+    onNoteClick: ()-> Unit,
     onSuccessMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -71,7 +74,7 @@ private fun MainContent(
         bottomBar = {
             //TODO: change attributes later
             MainBottomBar(
-                onCreateNoteClick = onProfileClick,
+                onCreateNoteClick = onNoteClick,
                 onWorkspacesClick = onProfileClick,
                 onTemplatesClick = onProfileClick,
                 onProfileClick = onProfileClick,
@@ -195,7 +198,30 @@ private fun MainBottomBar(
     modifier: Modifier = Modifier
 ){
     BottomAppBar(
-        actions = {ProfileActionButton(onClick = onProfileClick)},
+        actions = {ProfileActionButton(onClick = onProfileClick)
+                  NoteActionButton(onClick = onCreateNoteClick)},
         modifier = modifier
+    )
+}
+
+@Composable
+private fun NoteActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        NoteIcon()
+    }
+}
+
+@Composable
+private fun NoteIcon() {
+    Icon(
+        name = R.drawable.ic_edit,
     )
 }

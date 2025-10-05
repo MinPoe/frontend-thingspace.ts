@@ -18,6 +18,7 @@ sealed class NavigationEvent {
     object NavigateBack : NavigationEvent()
     object ClearBackStack : NavigationEvent()
     object NoNavigation : NavigationEvent()
+    object NavigateToNote : NavigationEvent()
 }
 
 data class NavigationState(
@@ -130,6 +131,11 @@ class NavigationStateManager @Inject constructor() {
         _navigationEvent.value = NavigationEvent.NavigateToProfileCompletion
         _navigationState.value =
             _navigationState.value.copy(currentRoute = NavRoutes.PROFILE_COMPLETION)
+    }
+
+    fun navigateToNote(){
+        _navigationEvent.value = NavigationEvent.NavigateToNote
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE)
     }
 
     /**

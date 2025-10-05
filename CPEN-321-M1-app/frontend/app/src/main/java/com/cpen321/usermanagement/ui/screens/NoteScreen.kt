@@ -25,10 +25,10 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 
 @Composable
 fun NoteScreen(
-    onProfileClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     NoteContent(
-        onBackClick = onProfileClick
+        onBackClick = onBackClick
     )
 }
 
