@@ -14,6 +14,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -65,6 +67,15 @@ private fun MainContent(
                 successMessage = uiState.successMessage,
                 onSuccessMessageShown = onSuccessMessageShown
             )
+        },
+        bottomBar = {
+            //TODO: change attributes later
+            BottomBar(
+                onCreateNoteClick = onProfileClick,
+                onWorkspacesClick = onProfileClick,
+                onTemplatesClick = onProfileClick,
+                onProfileClick = onProfileClick,
+                modifier = modifier)
         }
     ) { paddingValues ->
         MainBody(paddingValues = paddingValues)
@@ -171,6 +182,20 @@ private fun WelcomeMessage(
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun BottomBar(
+    onCreateNoteClick: ()->Unit,
+    onWorkspacesClick: ()-> Unit,
+    onProfileClick: ()->Unit,
+    onTemplatesClick: ()->Unit,
+    modifier: Modifier = Modifier
+){
+    BottomAppBar(
+        actions = {ProfileActionButton(onClick = onProfileClick)},
         modifier = modifier
     )
 }
