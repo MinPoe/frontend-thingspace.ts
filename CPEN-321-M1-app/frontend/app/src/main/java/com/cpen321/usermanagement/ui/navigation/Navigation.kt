@@ -21,6 +21,7 @@ import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
+import com.cpen321.usermanagement.ui.screens.TemplateScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
@@ -35,6 +36,7 @@ object NavRoutes {
     const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
     const val NOTE = "note"
+    const val TEMPLATE = "template"
 }
 
 @Composable
@@ -145,6 +147,11 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToTemplate -> {
+            navController.navigate(route = NavRoutes.TEMPLATE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
@@ -186,7 +193,8 @@ private fun AppNavHost(
             MainScreen(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
-                onNoteClick = {navigationStateManager.navigateToNote() }
+                onNoteClick = {navigationStateManager.navigateToNote() },
+                onTemplateClick = {navigationStateManager.navigateToTemplate()}
             )
         }
 
@@ -220,6 +228,12 @@ private fun AppNavHost(
 
         composable(NavRoutes.NOTE ){
             NoteScreen(
+                onBackClick = {navigationStateManager.navigateBack()}
+            )
+        }
+
+        composable(NavRoutes.TEMPLATE){
+            TemplateScreen(
                 onBackClick = {navigationStateManager.navigateBack()}
             )
         }

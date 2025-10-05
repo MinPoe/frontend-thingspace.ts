@@ -36,7 +36,8 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 fun MainScreen(
     mainViewModel: MainViewModel,
     onProfileClick: () -> Unit,
-    onNoteClick: () -> Unit
+    onNoteClick: () -> Unit,
+    onTemplateClick: ()-> Unit
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -46,6 +47,7 @@ fun MainScreen(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = onNoteClick,
+        onTemplateClick = onTemplateClick,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -56,6 +58,7 @@ private fun MainContent(
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onNoteClick: ()-> Unit,
+    onTemplateClick: ()-> Unit,
     onSuccessMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -76,7 +79,7 @@ private fun MainContent(
             MainBottomBar(
                 onCreateNoteClick = onNoteClick,
                 onWorkspacesClick = onProfileClick,
-                onTemplatesClick = onProfileClick,
+                onTemplatesClick = onTemplateClick,
                 onProfileClick = onProfileClick,
                 modifier = modifier)
         }
@@ -199,7 +202,8 @@ private fun MainBottomBar(
 ){
     BottomAppBar(
         actions = {ProfileActionButton(onClick = onProfileClick)
-                  NoteActionButton(onClick = onCreateNoteClick)},
+                  NoteActionButton(onClick = onCreateNoteClick)
+                  TemplateActionButton(onClick = onTemplatesClick)},
         modifier = modifier
     )
 }
@@ -223,5 +227,27 @@ private fun NoteActionButton(
 private fun NoteIcon() {
     Icon(
         name = R.drawable.ic_edit,
+    )
+}
+
+@Composable
+private fun TemplateActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        TemplateIcon()
+    }
+}
+
+@Composable
+private fun TemplateIcon() {
+    Icon(
+        name = R.drawable.ic_check, //TODO: change the icon to sth more meaningful
     )
 }

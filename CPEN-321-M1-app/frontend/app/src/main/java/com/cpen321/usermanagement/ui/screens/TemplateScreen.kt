@@ -20,21 +20,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.cpen321.usermanagement.R
-import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.components.BackActionButton
 
 @Composable
-fun NoteScreen(
+fun TemplateScreen(
     onBackClick: () -> Unit
 ) {
-    NoteContent(
+    TemplateContent(
         onBackClick = onBackClick
     )
 }
 
 @Composable
-private fun NoteContent(
+private fun TemplateContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -47,12 +47,12 @@ private fun NoteContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        NoteScreenBody(paddingValues = paddingValues)
+        TemplateScreenBody(paddingValues = paddingValues)
     }
 }
 
 @Composable
-private fun NoteScreenBody( //TODO:for now copy of main, change to actual note adding
+private fun TemplateScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier
 ) {
@@ -73,7 +73,7 @@ private fun WelcomeMessage(
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.welcome),
+        text = stringResource(R.string.bio_placeholder),
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
