@@ -148,7 +148,8 @@ class NavigationStateManager @Inject constructor() {
 
     fun navigateToTemplate(workspace_name: String){
         _navigationEvent.value = NavigationEvent.NavigateToTemplate(workspace_name)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE,
+            context_workspace = workspace_name)
     }
 
     fun navigateToWorkspaceList(){

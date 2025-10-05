@@ -246,7 +246,8 @@ private fun AppNavHost(
 
         composable(NavRoutes.TEMPLATE){
             TemplateScreen(
-                onBackClick = {navigationStateManager.navigateBack()}
+                onBackClick = {navigationStateManager.navigateBack()},
+                context_workspace = navigationStateManager.getContextWorkspace()
             )
         }
 

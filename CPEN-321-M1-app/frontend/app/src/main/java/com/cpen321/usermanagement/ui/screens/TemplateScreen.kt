@@ -26,16 +26,19 @@ import com.cpen321.usermanagement.ui.components.BackActionButton
 
 @Composable
 fun TemplateScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    context_workspace:String?
 ) {
     TemplateContent(
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        context_workspace=context_workspace
     )
 }
 
 @Composable
 private fun TemplateContent(
     onBackClick: () -> Unit,
+    context_workspace: String?,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -47,13 +50,14 @@ private fun TemplateContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        TemplateScreenBody(paddingValues = paddingValues)
+        TemplateScreenBody(paddingValues = paddingValues, context_workspace=context_workspace)
     }
 }
 
 @Composable
 private fun TemplateScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
+    context_workspace: String?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -62,18 +66,19 @@ private fun TemplateScreenBody( //TODO:for now copy of main, change to actual no
             .padding(paddingValues),
         contentAlignment = Alignment.Center
     ) {
-        WelcomeMessage()
+        WelcomeMessage(context_workspace)
     }
 }
 
 @Composable //TODO: Replace with actual content
 private fun WelcomeMessage(
+    context_workspace: String?,
     modifier: Modifier = Modifier
 ) {
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.bio_placeholder),
+        text = context_workspace?.toString() ?: "No workspace info",
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
