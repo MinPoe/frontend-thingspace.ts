@@ -35,4 +35,6 @@
     <string name="checking_authentication">Checking authentication...</string>
     <string name="successful_bio_update">Bio updated successfully!</string>
     <string name="sign_out">Sign Out</string>
+    <string name="workspace_dummy_1">Workspace 1</string>
+    <string name="workspace_dummy_2">Workspace 2</string>
 </resources>

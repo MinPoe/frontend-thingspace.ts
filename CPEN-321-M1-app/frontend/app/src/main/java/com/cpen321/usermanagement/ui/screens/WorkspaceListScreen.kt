@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement.ui.screens
 
+import Button
 import Icon
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +24,7 @@ import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.BackActionButton
+import androidx.compose.foundation.layout.Column
 
 @Composable
 fun WorkspaceListScreen(
@@ -47,39 +49,53 @@ private fun WorkspaceListContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        WorkspaceListScreenBody(paddingValues = paddingValues)
+        WorkspaceListScreenBody(paddingValues = paddingValues, onBackClick = onBackClick)
     }
 }
 
 @Composable
 private fun WorkspaceListScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
+    onBackClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage()
+        Button(
+            fullWidth = true,
+            enabled = true,
+        onClick = onBackClick, //TODO: Change later
+        ){
+            val fontSizes = LocalFontSizes.current
+            Text(
+                text=stringResource(R.string.workspace_dummy_1),
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = fontSizes.extraLarge3,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = modifier
+            )
+        }
+        Button(
+            fullWidth = true,
+            enabled = true,
+            onClick = onBackClick, //TODO: Change later
+        ){
+            val fontSizes = LocalFontSizes.current
+            Text(
+                text=stringResource(R.string.workspace_dummy_2),
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = fontSizes.extraLarge3,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = modifier
+            )
+        }
     }
 }
 
-@Composable //TODO: Replace with actual content
-private fun WelcomeMessage(
-    modifier: Modifier = Modifier
-) {
-    val fontSizes = LocalFontSizes.current
-
-    Text(
-        text = stringResource(R.string.bio),
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = fontSizes.extraLarge3,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
-    )
-}
 
 @Composable
 private fun WorkspaceListBottomBar(
