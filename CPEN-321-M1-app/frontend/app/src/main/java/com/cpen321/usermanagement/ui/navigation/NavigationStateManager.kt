@@ -28,7 +28,8 @@ data class NavigationState(
     val isAuthenticated: Boolean = false,
     val needsProfileCompletion: Boolean = false,
     val isLoading: Boolean = true,
-    val isNavigating: Boolean = false
+    val isNavigating: Boolean = false,
+    val context_workspace: String = ""
 )
 
 @Singleton
@@ -60,6 +61,10 @@ class NavigationStateManager @Inject constructor() {
         if (!isLoading) {
             handleAuthenticationNavigation(currentRoute, isAuthenticated, needsProfileCompletion)
         }
+    }
+
+    fun getContextWorkspace(): String?{
+        return _navigationState.value.context_workspace
     }
 
     /**
@@ -137,7 +142,8 @@ class NavigationStateManager @Inject constructor() {
 
     fun navigateToNote(workspace_name: String){
         _navigationEvent.value = NavigationEvent.NavigateToNote(workspace_name)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE,
+            context_workspace = workspace_name)
     }
 
     fun navigateToTemplate(workspace_name: String){

@@ -26,16 +26,19 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 
 @Composable
 fun NoteScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    context_workspace: String?
 ) {
     NoteContent(
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        context_workspace = context_workspace
     )
 }
 
 @Composable
 private fun NoteContent(
     onBackClick: () -> Unit,
+    context_workspace: String?,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -47,13 +50,14 @@ private fun NoteContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        NoteScreenBody(paddingValues = paddingValues)
+        NoteScreenBody(paddingValues = paddingValues, context_workspace = context_workspace)
     }
 }
 
 @Composable
 private fun NoteScreenBody( //TODO:for now copy of main, change to actual note adding
     paddingValues: PaddingValues,
+    context_workspace: String?,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -62,18 +66,19 @@ private fun NoteScreenBody( //TODO:for now copy of main, change to actual note a
             .padding(paddingValues),
         contentAlignment = Alignment.Center
     ) {
-        WelcomeMessage()
+        WorkspaceMessage(context_workspace)
     }
 }
 
 @Composable //TODO: Replace with actual content
-private fun WelcomeMessage(
+private fun WorkspaceMessage(
+    context_workspace: String?,
     modifier: Modifier = Modifier
 ) {
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.welcome),
+        text = context_workspace?.toString() ?: "No workspace info",
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
