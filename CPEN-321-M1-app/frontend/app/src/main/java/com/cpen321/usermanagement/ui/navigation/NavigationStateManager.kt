@@ -17,12 +17,12 @@ sealed class NavigationEvent {
     object NavigateBack : NavigationEvent()
     object ClearBackStack : NavigationEvent()
     object NoNavigation : NavigationEvent()
-    data class NavigateToNote(val workspace_name: String): NavigationEvent()
-    data class NavigateToTemplate(val workspace_name: String): NavigationEvent()
+    data class NavigateToNote(val workspaceName: String): NavigationEvent()
+    data class NavigateToTemplate(val workspaceName: String): NavigationEvent()
     object NavigateToWorkspaceList: NavigationEvent()
-    data class NavigateToWorkspaceInterior(val workspace_name: String): NavigationEvent()
-    data class NavigateToWorkspaceChat(val workspace_name: String): NavigationEvent()
-    data class NavigateToFilter(val workspace_name: String): NavigationEvent()
+    data class NavigateToWorkspaceInterior(val workspaceName: String): NavigationEvent()
+    data class NavigateToWorkspaceChat(val workspaceName: String): NavigationEvent()
+    data class NavigateToFilter(val workspaceName: String): NavigationEvent()
 }
 
 data class NavigationState(
@@ -31,7 +31,12 @@ data class NavigationState(
     val needsProfileCompletion: Boolean = false,
     val isLoading: Boolean = true,
     val isNavigating: Boolean = false,
-    val context_workspace: String = ""
+
+    //ids of context objects to load the screens with
+    val contextWorkspace: String = "",
+    val contextType: String = "",
+    val contextNote: String = "",
+    val contextUser: String = ""
 )
 
 @Singleton
@@ -66,7 +71,7 @@ class NavigationStateManager @Inject constructor() {
     }
 
     fun getContextWorkspace(): String?{
-        return _navigationState.value.context_workspace
+        return _navigationState.value.contextWorkspace
     }
 
     /**
@@ -142,16 +147,16 @@ class NavigationStateManager @Inject constructor() {
             _navigationState.value.copy(currentRoute = NavRoutes.PROFILE_COMPLETION)
     }
 
-    fun navigateToNote(workspace_name: String){
-        _navigationEvent.value = NavigationEvent.NavigateToNote(workspace_name)
+    fun navigateToNote(workspaceName: String){
+        _navigationEvent.value = NavigationEvent.NavigateToNote(workspaceName)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE,
-            context_workspace = workspace_name)
+            contextWorkspace = workspaceName)
     }
 
-    fun navigateToTemplate(workspace_name: String){
-        _navigationEvent.value = NavigationEvent.NavigateToTemplate(workspace_name)
+    fun navigateToTemplate(workspaceName: String){
+        _navigationEvent.value = NavigationEvent.NavigateToTemplate(workspaceName)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE,
-            context_workspace = workspace_name)
+            contextWorkspace = workspaceName)
     }
 
     fun navigateToWorkspaceList(){
@@ -159,22 +164,22 @@ class NavigationStateManager @Inject constructor() {
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_LIST)
     }
 
-    fun navigateToWorkspaceInterior(workspace_name: String){
-        _navigationEvent.value = NavigationEvent.NavigateToWorkspaceInterior(workspace_name)
+    fun navigateToWorkspaceInterior(workspaceName: String){
+        _navigationEvent.value = NavigationEvent.NavigateToWorkspaceInterior(workspaceName)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_INTERIOR,
-            context_workspace = workspace_name)
+            contextWorkspace = workspaceName)
     }
 
-    fun navigateToWorkspaceChat(workspace_name: String){
-        _navigationEvent.value = NavigationEvent.NavigateToWorkspaceChat(workspace_name)
+    fun navigateToWorkspaceChat(workspaceName: String){
+        _navigationEvent.value = NavigationEvent.NavigateToWorkspaceChat(workspaceName)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WORKSPACE_INTERIOR,
-            context_workspace = workspace_name)
+            contextWorkspace = workspaceName)
     }
 
-    fun navigateToFilter(workspace_name: String){
-        _navigationEvent.value = NavigationEvent.NavigateToFilter(workspace_name)
+    fun navigateToFilter(workspaceName: String){
+        _navigationEvent.value = NavigationEvent.NavigateToFilter(workspaceName)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FILTER,
-            context_workspace = workspace_name)
+            contextWorkspace = workspaceName)
     }
 
     /**
