@@ -96,21 +96,21 @@ class ProfileRepositoryImpl @Inject constructor(
                 Result.success(response.body()!!.data!!.user)
             } else {
                 val errorBodyString = response.errorBody()?.string()
-                val errorMessage = parseErrorMessage(errorBodyString, "Failed to fetch hobbies.")
-                Log.e(TAG, "Failed to get available hobbies: $errorMessage")
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to update the profile picture.")
+                Log.e(TAG, "Failed to update the profile picture: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
         } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while getting available hobbies", e)
+            Log.e(TAG, "Network timeout while updating the profile picture", e)
             Result.failure(e)
         } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while getting available hobbies", e)
+            Log.e(TAG, "Network connection failed while updating the profile picture", e)
             Result.failure(e)
         } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while getting available hobbies", e)
+            Log.e(TAG, "IO error while updating the profile picture", e)
             Result.failure(e)
         } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while getting available hobbies: ${e.code()}", e)
+            Log.e(TAG, "HTTP error while updating the profile picture: ${e.code()}", e)
             Result.failure(e)
         }
     }
