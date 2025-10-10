@@ -19,12 +19,22 @@ sealed class NavigationEvent {
     object NoNavigation : NavigationEvent()
 }
 
+//context of the note-workspace-user system
+data class FeatureContext(
+    val noteId: String? = null,
+    val userId: String? = null,
+    val workspaceId: String? = null,
+    val noteType: String? = null
+)
+
 data class NavigationState(
     val currentRoute: String = NavRoutes.LOADING,
     val isAuthenticated: Boolean = false,
     val needsProfileCompletion: Boolean = false,
     val isLoading: Boolean = true,
     val isNavigating: Boolean = false,
+    val featureContext: FeatureContext = FeatureContext()
+
 )
 
 @Singleton
