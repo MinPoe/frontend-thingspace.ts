@@ -34,6 +34,21 @@ object NavRoutes {
     const val PROFILE = "profile"
     const val MANAGE_PROFILE = "manage_profile"
     const val PROFILE_COMPLETION = "profile_completion"
+    const val CHAT = "chat"
+    const val COPY = "copy"
+    const val FIELDS = "fields"
+    const val FILTER = "filter"
+    const val INVITE = "invite"
+    const val MEMBERS_MANAGER = "members_manager"
+    const val MEMBERS = "members"
+    const val NAVIGATION = "navigation"
+    const val NOTE = "note"
+    const val OTHER_PROFILE = "profile"
+    const val SHARING = "sharing"
+    const val TEMPLATE = "template"
+    const val WS_CREATION = "ws_creation"
+    const val WS_PROFILE_MANAGER = "ws_profile_manager"
+    const val WS_PROFILE = "ws_profile"
 }
 
 @Composable
@@ -136,6 +151,112 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NoNavigation -> {
             // Do nothing
+        }
+
+        //when cases for the feature events
+        is NavigationEvent.NavigateToChat -> {
+            navController.navigate(NavRoutes.CHAT) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToCopy -> {
+            navController.navigate(NavRoutes.COPY) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToFields -> {
+            navController.navigate(NavRoutes.FIELDS) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToFilter -> {
+            navController.navigate(NavRoutes.FILTER) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToInvite -> {
+            navController.navigate(NavRoutes.INVITE) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMembersManager -> {
+            navController.navigate(NavRoutes.MEMBERS_MANAGER) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMembers -> {
+            navController.navigate(NavRoutes.MEMBERS) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToNavigation -> {
+            navController.navigate(NavRoutes.NAVIGATION) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToNote -> {
+            navController.navigate(NavRoutes.NOTE) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToOtherProfile -> {
+            navController.navigate(NavRoutes.OTHER_PROFILE) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToSharing -> {
+            navController.navigate(NavRoutes.SHARING) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToTemplate -> {
+            navController.navigate(NavRoutes.TEMPLATE) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsCreation -> {
+            navController.navigate(NavRoutes.WS_CREATION) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsProfileManager -> {
+            navController.navigate(NavRoutes.WS_PROFILE_MANAGER) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsProfile -> {
+            navController.navigate(NavRoutes.WS_PROFILE) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
         }
     }
 }

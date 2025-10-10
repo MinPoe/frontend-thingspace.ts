@@ -17,6 +17,23 @@ sealed class NavigationEvent {
     object NavigateBack : NavigationEvent()
     object ClearBackStack : NavigationEvent()
     object NoNavigation : NavigationEvent()
+
+    //feature navigation events
+    data class NavigateToChat(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToCopy(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToFields(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToFilter(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToInvite(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToMembersManager(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToMembers(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToNavigation(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToNote(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToOtherProfile(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToSharing(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToTemplate(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToWsCreation(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToWsProfileManager(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToWsProfile(val context: FeatureContext) : NavigationEvent()
 }
 
 //context of the note-workspace-user system
@@ -33,8 +50,6 @@ data class NavigationState(
     val needsProfileCompletion: Boolean = false,
     val isLoading: Boolean = true,
     val isNavigating: Boolean = false,
-    val featureContext: FeatureContext = FeatureContext()
-
 )
 
 @Singleton
