@@ -15,19 +15,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.screens.AuthScreen
-import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.LoadingScreen
 import com.cpen321.usermanagement.ui.screens.MainScreen
 //import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
 import com.cpen321.usermanagement.ui.screens.ManageProfileScreen
-import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
-import com.cpen321.usermanagement.ui.screens.TemplateScreen
-import com.cpen321.usermanagement.ui.screens.WorkspaceChatScreen
-import com.cpen321.usermanagement.ui.screens.WorkspaceInteriorScreen
-import com.cpen321.usermanagement.ui.screens.WorkspaceListScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
@@ -40,12 +34,6 @@ object NavRoutes {
     const val PROFILE = "profile"
     const val MANAGE_PROFILE = "manage_profile"
     const val PROFILE_COMPLETION = "profile_completion"
-    const val NOTE = "note"
-    const val TEMPLATE = "template"
-    const val WORKSPACE_LIST = "workspace_list"
-    const val WORKSPACE_INTERIOR = "workspace_interior"
-    const val WORKSPACE_CHAT = "workspace_chat"
-    const val FILTER = "filter"
 }
 
 @Composable
@@ -146,36 +134,6 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
-        is NavigationEvent.NavigateToNote -> {
-            navController.navigate(route = NavRoutes.NOTE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToTemplate -> {
-            navController.navigate(route = NavRoutes.TEMPLATE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWorkspaceList ->{
-            navController.navigate(route = NavRoutes.WORKSPACE_LIST)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWorkspaceInterior -> {
-            navController.navigate(route = NavRoutes.WORKSPACE_INTERIOR)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWorkspaceChat -> {
-            navController.navigate(route = NavRoutes.WORKSPACE_CHAT)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToFilter -> {
-            navController.navigate(route = NavRoutes.FILTER)
-            navigationStateManager.clearNavigationEvent()
-        }
-
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
@@ -218,10 +176,10 @@ private fun AppNavHost(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
-                onNoteClick = {navigationStateManager.navigateToNote("personal") },
-                onTemplateClick = {navigationStateManager.navigateToTemplate("personal")},
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
-                onFilterClick = {navigationStateManager.navigateToFilter("personal")}
+                onNoteClick = {},
+                onTemplateClick = {},
+                onWorkspaceClick = {},
+                onFilterClick = {}
             )
         }
 
@@ -245,79 +203,6 @@ private fun AppNavHost(
             )
         }
 
-        composable(NavRoutes.NOTE){
-            NoteScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                context_workspace = navigationStateManager.getContextWorkspace()
-            )
-        }
 
-        composable(NavRoutes.TEMPLATE){
-            TemplateScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                context_workspace = navigationStateManager.getContextWorkspace()
-            )
-        }
-
-        composable(NavRoutes.WORKSPACE_LIST){
-            WorkspaceListScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                onWorkspaceClick = {
-                    workspaceName -> navigationStateManager.navigateToWorkspaceInterior(workspaceName)
-                },
-                onBackToMainClick = {navigationStateManager.navigateToMain()}
-            )
-        }
-
-        composable(NavRoutes.WORKSPACE_INTERIOR){
-            val context_workspace:String? = navigationStateManager.getContextWorkspace()
-            WorkspaceInteriorScreen(
-                context_workspace = context_workspace,
-                onProfileClick = {navigationStateManager.navigateToProfile()},
-                onNoteClick = {navigationStateManager.navigateToNote(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )},
-                onTemplateClick = {navigationStateManager.navigateToTemplate(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )
-                },
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
-                onChatClick ={navigationStateManager.navigateToWorkspaceChat(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )}
-            )
-        }
-
-        composable(NavRoutes.WORKSPACE_CHAT){
-            val context_workspace:String? = navigationStateManager.getContextWorkspace()
-            WorkspaceChatScreen(
-                context_workspace = context_workspace,
-                onProfileClick = {navigationStateManager.navigateToProfile()},
-                onNoteClick = {navigationStateManager.navigateToNote(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )},
-                onTemplateClick = {navigationStateManager.navigateToTemplate(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )
-                },
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
-                onMainContentClick = {navigationStateManager.navigateToWorkspaceInterior(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )}
-            )
-        }
-
-        composable(NavRoutes.FILTER){
-            FilterScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                context_workspace = navigationStateManager.getContextWorkspace()
-            )
-        }
     }
 }
