@@ -235,65 +235,47 @@ private fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToCopy -> {
-            navController.navigate(NavRoutes.COPY) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.COPY)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToFields -> {
-            navController.navigate(NavRoutes.FIELDS) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.FIELDS)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToFilter -> {
-            navController.navigate(NavRoutes.FILTER) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.FILTER)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToInvite -> {
-            navController.navigate(NavRoutes.INVITE) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.INVITE)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToMembersManager -> {
-            navController.navigate(NavRoutes.MEMBERS_MANAGER) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.MEMBERS_MANAGER)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToMembers -> {
-            navController.navigate(NavRoutes.MEMBERS) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.MEMBERS)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToNote -> {
-            navController.navigate(NavRoutes.NOTE) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.NOTE)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToOtherProfile -> {
-            navController.navigate(NavRoutes.OTHER_PROFILE) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.OTHER_PROFILE)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToSharing -> {
-            navController.navigate(NavRoutes.SHARING) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.SHARING)
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -305,30 +287,22 @@ private fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToWsCreation -> {
-            navController.navigate(NavRoutes.WS_CREATION) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.WS_CREATION)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToWsProfileManager -> {
-            navController.navigate(NavRoutes.WS_PROFILE_MANAGER) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.WS_PROFILE_MANAGER)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToWsProfile -> {
-            navController.navigate(NavRoutes.WS_PROFILE) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.WS_PROFILE)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToWsSelect -> {
-            navController.navigate(NavRoutes.WS_SELECT) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.WS_SELECT)
             navigationStateManager.clearNavigationEvent()
         }
 

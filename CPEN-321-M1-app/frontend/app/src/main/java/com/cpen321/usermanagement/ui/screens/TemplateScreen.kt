@@ -52,7 +52,8 @@ fun TemplateScreen(
         onNoteClick = { }, //TODO: for now
         onTemplateClick = {  featureActions.navigateToMainWithContext(
             FeatureContext(workspaceId = templateViewModel.getWorkspaceName()))},
-        onWorkspaceClick = { featureActions.navigateToWsSelect(FeatureContext()) },
+        onWorkspaceClick = { featureActions.navigateToWsSelect(
+            FeatureContext(workspaceId = templateViewModel.getWorkspaceName())) },
         onFilterClick = {  },
     )
 }
