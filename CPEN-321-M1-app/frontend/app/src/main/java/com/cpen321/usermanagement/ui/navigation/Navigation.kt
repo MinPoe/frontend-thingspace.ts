@@ -41,7 +41,6 @@ object NavRoutes {
     const val INVITE = "invite"
     const val MEMBERS_MANAGER = "members_manager"
     const val MEMBERS = "members"
-    const val NAVIGATION = "navigation"
     const val NOTE = "note"
     const val OTHER_PROFILE = "profile"
     const val SHARING = "sharing"
@@ -115,7 +114,7 @@ private fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToMainWithMessage -> {
-            mainViewModel.setSuccessMessage(navigationEvent.message)
+            mainViewModel.setSuccessMessage(navigationEvent.message) //NOTE: this is how to access context
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
@@ -144,6 +143,7 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        //feature screens navigation starts here
         is NavigationEvent.ClearBackStack -> {
             navController.popBackStack(navController.graph.startDestinationId, false)
             navigationStateManager.clearNavigationEvent()
@@ -203,13 +203,6 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
-        is NavigationEvent.NavigateToNavigation -> {
-            navController.navigate(NavRoutes.NAVIGATION) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
         is NavigationEvent.NavigateToNote -> {
             navController.navigate(NavRoutes.NOTE) {
                 popUpTo(0) { inclusive = true }
@@ -257,6 +250,72 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMainWithContext -> {
+            navController.navigate(NavRoutes.MAIN) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+    }
+}
+
+class FeatureActions(private val navigationStateManager: NavigationStateManager){
+
+        fun navigateToChat(context: FeatureContext) {
+            navigationStateManager.navigateToChat(context)
+        }
+
+        fun navigateToCopy(context: FeatureContext) {
+            navigationStateManager.navigateToCopy(context)
+        }
+
+        fun navigateToFields(context: FeatureContext) {
+            navigationStateManager.navigateToFields(context)
+        }
+
+        fun navigateToFilter(context: FeatureContext) {
+            navigationStateManager.navigateToFilter(context)
+        }
+
+        fun navigateToInvite(context: FeatureContext) {
+            navigationStateManager.navigateToInvite(context)
+        }
+
+        fun navigateToMembersManager(context: FeatureContext) {
+            navigationStateManager.navigateToMembersManager(context)
+        }
+
+        fun navigateToMembers(context: FeatureContext) {
+            navigationStateManager.navigateToMembers(context)
+        }
+
+        fun navigateToNote(context: FeatureContext) {
+            navigationStateManager.navigateToNote(context)
+        }
+
+        fun navigateToOtherProfile(context: FeatureContext) {
+            navigationStateManager.navigateToOtherProfile(context)
+        }
+
+        fun navigateToSharing(context: FeatureContext) {
+            navigationStateManager.navigateToSharing(context)
+        }
+
+        fun navigateToTemplate(context: FeatureContext) {
+            navigationStateManager.navigateToTemplate(context)
+        }
+
+        fun navigateToWsCreation(context: FeatureContext) {
+            navigationStateManager.navigateToWsCreation(context)
+        }
+
+        fun navigateToWsProfileManager(context: FeatureContext) {
+            navigationStateManager.navigateToWsProfileManager(context)
+        }
+
+        fun navigateToWsProfile(context: FeatureContext) {
+            navigationStateManager.navigateToWsProfile(context)
         }
     }
 }

@@ -26,7 +26,6 @@ sealed class NavigationEvent {
     data class NavigateToInvite(val context: FeatureContext) : NavigationEvent()
     data class NavigateToMembersManager(val context: FeatureContext) : NavigationEvent()
     data class NavigateToMembers(val context: FeatureContext) : NavigationEvent()
-    data class NavigateToNavigation(val context: FeatureContext) : NavigationEvent()
     data class NavigateToNote(val context: FeatureContext) : NavigationEvent()
     data class NavigateToOtherProfile(val context: FeatureContext) : NavigationEvent()
     data class NavigateToSharing(val context: FeatureContext) : NavigationEvent()
@@ -34,6 +33,7 @@ sealed class NavigationEvent {
     data class NavigateToWsCreation(val context: FeatureContext) : NavigationEvent()
     data class NavigateToWsProfileManager(val context: FeatureContext) : NavigationEvent()
     data class NavigateToWsProfile(val context: FeatureContext) : NavigationEvent()
+    data class NavigateToMainWithContext(val context: FeatureContext): NavigationEvent()
 }
 
 //context of the note-workspace-user system
@@ -145,6 +145,126 @@ class NavigationStateManager @Inject constructor() {
     fun navigateToMainWithMessage(message: String) {
         _navigationEvent.value = NavigationEvent.NavigateToMainWithMessage(message)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN)
+    }
+
+    /**
+     * Navigate to chat screen with standard context
+     */
+    fun navigateToChat(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToChat(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.CHAT)
+    }
+
+    /**
+     * Navigate to copy screen with standard context
+     */
+    fun navigateToCopy(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToCopy(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.COPY)
+    }
+
+    /**
+     * Navigate to fields screen with standard context
+     */
+    fun navigateToFields(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToFields(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FIELDS)
+    }
+
+    /**
+     * Navigate to filter screen with standard context
+     */
+    fun navigateToFilter(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToFilter(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FILTER)
+    }
+
+    /**
+     * Navigate to invite screen with standard context
+     */
+    fun navigateToInvite(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToInvite(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.INVITE)
+    }
+
+    /**
+     * Navigate to members manager screen with standard context
+     */
+    fun navigateToMembersManager(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToMembersManager(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS_MANAGER)
+    }
+
+    /**
+     * Navigate to members screen with standard context
+     */
+    fun navigateToMembers(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToMembers(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS)
+    }
+
+    /**
+     * Navigate to main screen with standard context
+     */
+    fun navigateToMainWithContext(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToMainWithContext(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN)
+    }
+
+    /**
+     * Navigate to note screen with standard context
+     */
+    fun navigateToNote(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToNote(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE)
+    }
+
+    /**
+     * Navigate to other profile screen with standard context
+     */
+    fun navigateToOtherProfile(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToOtherProfile(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.OTHER_PROFILE)
+    }
+
+    /**
+     * Navigate to sharing screen with standard context
+     */
+    fun navigateToSharing(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToSharing(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.SHARING)
+    }
+
+    /**
+     * Navigate to template screen with standard context
+     */
+    fun navigateToTemplate(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToTemplate(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE)
+    }
+
+    /**
+     * Navigate to workspace creation screen with standard context
+     */
+    fun navigateToWsCreation(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToWsCreation(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_CREATION)
+    }
+
+    /**
+     * Navigate to workspace profile manager screen with standard context
+     */
+    fun navigateToWsProfileManager(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToWsProfileManager(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE_MANAGER)
+    }
+
+    /**
+     * Navigate to workspace profile screen with standard context
+     */
+    fun navigateToWsProfile(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToWsProfile(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE)
     }
 
     /**
