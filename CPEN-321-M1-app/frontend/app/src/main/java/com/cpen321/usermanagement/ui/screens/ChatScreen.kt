@@ -34,6 +34,7 @@ import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
+import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
@@ -180,6 +181,10 @@ private fun MainBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WelcomeMessage()
+        SearchBar(
+            onQueryChange = {},//TODO: for now
+            onFilterClick = {}
+        )
         Button(
             fullWidth = true,
             enabled = true,
