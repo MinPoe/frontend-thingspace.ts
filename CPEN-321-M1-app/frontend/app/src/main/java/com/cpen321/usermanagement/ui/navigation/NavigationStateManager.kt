@@ -44,6 +44,7 @@ data class NavigationState(
     val needsProfileCompletion: Boolean = false,
     val isLoading: Boolean = true,
     val isNavigating: Boolean = false,
+    val context: FeatureContext = FeatureContext()
 )
 
 @Singleton
@@ -146,7 +147,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToChat(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToChat(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.CHAT)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.CHAT, context = context)
     }
 
     /**
@@ -154,7 +155,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToCopy(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToCopy(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.COPY)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.COPY, context = context)
     }
 
     /**
@@ -162,7 +163,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToFields(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToFields(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FIELDS)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FIELDS, context = context)
     }
 
     /**
@@ -170,7 +171,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToFilter(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToFilter(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FILTER)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FILTER, context = context)
     }
 
     /**
@@ -178,7 +179,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToInvite(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToInvite(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.INVITE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.INVITE, context = context)
     }
 
     /**
@@ -186,7 +187,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToMembersManager(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToMembersManager(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS_MANAGER)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS_MANAGER, context = context)
     }
 
     /**
@@ -194,7 +195,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToMembers(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToMembers(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS, context = context)
     }
 
     /**
@@ -202,7 +203,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToMainWithContext(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToMainWithContext(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN, context = context)
     }
 
     /**
@@ -210,7 +211,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToNote(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToNote(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE, context = context)
     }
 
     /**
@@ -218,7 +219,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToOtherProfile(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToOtherProfile(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.OTHER_PROFILE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.OTHER_PROFILE, context = context)
     }
 
     /**
@@ -226,7 +227,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToSharing(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToSharing(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.SHARING)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.SHARING, context = context)
     }
 
     /**
@@ -234,7 +235,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToTemplate(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToTemplate(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.TEMPLATE, context = context)
     }
 
     /**
@@ -242,7 +243,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToWsCreation(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToWsCreation(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_CREATION)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_CREATION, context = context)
     }
 
     /**
@@ -250,7 +251,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToWsProfileManager(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToWsProfileManager(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE_MANAGER)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE_MANAGER, context = context)
     }
 
     /**
@@ -258,7 +259,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToWsProfile(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToWsProfile(context)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE, context = context)
     }
 
     /**

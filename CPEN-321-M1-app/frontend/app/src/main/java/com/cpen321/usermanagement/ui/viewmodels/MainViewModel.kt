@@ -1,6 +1,7 @@
 package com.cpen321.usermanagement.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import com.cpen321.usermanagement.utils.FeatureContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +14,6 @@ data class MainUiState(
 
 @HiltViewModel
 class MainViewModel @Inject constructor() : ViewModel() {
-
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 

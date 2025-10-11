@@ -22,9 +22,22 @@ import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
 import com.cpen321.usermanagement.ui.screens.TemplateScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
+import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
+import com.cpen321.usermanagement.ui.viewmodels.CopyViewModel
+import com.cpen321.usermanagement.ui.viewmodels.FieldsViewModel
+import com.cpen321.usermanagement.ui.viewmodels.FilterViewModel
+import com.cpen321.usermanagement.ui.viewmodels.InviteViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
+import com.cpen321.usermanagement.ui.viewmodels.MembersManagerViewModel
+import com.cpen321.usermanagement.ui.viewmodels.MembersViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
+import com.cpen321.usermanagement.ui.viewmodels.NoteViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
+import com.cpen321.usermanagement.ui.viewmodels.SharingViewModel
+import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
 import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
@@ -63,6 +76,19 @@ fun AppNavigation(
     val authViewModel: AuthViewModel = hiltViewModel()
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val mainViewModel: MainViewModel = hiltViewModel()
+    val chatViewModel: ChatViewModel = hiltViewModel()
+    val copyViewModel: CopyViewModel = hiltViewModel()
+    val fieldsViewModel: FieldsViewModel = hiltViewModel()
+    val filterViewModel: FilterViewModel = hiltViewModel()
+    val inviteViewModel: InviteViewModel = hiltViewModel()
+    val membersManagerViewModel: MembersManagerViewModel = hiltViewModel()
+    val membersViewModel: MembersViewModel = hiltViewModel()
+    val noteViewModel: NoteViewModel = hiltViewModel()
+    val sharingViewModel: SharingViewModel = hiltViewModel()
+    val templateViewModel: TemplateViewModel = hiltViewModel()
+    val wsCreationViewModel: WsCreationViewModel = hiltViewModel()
+    val wsProfileManagerViewModel: WsProfileManagerViewModel = hiltViewModel()
+    val wsProfileViewModel: WsProfileViewModel = hiltViewModel()
 
     // Handle navigation events from NavigationStateManager
     LaunchedEffect(navigationEvent) {
@@ -71,7 +97,20 @@ fun AppNavigation(
             navController,
             navigationStateManager,
             authViewModel,
-            mainViewModel
+            chatViewModel = chatViewModel,
+            copyViewModel = copyViewModel,
+            fieldsViewModel = fieldsViewModel,
+            filterViewModel = filterViewModel,
+            inviteViewModel = inviteViewModel,
+            membersManagerViewModel = membersManagerViewModel,
+            membersViewModel = membersViewModel,
+            noteViewModel = noteViewModel,
+            sharingViewModel = sharingViewModel,
+            templateViewModel = templateViewModel,
+            wsCreationViewModel = wsCreationViewModel,
+            wsProfileManagerViewModel = wsProfileManagerViewModel,
+            wsProfileViewModel = wsProfileViewModel,
+            mainViewModel = mainViewModel
         )
     }
 
@@ -80,6 +119,19 @@ fun AppNavigation(
         authViewModel = authViewModel,
         profileViewModel = profileViewModel,
         mainViewModel = mainViewModel,
+        chatViewModel = chatViewModel,
+        copyViewModel = copyViewModel,
+        fieldsViewModel = fieldsViewModel,
+        filterViewModel = filterViewModel,
+        inviteViewModel = inviteViewModel,
+        membersManagerViewModel = membersManagerViewModel,
+        membersViewModel = membersViewModel,
+        noteViewModel = noteViewModel,
+        sharingViewModel = sharingViewModel,
+        templateViewModel = templateViewModel,
+        wsCreationViewModel = wsCreationViewModel,
+        wsProfileManagerViewModel = wsProfileManagerViewModel,
+        wsProfileViewModel = wsProfileViewModel,
         navigationStateManager = navigationStateManager
     )
 }
@@ -89,6 +141,19 @@ private fun handleNavigationEvent(
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
+    chatViewModel: ChatViewModel,
+    copyViewModel: CopyViewModel,
+    fieldsViewModel: FieldsViewModel,
+    filterViewModel: FilterViewModel,
+    inviteViewModel: InviteViewModel,
+    membersManagerViewModel: MembersManagerViewModel,
+    membersViewModel: MembersViewModel,
+    noteViewModel: NoteViewModel,
+    sharingViewModel: SharingViewModel,
+    templateViewModel: TemplateViewModel,
+    wsCreationViewModel: WsCreationViewModel,
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    wsProfileViewModel: WsProfileViewModel,
     mainViewModel: MainViewModel
 ) {
     when (navigationEvent) {
@@ -333,6 +398,19 @@ private fun AppNavHost(
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
     mainViewModel: MainViewModel,
+    chatViewModel: ChatViewModel,
+    copyViewModel: CopyViewModel,
+    fieldsViewModel: FieldsViewModel,
+    filterViewModel: FilterViewModel,
+    inviteViewModel: InviteViewModel,
+    membersManagerViewModel: MembersManagerViewModel,
+    membersViewModel: MembersViewModel,
+    noteViewModel: NoteViewModel,
+    sharingViewModel: SharingViewModel,
+    templateViewModel: TemplateViewModel,
+    wsCreationViewModel: WsCreationViewModel,
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    wsProfileViewModel: WsProfileViewModel,
     navigationStateManager: NavigationStateManager
 ) {
     NavHost(
