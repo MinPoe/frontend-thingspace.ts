@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.screens.AuthScreen
+import com.cpen321.usermanagement.ui.screens.ChatScreen
 import com.cpen321.usermanagement.ui.screens.LoadingScreen
 import com.cpen321.usermanagement.ui.screens.MainScreen
 //import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
@@ -474,5 +475,13 @@ private fun AppNavHost(
                 featureActions = FeatureActions(navigationStateManager))
         }
 
+        composable(NavRoutes.CHAT){
+            ChatScreen(
+                chatViewModel = chatViewModel,
+                onProfileClick = { navigationStateManager.navigateToProfile() },
+                //TODO: change 'personal' to user id once we have access to
+                featureActions = FeatureActions(navigationStateManager)
+            )
+        }
     }
 }

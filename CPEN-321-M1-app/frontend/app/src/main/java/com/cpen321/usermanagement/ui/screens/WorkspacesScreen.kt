@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.cpen321.usermanagement.ui.components.BackActionButton
+import com.cpen321.usermanagement.ui.components.WorkspaceRow
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.utils.FeatureContext
@@ -26,16 +27,37 @@ fun WorkspacesScreen(
     val availableWs=listOf("ws1", "ws2") // TODO: will be obtained via the ViewModel
     val onWsMainClick = {index:Int ->
         featureActions.navigateToMainWithContext(FeatureContext(workspaceId = availableWs[index]))}
+    val onWsChatClick = {index:Int ->
+        featureActions.navigateToChat(FeatureContext(workspaceId = availableWs[index]))}
+    val onWsTemplateClick = {index:Int ->
+        featureActions.navigateToTemplate(FeatureContext(workspaceId = availableWs[index]))}
+    val onPersonalProfileClick = {} //TODO: for now before the situation with profile clarifies
+    val onPersonalChatClick={featureActions.navigateToChat(context= FeatureContext())}
+    val onPersonalContentClick={featureActions.navigateToMainWithContext(context= FeatureContext())}
+    val onPersonalTemplateClick={featureActions.navigateToTemplate(context= FeatureContext())}
 
     WsContent(onWsMainClick = onWsMainClick,
         onBackClick = onBackClick,
-        availableWs = availableWs)
+        availableWs = availableWs,
+        onWsChatClick= onWsChatClick,
+        onWsTemplateClick = onWsTemplateClick,
+        onPersonalProfileClick = onPersonalProfileClick,
+        onPersonalContentClick = onPersonalContentClick,
+        onPersonalChatClick = onPersonalChatClick,
+        onPersonalTemplateClick = onPersonalTemplateClick
+    )
 }
 @Composable
 private fun WsContent(
     onWsMainClick: (Int)-> Unit,
     onBackClick: ()->Unit,
     availableWs: List<String>,
+    onWsTemplateClick: (Int)->Unit,
+    onWsChatClick: (Int)->Unit,
+    onPersonalProfileClick: ()->Unit,
+    onPersonalContentClick: ()->Unit,
+    onPersonalChatClick: ()->Unit,
+    onPersonalTemplateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -49,7 +71,14 @@ private fun WsContent(
         WsBody(
             availableWs = availableWs,
             paddingValues = paddingValues,
-            onWsMainClick = onWsMainClick)
+            onWsMainClick = onWsMainClick,
+            onWsChatClick = onWsChatClick,
+            onWsTemplateClick = onWsTemplateClick,
+            onPersonalProfileClick = onPersonalProfileClick,
+            onPersonalContentClick = onPersonalContentClick,
+            onPersonalChatClick = onPersonalChatClick,
+            onPersonalTemplateClick = onPersonalTemplateClick
+            )
     }
 }
 
@@ -58,6 +87,12 @@ private fun WsBody(
     availableWs: List<String>,
     paddingValues: PaddingValues,
     onWsMainClick: (Int) -> Unit,
+    onWsChatClick: (Int) -> Unit,
+    onWsTemplateClick: (Int) -> Unit,
+    onPersonalProfileClick: ()->Unit,
+    onPersonalContentClick: ()->Unit,
+    onPersonalChatClick: ()->Unit,
+    onPersonalTemplateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -66,21 +101,20 @@ private fun WsBody(
             .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        WorkspaceRow(
+            workspaceName = "personal", //TODO: for now
+            onContentClick = onPersonalContentClick,
+            onTemplatesClick = onPersonalTemplateClick,
+            onProfileClick = onPersonalProfileClick,
+            onChatClick = onPersonalChatClick
+        )
         for (i in 0..(availableWs.size-1))
-        Button(
-            fullWidth = true,
-            enabled = true,
-            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
-            onClick = { onWsMainClick(i) },
-        ) {
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = availableWs[i],
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
+            WorkspaceRow(
+                workspaceName = availableWs[i],
+                onContentClick = {onWsMainClick(i)},
+                onProfileClick = {},//TODO: for Now,
+                onChatClick = {onWsChatClick(i)},
+                onTemplatesClick = {onWsTemplateClick(i)}
             )
-        }
     }
 }

@@ -50,11 +50,16 @@ fun TemplateScreen(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
-        onTemplateClick = {  featureActions.navigateToMainWithContext(
+        onContentClick = {  featureActions.navigateToMainWithContext(
             FeatureContext(workspaceId = templateViewModel.getWorkspaceName()))},
         onWorkspaceClick = { featureActions.navigateToWsSelect(
             FeatureContext(workspaceId = templateViewModel.getWorkspaceName())) },
         onFilterClick = {  },
+        onChatClick={
+            featureActions.navigateToChat(
+                context = FeatureContext(workspaceId = templateViewModel.getWorkspaceName())
+            )
+        }
     )
 }
 
@@ -63,7 +68,8 @@ private fun MainContent(
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onNoteClick: ()-> Unit,
-    onTemplateClick: ()-> Unit,
+    onContentClick: ()->Unit,
+    onChatClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -77,8 +83,9 @@ private fun MainContent(
             MainBottomBar(
                 onCreateNoteClick = onNoteClick,
                 onWorkspacesClick = onWorkspaceClick,
-                onTemplatesClick = onTemplateClick,
-                onProfileClick = onProfileClick,
+                onTemplatesClick = {  },
+                onContentClick = onContentClick,
+                onChatClick = onChatClick,
                 modifier = modifier)
         }
     ) { paddingValues ->
