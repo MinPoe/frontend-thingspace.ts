@@ -35,6 +35,8 @@ sealed class NavigationEvent {
     data class NavigateToWsProfileManager(val context: FeatureContext) : NavigationEvent()
     data class NavigateToWsProfile(val context: FeatureContext) : NavigationEvent()
     data class NavigateToMainWithContext(val context: FeatureContext): NavigationEvent()
+    data class NavigateToWsSelect(val context: FeatureContext): NavigationEvent()
+
 }
 
 
@@ -264,6 +266,11 @@ class NavigationStateManager @Inject constructor() {
     fun navigateToWsProfile(context: FeatureContext) {
         _navigationEvent.value = NavigationEvent.NavigateToWsProfile(context)
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_PROFILE, context = context)
+    }
+
+    fun navigateToWsSelect(context: FeatureContext) {
+        _navigationEvent.value = NavigationEvent.NavigateToWsSelect(context)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_SELECT, context = context)
     }
 
     /**

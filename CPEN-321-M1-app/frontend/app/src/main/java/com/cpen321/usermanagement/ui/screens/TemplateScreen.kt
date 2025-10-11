@@ -30,7 +30,7 @@ import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
-import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
+import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
@@ -39,48 +39,37 @@ import com.cpen321.usermanagement.utils.IFeatureActions
 
 @Composable
 fun TemplateScreen(
-    mainViewModel: MainViewModel,
+    templateViewModel: TemplateViewModel,
     onProfileClick: () -> Unit,
     featureActions: IFeatureActions
 ) {
-    val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
 
     MainContent(
-        uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
-        onTemplateClick = {  featureActions.navigateToMainWithContext(FeatureContext(workspaceId = "testWS"))},
+        onTemplateClick = {  featureActions.navigateToMainWithContext(
+            FeatureContext(workspaceId = templateViewModel.getWorkspaceName()))},
         onWorkspaceClick = {  },
         onFilterClick = {  },
-        onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
 
 @Composable
 private fun MainContent(
-    uiState: MainUiState,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onNoteClick: ()-> Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
-    onSuccessMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
         topBar = {
             MainTopBar(onProfileClick = onProfileClick)
-        },
-        snackbarHost = {
-            MainSnackbarHost(
-                hostState = snackBarHostState,
-                successMessage = uiState.successMessage,
-                onSuccessMessageShown = onSuccessMessageShown
-            )
         },
         bottomBar = {
             MainBottomBar(

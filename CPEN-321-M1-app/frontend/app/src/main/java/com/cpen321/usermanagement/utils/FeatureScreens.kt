@@ -24,4 +24,5 @@ interface IFeatureActions {
     fun navigateToWsCreation(context: FeatureContext)
     fun navigateToWsProfileManager(context: FeatureContext)
     fun navigateToWsProfile(context: FeatureContext)
+    fun navigateToWsSelect(context: FeatureContext)
 }

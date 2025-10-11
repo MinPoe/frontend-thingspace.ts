@@ -38,6 +38,7 @@ import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
@@ -62,6 +63,7 @@ object NavRoutes {
     const val WS_CREATION = "ws_creation"
     const val WS_PROFILE_MANAGER = "ws_profile_manager"
     const val WS_PROFILE = "ws_profile"
+    const val WS_SELECT = "ws_select"
 }
 
 @Composable
@@ -89,6 +91,7 @@ fun AppNavigation(
     val wsCreationViewModel: WsCreationViewModel = hiltViewModel()
     val wsProfileManagerViewModel: WsProfileManagerViewModel = hiltViewModel()
     val wsProfileViewModel: WsProfileViewModel = hiltViewModel()
+    val wsSelectViewModel: WsSelectViewModel = hiltViewModel()
 
     // Handle navigation events from NavigationStateManager
     LaunchedEffect(navigationEvent) {
@@ -110,6 +113,7 @@ fun AppNavigation(
             wsCreationViewModel = wsCreationViewModel,
             wsProfileManagerViewModel = wsProfileManagerViewModel,
             wsProfileViewModel = wsProfileViewModel,
+            wsSelectViewModel = wsSelectViewModel,
             mainViewModel = mainViewModel
         )
     }
@@ -132,6 +136,7 @@ fun AppNavigation(
         wsCreationViewModel = wsCreationViewModel,
         wsProfileManagerViewModel = wsProfileManagerViewModel,
         wsProfileViewModel = wsProfileViewModel,
+        wsSelectViewModel = wsSelectViewModel,
         navigationStateManager = navigationStateManager
     )
 }
@@ -154,6 +159,7 @@ private fun handleNavigationEvent(
     wsCreationViewModel: WsCreationViewModel,
     wsProfileManagerViewModel: WsProfileManagerViewModel,
     wsProfileViewModel: WsProfileViewModel,
+    wsSelectViewModel: WsSelectViewModel,
     mainViewModel: MainViewModel
 ) {
     when (navigationEvent) {
@@ -318,6 +324,13 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
+        is NavigationEvent.NavigateToWsSelect -> {
+            navController.navigate(NavRoutes.WS_SELECT) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
         is NavigationEvent.NavigateToMainWithContext -> {
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
@@ -390,6 +403,10 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     override fun navigateToWsProfile(context: FeatureContext) {
         navigationStateManager.navigateToWsProfile(context)
     }
+
+    override fun navigateToWsSelect(context: FeatureContext) {
+        navigationStateManager.navigateToWsSelect(context)
+    }
 }
 
 @Composable
@@ -411,6 +428,7 @@ private fun AppNavHost(
     wsCreationViewModel: WsCreationViewModel,
     wsProfileManagerViewModel: WsProfileManagerViewModel,
     wsProfileViewModel: WsProfileViewModel,
+    wsSelectViewModel: WsSelectViewModel,
     navigationStateManager: NavigationStateManager
 ) {
     NavHost(
@@ -447,7 +465,7 @@ private fun AppNavHost(
 
         composable(NavRoutes.TEMPLATE){
             TemplateScreen(
-                mainViewModel = mainViewModel,
+                templateViewModel = templateViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
                 featureActions = FeatureActions(navigationStateManager)

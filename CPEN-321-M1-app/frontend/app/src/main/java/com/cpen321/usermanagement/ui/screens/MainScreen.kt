@@ -51,7 +51,8 @@ fun MainScreen(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
-        onTemplateClick = {  featureActions.navigateToTemplate(FeatureContext(workspaceId = "personal"))},
+        onTemplateClick = {  featureActions.navigateToTemplate(
+            FeatureContext(workspaceId = mainViewModel.getWorkspaceName()))},
         onWorkspaceClick = {  },
         onFilterClick = {  },
         workspaceName = wsname,
