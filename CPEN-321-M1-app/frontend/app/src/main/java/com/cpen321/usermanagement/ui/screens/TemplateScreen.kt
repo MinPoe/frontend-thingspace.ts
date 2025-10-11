@@ -51,7 +51,7 @@ fun TemplateScreen(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
-        onTemplateClick = {  featureActions.navigateToMainWithContext(FeatureContext(workspaceId = "personal"))},
+        onTemplateClick = {  featureActions.navigateToMainWithContext(FeatureContext(workspaceId = "testWS"))},
         onWorkspaceClick = {  },
         onFilterClick = {  },
         onSuccessMessageShown = mainViewModel::clearSuccessMessage

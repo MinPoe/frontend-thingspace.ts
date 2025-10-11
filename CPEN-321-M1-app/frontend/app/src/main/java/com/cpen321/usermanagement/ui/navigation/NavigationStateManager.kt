@@ -55,6 +55,10 @@ class NavigationStateManager @Inject constructor() {
 
     private val _navigationState = MutableStateFlow(NavigationState())
 
+    fun getContext(): FeatureContext{
+        return _navigationState.value.context
+    }
+
     /**
      * Updates the authentication state and triggers appropriate navigation
      */

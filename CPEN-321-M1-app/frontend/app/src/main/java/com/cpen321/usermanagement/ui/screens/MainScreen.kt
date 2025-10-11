@@ -3,6 +3,7 @@ package com.cpen321.usermanagement.ui.screens
 import Button
 import Icon
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
@@ -42,6 +44,7 @@ fun MainScreen(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+    val wsname = mainViewModel.getWorkspaceName()
 
     MainContent(
         uiState = uiState,
@@ -51,6 +54,7 @@ fun MainScreen(
         onTemplateClick = {  featureActions.navigateToTemplate(FeatureContext(workspaceId = "personal"))},
         onWorkspaceClick = {  },
         onFilterClick = {  },
+        workspaceName = wsname,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -65,6 +69,7 @@ private fun MainContent(
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
     onSuccessMessageShown: () -> Unit,
+    workspaceName: String,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -90,6 +95,7 @@ private fun MainContent(
     ) { paddingValues ->
         MainBody(
             paddingValues = paddingValues,
+            workspaceName = workspaceName,
             onFilterClick = onFilterClick)
     }
 }
@@ -172,15 +178,16 @@ private fun MainSnackbarHost(
 private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
+    workspaceName: String,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage()
+        WorkspaceName(workspaceName)
         Button(
             fullWidth = true,
             enabled = true,
@@ -199,13 +206,14 @@ private fun MainBody(
     }
 }
 @Composable
-private fun WelcomeMessage(
+private fun WorkspaceName(
+    workspaceName: String,
     modifier: Modifier = Modifier
 ) {
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.welcome),
+        text = workspaceName,
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
