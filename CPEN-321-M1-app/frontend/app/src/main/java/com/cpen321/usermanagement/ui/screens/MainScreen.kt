@@ -53,7 +53,7 @@ fun MainScreen(
         onNoteClick = { }, //TODO: for now
         onTemplateClick = {  featureActions.navigateToTemplate(
             FeatureContext(workspaceId = mainViewModel.getWorkspaceName()))},
-        onWorkspaceClick = {  },
+        onWorkspaceClick = { featureActions.navigateToWsSelect(FeatureContext()) },
         onFilterClick = {  },
         workspaceName = wsname,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage

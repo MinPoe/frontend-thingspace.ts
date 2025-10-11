@@ -34,6 +34,7 @@ import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
+import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
@@ -51,7 +52,7 @@ fun TemplateScreen(
         onNoteClick = { }, //TODO: for now
         onTemplateClick = {  featureActions.navigateToMainWithContext(
             FeatureContext(workspaceId = templateViewModel.getWorkspaceName()))},
-        onWorkspaceClick = {  },
+        onWorkspaceClick = { featureActions.navigateToWsSelect(FeatureContext()) },
         onFilterClick = {  },
     )
 }

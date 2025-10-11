@@ -21,6 +21,7 @@ import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
 import com.cpen321.usermanagement.ui.screens.TemplateScreen
+import com.cpen321.usermanagement.ui.screens.WorkspacesScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.ui.viewmodels.CopyViewModel
@@ -492,6 +493,12 @@ private fun AppNavHost(
             )
         }
 
+        composable(NavRoutes.WS_SELECT) {
+            WorkspacesScreen(
+                workspacesViewModel = wsSelectViewModel,
+                onBackClick = {navigationStateManager.navigateBack()},
+                featureActions = FeatureActions(navigationStateManager))
+        }
 
     }
 }
