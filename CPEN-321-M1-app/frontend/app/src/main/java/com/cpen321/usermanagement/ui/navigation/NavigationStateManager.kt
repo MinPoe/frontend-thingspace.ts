@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.cpen321.usermanagement.utils.FeatureContext
 
 sealed class NavigationEvent {
     object NavigateToAuth : NavigationEvent()
@@ -36,13 +37,6 @@ sealed class NavigationEvent {
     data class NavigateToMainWithContext(val context: FeatureContext): NavigationEvent()
 }
 
-//context of the note-workspace-user system
-data class FeatureContext(
-    val noteId: String? = null,
-    val userId: String? = null,
-    val workspaceId: String? = null,
-    val noteType: String? = null
-)
 
 data class NavigationState(
     val currentRoute: String = NavRoutes.LOADING,

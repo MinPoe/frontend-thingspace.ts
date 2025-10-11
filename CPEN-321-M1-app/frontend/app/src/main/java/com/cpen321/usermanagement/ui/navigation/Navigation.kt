@@ -8,11 +8,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.screens.AuthScreen
 import com.cpen321.usermanagement.ui.screens.LoadingScreen
@@ -22,10 +20,13 @@ import com.cpen321.usermanagement.ui.screens.ManageProfileScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
+import com.cpen321.usermanagement.ui.screens.TemplateScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
+import com.cpen321.usermanagement.utils.FeatureContext
+import com.cpen321.usermanagement.utils.IFeatureActions
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -257,66 +258,72 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+        }
     }
 }
 
-class FeatureActions(private val navigationStateManager: NavigationStateManager){
 
-        fun navigateToChat(context: FeatureContext) {
-            navigationStateManager.navigateToChat(context)
-        }
+class FeatureActions(private val navigationStateManager: NavigationStateManager) :
+    IFeatureActions {
 
-        fun navigateToCopy(context: FeatureContext) {
-            navigationStateManager.navigateToCopy(context)
-        }
+    override fun navigateToChat(context: FeatureContext) {
+        navigationStateManager.navigateToChat(context)
+    }
 
-        fun navigateToFields(context: FeatureContext) {
-            navigationStateManager.navigateToFields(context)
-        }
+    override fun navigateToCopy(context: FeatureContext) {
+        navigationStateManager.navigateToCopy(context)
+    }
 
-        fun navigateToFilter(context: FeatureContext) {
-            navigationStateManager.navigateToFilter(context)
-        }
+    override fun navigateToFields(context: FeatureContext) {
+        navigationStateManager.navigateToFields(context)
+    }
 
-        fun navigateToInvite(context: FeatureContext) {
-            navigationStateManager.navigateToInvite(context)
-        }
+    override fun navigateToFilter(context: FeatureContext) {
+        navigationStateManager.navigateToFilter(context)
+    }
 
-        fun navigateToMembersManager(context: FeatureContext) {
-            navigationStateManager.navigateToMembersManager(context)
-        }
+    override fun navigateToInvite(context: FeatureContext) {
+        navigationStateManager.navigateToInvite(context)
+    }
 
-        fun navigateToMembers(context: FeatureContext) {
-            navigationStateManager.navigateToMembers(context)
-        }
+    override fun navigateToMembersManager(context: FeatureContext) {
+        navigationStateManager.navigateToMembersManager(context)
+    }
 
-        fun navigateToNote(context: FeatureContext) {
-            navigationStateManager.navigateToNote(context)
-        }
+    override fun navigateToMembers(context: FeatureContext) {
+        navigationStateManager.navigateToMembers(context)
+    }
 
-        fun navigateToOtherProfile(context: FeatureContext) {
-            navigationStateManager.navigateToOtherProfile(context)
-        }
+    override fun navigateToMainWithContext(context: FeatureContext) {
+        navigationStateManager.navigateToMainWithContext(context)
+    }
 
-        fun navigateToSharing(context: FeatureContext) {
-            navigationStateManager.navigateToSharing(context)
-        }
+    override fun navigateToNote(context: FeatureContext) {
+        navigationStateManager.navigateToNote(context)
+    }
 
-        fun navigateToTemplate(context: FeatureContext) {
-            navigationStateManager.navigateToTemplate(context)
-        }
+    override fun navigateToOtherProfile(context: FeatureContext) {
+        navigationStateManager.navigateToOtherProfile(context)
+    }
 
-        fun navigateToWsCreation(context: FeatureContext) {
-            navigationStateManager.navigateToWsCreation(context)
-        }
+    override fun navigateToSharing(context: FeatureContext) {
+        navigationStateManager.navigateToSharing(context)
+    }
 
-        fun navigateToWsProfileManager(context: FeatureContext) {
-            navigationStateManager.navigateToWsProfileManager(context)
-        }
+    override fun navigateToTemplate(context: FeatureContext) {
+        navigationStateManager.navigateToTemplate(context)
+    }
 
-        fun navigateToWsProfile(context: FeatureContext) {
-            navigationStateManager.navigateToWsProfile(context)
-        }
+    override fun navigateToWsCreation(context: FeatureContext) {
+        navigationStateManager.navigateToWsCreation(context)
+    }
+
+    override fun navigateToWsProfileManager(context: FeatureContext) {
+        navigationStateManager.navigateToWsProfileManager(context)
+    }
+
+    override fun navigateToWsProfile(context: FeatureContext) {
+        navigationStateManager.navigateToWsProfile(context)
     }
 }
 
@@ -356,10 +363,16 @@ private fun AppNavHost(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
-                onNoteClick = {},
-                onTemplateClick = {},
-                onWorkspaceClick = {},
-                onFilterClick = {}
+                featureActions = FeatureActions(navigationStateManager)
+            )
+        }
+
+        composable(NavRoutes.TEMPLATE){
+            TemplateScreen(
+                mainViewModel = mainViewModel,
+                onProfileClick = { navigationStateManager.navigateToProfile() },
+                //TODO: change 'personal' to user id once we have access to
+                featureActions = FeatureActions(navigationStateManager)
             )
         }
 

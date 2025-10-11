@@ -3,6 +3,7 @@ package com.cpen321.usermanagement.ui.screens
 import Button
 import Icon
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +38,7 @@ import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 @Composable
-fun MainScreen(
+fun TemplateScreen(
     mainViewModel: MainViewModel,
     onProfileClick: () -> Unit,
     featureActions: IFeatureActions
@@ -48,7 +51,7 @@ fun MainScreen(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
-        onTemplateClick = {  featureActions.navigateToTemplate(FeatureContext(workspaceId = "personal"))},
+        onTemplateClick = {  featureActions.navigateToMainWithContext(FeatureContext(workspaceId = "personal"))},
         onWorkspaceClick = {  },
         onFilterClick = {  },
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
@@ -174,11 +177,11 @@ private fun MainBody(
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WelcomeMessage()
         Button(
