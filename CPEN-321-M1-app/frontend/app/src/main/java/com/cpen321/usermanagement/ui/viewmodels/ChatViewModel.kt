@@ -12,6 +12,7 @@ class ChatViewModel@Inject constructor(
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
     fun getWorkspaceName():String{
-        return navigationStateManager.getContext().workspaceId ?: "personal" //TODO: if null should move to userId
+        val workspaceId = navigationStateManager.getWorkspaceId()
+        return if (workspaceId != "") workspaceId else "personal" //TODO: if null should move to userId
     }
 }

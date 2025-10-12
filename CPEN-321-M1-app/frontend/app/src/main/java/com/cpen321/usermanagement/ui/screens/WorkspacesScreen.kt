@@ -15,7 +15,6 @@ import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.components.WorkspaceRow
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
-import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 @Composable
@@ -26,15 +25,18 @@ fun WorkspacesScreen(
 ){
     val availableWs=listOf("ws1", "ws2") // TODO: will be obtained via the ViewModel
     val onWsMainClick = {index:Int ->
-        featureActions.navigateToMainWithContext(FeatureContext(workspaceId = availableWs[index]))}
+        featureActions.navigateToMainWithContext(availableWs[index])}
     val onWsChatClick = {index:Int ->
-        featureActions.navigateToChat(FeatureContext(workspaceId = availableWs[index]))}
+        featureActions.navigateToChat(availableWs[index])}
     val onWsTemplateClick = {index:Int ->
-        featureActions.navigateToTemplate(FeatureContext(workspaceId = availableWs[index]))}
+        featureActions.navigateToTemplate(availableWs[index])}
     val onPersonalProfileClick = {} //TODO: for now before the situation with profile clarifies
-    val onPersonalChatClick={featureActions.navigateToChat(context= FeatureContext())}
-    val onPersonalContentClick={featureActions.navigateToMainWithContext(context= FeatureContext())}
-    val onPersonalTemplateClick={featureActions.navigateToTemplate(context= FeatureContext())}
+    val onPersonalChatClick={ featureActions.navigateToChat(
+        "") } //TODO: before we get actual profile info
+    val onPersonalContentClick={ featureActions.navigateToMainWithContext(
+        "") }
+    val onPersonalTemplateClick={ featureActions.navigateToTemplate(
+        "") }
 
     WsContent(onWsMainClick = onWsMainClick,
         onBackClick = onBackClick,

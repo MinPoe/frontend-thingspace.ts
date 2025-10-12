@@ -41,7 +41,7 @@ import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
-import com.cpen321.usermanagement.utils.FeatureContext
+import com.cpen321.usermanagement.utils.NoteType
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 object NavRoutes {
@@ -320,69 +320,138 @@ private fun handleNavigationEvent(
 class FeatureActions(private val navigationStateManager: NavigationStateManager) :
     IFeatureActions {
 
-    override fun navigateToChat(context: FeatureContext) {
-        navigationStateManager.navigateToChat(context)
+    // --- Getters delegation ---
+    override fun getWorkspaceId(): String {
+        return navigationStateManager.getWorkspaceId()
     }
 
-    override fun navigateToCopy(context: FeatureContext) {
-        navigationStateManager.navigateToCopy(context)
+    override fun getOtherUserId(): String {
+        return navigationStateManager.getOtherUserId()
     }
 
-    override fun navigateToFields(context: FeatureContext) {
-        navigationStateManager.navigateToFields(context)
+    override fun getNoteType(): NoteType {
+        return navigationStateManager.getNoteType()
     }
 
-    override fun navigateToFilter(context: FeatureContext) {
-        navigationStateManager.navigateToFilter(context)
+    override fun getNoteId(): String {
+        return navigationStateManager.getNoteId()
     }
 
-    override fun navigateToInvite(context: FeatureContext) {
-        navigationStateManager.navigateToInvite(context)
+    override fun getSelectedTags(): List<String> {
+        return navigationStateManager.getSelectedTags()
     }
 
-    override fun navigateToMembersManager(context: FeatureContext) {
-        navigationStateManager.navigateToMembersManager(context)
+    override fun getAllTagsSelected(): Boolean {
+        return navigationStateManager.getAllTagsSelected()
     }
 
-    override fun navigateToMembers(context: FeatureContext) {
-        navigationStateManager.navigateToMembers(context)
+    override fun getSearchQuery(): String {
+        return navigationStateManager.getSearchQuery()
     }
 
-    override fun navigateToMainWithContext(context: FeatureContext) {
-        navigationStateManager.navigateToMainWithContext(context)
+    // --- Navigation delegation ---
+    override fun navigateToChat(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean,
+        searchQuery: String
+    ) {
+        navigationStateManager.navigateToChat(
+            workspaceId,
+            selectedTags,
+            allTagsSelected,
+            searchQuery
+        )
     }
 
-    override fun navigateToNote(context: FeatureContext) {
-        navigationStateManager.navigateToNote(context)
+    override fun navigateToCopy() {
+        navigationStateManager.navigateToCopy()
     }
 
-    override fun navigateToOtherProfile(context: FeatureContext) {
-        navigationStateManager.navigateToOtherProfile(context)
+    override fun navigateToFields() {
+        navigationStateManager.navigateToFields()
     }
 
-    override fun navigateToSharing(context: FeatureContext) {
-        navigationStateManager.navigateToSharing(context)
+    override fun navigateToFilter(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean
+    ) {
+        navigationStateManager.navigateToFilter(
+            workspaceId,
+            selectedTags,
+            allTagsSelected
+        )
     }
 
-    override fun navigateToTemplate(context: FeatureContext) {
-        navigationStateManager.navigateToTemplate(context)
+    override fun navigateToInvite() {
+        navigationStateManager.navigateToInvite()
     }
 
-    override fun navigateToWsCreation(context: FeatureContext) {
-        navigationStateManager.navigateToWsCreation(context)
+    override fun navigateToMembersManager() {
+        navigationStateManager.navigateToMembersManager()
     }
 
-    override fun navigateToWsProfileManager(context: FeatureContext) {
-        navigationStateManager.navigateToWsProfileManager(context)
+    override fun navigateToMembers() {
+        navigationStateManager.navigateToMembers()
     }
 
-    override fun navigateToWsProfile(context: FeatureContext) {
-        navigationStateManager.navigateToWsProfile(context)
+    override fun navigateToNote(noteId: String) {
+        navigationStateManager.navigateToNote(noteId)
     }
 
-    override fun navigateToWsSelect(context: FeatureContext) {
-        navigationStateManager.navigateToWsSelect(context)
+    override fun navigateToOtherProfile(otherUserId: String) {
+        navigationStateManager.navigateToOtherProfile(otherUserId)
     }
+
+    override fun navigateToSharing() {
+        navigationStateManager.navigateToSharing()
+    }
+
+    override fun navigateToTemplate(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean,
+        searchQuery: String
+    ) {
+        navigationStateManager.navigateToTemplate(
+            workspaceId,
+            selectedTags,
+            allTagsSelected,
+            searchQuery
+        )
+    }
+
+    override fun navigateToWsCreation() {
+        navigationStateManager.navigateToWsCreation()
+    }
+
+    override fun navigateToWsProfileManager(workspaceId: String) {
+        navigationStateManager.navigateToWsProfileManager(workspaceId)
+    }
+
+    override fun navigateToWsProfile(workspaceId: String) {
+        navigationStateManager.navigateToWsProfile(workspaceId)
+    }
+
+    override fun navigateToMainWithContext(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean,
+        searchQuery: String
+    ) {
+        navigationStateManager.navigateToMainWithContext(
+            workspaceId,
+            selectedTags,
+            allTagsSelected,
+            searchQuery
+        )
+    }
+
+    override fun navigateToWsSelect() {
+        navigationStateManager.navigateToWsSelect()
+    }
+
 }
 
 @Composable

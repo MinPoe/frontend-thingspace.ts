@@ -36,7 +36,6 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
-import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 @Composable
@@ -52,13 +51,12 @@ fun TemplateScreen(
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
         onContentClick = {  featureActions.navigateToMainWithContext(
-            FeatureContext(workspaceId = templateViewModel.getWorkspaceName()))},
-        onWorkspaceClick = { featureActions.navigateToWsSelect(
-            FeatureContext(workspaceId = templateViewModel.getWorkspaceName())) },
+            featureActions.getWorkspaceId()) },
+        onWorkspaceClick = { featureActions.navigateToWsSelect() },
         onFilterClick = {  },
         onChatClick={
             featureActions.navigateToChat(
-                context = FeatureContext(workspaceId = templateViewModel.getWorkspaceName())
+                featureActions.getWorkspaceId()
             )
         }
     )

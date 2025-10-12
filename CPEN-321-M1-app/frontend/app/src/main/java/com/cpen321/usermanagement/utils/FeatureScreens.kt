@@ -1,28 +1,69 @@
 package com.cpen321.usermanagement.utils
 
-//context of the note-workspace-user system
-data class FeatureContext(
-    val noteId: String? = null,
-    val userId: String? = null,
-    val workspaceId: String? = null,
-    val noteType: String? = null
-)
-
 interface IFeatureActions {
-    fun navigateToChat(context: FeatureContext)
-    fun navigateToCopy(context: FeatureContext)
-    fun navigateToFields(context: FeatureContext)
-    fun navigateToFilter(context: FeatureContext)
-    fun navigateToInvite(context: FeatureContext)
-    fun navigateToMembersManager(context: FeatureContext)
-    fun navigateToMembers(context: FeatureContext)
-    fun navigateToMainWithContext(context: FeatureContext)
-    fun navigateToNote(context: FeatureContext)
-    fun navigateToOtherProfile(context: FeatureContext)
-    fun navigateToSharing(context: FeatureContext)
-    fun navigateToTemplate(context: FeatureContext)
-    fun navigateToWsCreation(context: FeatureContext)
-    fun navigateToWsProfileManager(context: FeatureContext)
-    fun navigateToWsProfile(context: FeatureContext)
-    fun navigateToWsSelect(context: FeatureContext)
+    // --- Common navigation state getters ---
+    fun getWorkspaceId(): String
+    fun getOtherUserId(): String
+    fun getNoteType(): NoteType
+    fun getNoteId(): String
+    fun getSelectedTags(): List<String>
+    fun getAllTagsSelected(): Boolean
+    fun getSearchQuery(): String
+
+    // --- Navigation methods ---
+
+    fun navigateToChat(
+        workspaceId: String,
+        selectedTags: List<String> = emptyList(),
+        allTagsSelected: Boolean = true,
+        searchQuery: String = ""
+    )
+
+    fun navigateToCopy()
+
+    fun navigateToFields()
+
+    fun navigateToFilter(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean
+    )
+
+    fun navigateToInvite()
+
+    fun navigateToMembersManager()
+
+    fun navigateToMembers()
+
+    fun navigateToNote(noteId: String)
+
+    fun navigateToOtherProfile(otherUserId: String)
+
+    fun navigateToSharing()
+
+    fun navigateToTemplate(
+        workspaceId: String,
+        selectedTags: List<String> = emptyList(),
+        allTagsSelected: Boolean = true,
+        searchQuery: String = ""
+    )
+
+    fun navigateToWsCreation()
+
+    fun navigateToWsProfileManager(workspaceId: String)
+
+    fun navigateToWsProfile(workspaceId: String)
+
+    fun navigateToMainWithContext(
+        workspaceId: String,
+        selectedTags: List<String> = emptyList(),
+        allTagsSelected: Boolean = true,
+        searchQuery: String = ""
+    )
+
+    fun navigateToWsSelect()
+}
+
+enum class NoteType{
+    TEMPLATE, CONTENT, CHAT
 }

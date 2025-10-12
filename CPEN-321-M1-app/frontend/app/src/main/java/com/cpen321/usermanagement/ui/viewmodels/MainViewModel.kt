@@ -2,7 +2,6 @@ package com.cpen321.usermanagement.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
-import com.cpen321.usermanagement.utils.FeatureContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +26,7 @@ class MainViewModel @Inject constructor(private val navigationStateManager: Navi
     }
 
     fun getWorkspaceName():String{
-        return navigationStateManager.getContext().workspaceId ?: "personal" //TODO: if null should move to userId
+        val workspaceId = navigationStateManager.getWorkspaceId()
+        return if (workspaceId != "") workspaceId else "personal" //TODO: if "" should move to userId
     }
 }

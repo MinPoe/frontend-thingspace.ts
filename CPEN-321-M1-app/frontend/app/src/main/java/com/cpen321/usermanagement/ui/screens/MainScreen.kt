@@ -34,7 +34,6 @@ import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.SearchBar
-import com.cpen321.usermanagement.utils.FeatureContext
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 @Composable
@@ -45,7 +44,7 @@ fun MainScreen(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    val wsname = mainViewModel.getWorkspaceName()
+    val wsname =mainViewModel.getWorkspaceName()
 
     MainContent(
         uiState = uiState,
@@ -53,13 +52,11 @@ fun MainScreen(
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
         onTemplateClick = {  featureActions.navigateToTemplate(
-            FeatureContext(workspaceId = mainViewModel.getWorkspaceName()))},
-        onWorkspaceClick = { featureActions.navigateToWsSelect(
-            FeatureContext(workspaceId = mainViewModel.getWorkspaceName())) },
+            featureActions.getWorkspaceId())},
+        onWorkspaceClick = { featureActions.navigateToWsSelect()},
         onFilterClick = {  },
-        onChatClick = {featureActions.navigateToChat(
-            FeatureContext(workspaceId = mainViewModel.getWorkspaceName())
-        )},
+        onChatClick = { featureActions.navigateToChat(
+            featureActions.getWorkspaceId()) },
         workspaceName = wsname,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
