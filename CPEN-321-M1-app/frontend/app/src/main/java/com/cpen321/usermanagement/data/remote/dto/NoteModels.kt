@@ -11,7 +11,7 @@ data class Note(
     val dateLastEdit: LocalDateTime,
     val tags: ArrayList<String>,
     val noteType: NoteType,
-    val fields: Field,
+    val fields: List<Field>,
 )
 
 // Field Types implemented here:

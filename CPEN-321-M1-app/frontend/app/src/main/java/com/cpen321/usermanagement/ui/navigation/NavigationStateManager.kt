@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.cpen321.usermanagement.utils.NoteType
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 
 sealed class NavigationEvent {
     object NavigateToAuth : NavigationEvent()

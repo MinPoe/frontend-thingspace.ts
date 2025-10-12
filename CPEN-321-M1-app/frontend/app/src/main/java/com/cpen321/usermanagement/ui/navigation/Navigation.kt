@@ -41,7 +41,7 @@ import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
-import com.cpen321.usermanagement.utils.NoteType
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 object NavRoutes {

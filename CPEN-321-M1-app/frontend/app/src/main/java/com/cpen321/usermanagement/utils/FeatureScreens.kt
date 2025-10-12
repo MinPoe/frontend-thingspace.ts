@@ -1,5 +1,5 @@
 package com.cpen321.usermanagement.utils
-
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 interface IFeatureActions {
     // --- Common navigation state getters ---
     fun getWorkspaceId(): String
@@ -62,8 +62,4 @@ interface IFeatureActions {
     )
 
     fun navigateToWsSelect()
-}
-
-enum class NoteType{
-    TEMPLATE, CONTENT, CHAT
 }
