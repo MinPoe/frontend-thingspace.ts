@@ -7,13 +7,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
+import com.cpen321.usermanagement.ui.viewmodels.DisplayViewModel
 
 data class MainUiState(
     val successMessage: String? = null
 )
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val navigationStateManager: NavigationStateManager) : ViewModel() {
+class MainViewModel @Inject constructor(private val navigationStateManager: NavigationStateManager) : DisplayViewModel(navigationStateManager) {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
@@ -25,8 +26,5 @@ class MainViewModel @Inject constructor(private val navigationStateManager: Navi
         _uiState.value = _uiState.value.copy(successMessage = null)
     }
 
-    fun getWorkspaceName():String{
-        val workspaceId = navigationStateManager.getWorkspaceId()
-        return if (workspaceId != "") workspaceId else "personal" //TODO: if "" should move to userId
-    }
+
 }

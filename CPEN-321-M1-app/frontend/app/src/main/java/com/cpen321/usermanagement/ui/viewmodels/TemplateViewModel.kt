@@ -10,9 +10,6 @@ import javax.inject.Inject
 class TemplateViewModel@Inject constructor(
     private val authRepository: AuthRepository,
     private val navigationStateManager: NavigationStateManager
-) : ViewModel() {
-    fun getWorkspaceName():String{
-        val workspaceId = navigationStateManager.getWorkspaceId()
-        return if (workspaceId != "") workspaceId else "personal" //TODO: if "" should move to userId
-    }
+) : DisplayViewModel(navigationStateManager) {
+
 }

@@ -10,9 +10,5 @@ import javax.inject.Inject
 class ChatViewModel@Inject constructor(
     private val authRepository: AuthRepository,
     private val navigationStateManager: NavigationStateManager
-) : ViewModel() {
-    fun getWorkspaceName():String{
-        val workspaceId = navigationStateManager.getWorkspaceId()
-        return if (workspaceId != "") workspaceId else "personal" //TODO: if null should move to userId
-    }
+) : DisplayViewModel(navigationStateManager) {
 }

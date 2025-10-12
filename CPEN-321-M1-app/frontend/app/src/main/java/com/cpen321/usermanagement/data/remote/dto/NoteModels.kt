@@ -1,5 +1,5 @@
 package com.cpen321.usermanagement.data.remote.dto
-import kotlinx.datetime.*;
+import java.time.LocalDateTime
 
 /*
  * Note and Field data classes
