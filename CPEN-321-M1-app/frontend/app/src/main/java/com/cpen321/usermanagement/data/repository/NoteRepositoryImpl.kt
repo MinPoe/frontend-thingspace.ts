@@ -10,8 +10,11 @@ import com.cpen321.usermanagement.data.remote.dto.Field
  * !!! MOCK IMPL 4 NOW !!!
  * **/
 import java.time.LocalDateTime
+import javax.inject.Singleton
+import javax.inject.Inject
 
-class NoteRepositoryImpl : NoteRepository {
+@Singleton
+class NoteRepositoryImpl @Inject constructor() : NoteRepository {
 
     override fun getNote(noteId: String): Result<Note> {
         val note = Note(

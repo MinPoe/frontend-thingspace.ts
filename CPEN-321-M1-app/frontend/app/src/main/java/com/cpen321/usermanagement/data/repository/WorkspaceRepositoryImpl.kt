@@ -6,9 +6,11 @@ import com.cpen321.usermanagement.data.remote.dto.User
 /**
  * !!! MOCK IMPL 4 NOW !!!
  * **/
-import java.time.LocalDateTime
+import javax.inject.Singleton
+import javax.inject.Inject
 
-class WorkspaceRepositoryImpl : WorkspaceRepository {
+@Singleton
+class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
 
     override fun getWorkspace(workspaceId: String): Result<Workspace> {
         return Result.success(
