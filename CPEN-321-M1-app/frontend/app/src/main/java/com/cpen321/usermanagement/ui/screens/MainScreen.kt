@@ -35,6 +35,7 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.utils.IFeatureActions
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun MainScreen(
@@ -44,7 +45,7 @@ fun MainScreen(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    val wsname =mainViewModel.getWorkspaceName()
+    val wsname =  mainViewModel.getWorkspaceName()
 
     MainContent(
         uiState = uiState,

@@ -16,7 +16,7 @@ import javax.inject.Inject
 @Singleton
 class NoteRepositoryImpl @Inject constructor() : NoteRepository {
 
-    override fun getNote(noteId: String): Result<Note> {
+    override suspend fun getNote(noteId: String): Result<Note> {
         val note = Note(
             _id = noteId,
             dateCreation = LocalDateTime.now().minusDays(noteId.length.toLong()),
@@ -32,7 +32,7 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         return Result.success(note)
     }
 
-    override fun createNote(
+    override suspend fun createNote(
         authorId: String,
         tags: List<String>,
         fields: List<Field>,
@@ -41,15 +41,15 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         return Result.success(Unit)
     }
 
-    override fun updateNote(noteId: String, tags: List<String>, fields: List<Field>): Result<Unit> {
+    override suspend fun updateNote(noteId: String, tags: List<String>, fields: List<Field>): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun deleteNote(noteId: String): Result<Unit> {
+    override suspend fun deleteNote(noteId: String): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun findNotes(
+    override suspend fun findNotes(
         workspaceId: String,
         noteType: NoteType,
         tagsToInclude: List<String>,
@@ -74,7 +74,7 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         return Result.success(notes)
     }
 
-    override fun getAuthors(noteIds: List<String>): Result<List<User>> {
+    override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
         val authors = noteIds.mapIndexed { index, id ->
             User(
                 _id = "author_$id",
@@ -87,11 +87,11 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         return Result.success(authors)
     }
 
-    override fun getWorkspacesForNote(noteId: String): Result<Unit> {
+    override suspend fun getWorkspacesForNote(noteId: String): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun shareNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
+    override suspend fun shareNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
         return Result.success(Unit)
     }
 }

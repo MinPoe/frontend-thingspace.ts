@@ -12,7 +12,7 @@ import javax.inject.Inject
 @Singleton
 class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
 
-    override fun getWorkspace(workspaceId: String): Result<Workspace> {
+    override suspend fun getWorkspace(workspaceId: String): Result<Workspace> {
         return Result.success(
             Workspace(
                 _id = workspaceId,
@@ -23,7 +23,7 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         )
     }
 
-    override fun getWorkspacesForUser(userId: String): Result<List<Workspace>> {
+    override suspend fun getWorkspacesForUser(userId: String): Result<List<Workspace>> {
         val workspaces = (1..3).map {
             Workspace(
                 _id = "ws_${userId}_$it",
@@ -35,7 +35,7 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(workspaces)
     }
 
-    override fun getWorkspaceMembers(workspaceId: String): Result<List<User>> {
+    override suspend fun getWorkspaceMembers(workspaceId: String): Result<List<User>> {
         val members = (1..4).map {
             User(
                 _id = "u_${workspaceId}_$it",
@@ -48,7 +48,7 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(members)
     }
 
-    override fun createWorkspace(
+    override suspend fun createWorkspace(
         managerId: String,
         workspaceName: String,
         workspaceProfilePicture: String,
@@ -57,7 +57,7 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(Unit)
     }
 
-    override fun updateWorkspaceProfile(
+    override suspend fun updateWorkspaceProfile(
         workspaceId: String,
         workspaceName: String,
         workspaceDescription: String
@@ -65,26 +65,26 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(Unit)
     }
 
-    override fun updateWorkspacePicture(
+    override suspend fun updateWorkspacePicture(
         workspaceId: String,
         workspaceProfilePicture: String
     ): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun deleteWorkspace(workspaceId: String): Result<Unit> {
+    override suspend fun deleteWorkspace(workspaceId: String): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun addMember(userId: String, workspaceId: String): Result<Unit> {
+    override suspend fun addMember(userId: String, workspaceId: String): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun banMember(userId: String, workspaceId: String): Result<Unit> {
+    override suspend fun banMember(userId: String, workspaceId: String): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override fun getMembershipStatus(userId: String): Result<WsMembershipStatus> {
+    override suspend fun getMembershipStatus(userId: String): Result<WsMembershipStatus> {
         val status = when (userId.hashCode() % 4) {
             0 -> WsMembershipStatus.MEMBER
             1 -> WsMembershipStatus.MANAGER
@@ -94,7 +94,7 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(status)
     }
 
-    override fun getAllTags(workspaceId: String): Result<List<String>> {
+    override suspend fun getAllTags(workspaceId: String): Result<List<String>> {
         val tags = listOf("tag1_$workspaceId", "tag2_$workspaceId", "tag3_$workspaceId")
         return Result.success(tags)
     }
