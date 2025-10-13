@@ -23,24 +23,29 @@ fun WorkspacesScreen(
     onBackClick: () -> Unit,
     featureActions: IFeatureActions
 ){
-    val availableWs=listOf("ws1", "ws2") // TODO: will be obtained via the ViewModel
+    val userAndWs = workspacesViewModel.getUserAndWorkspaces()
+    val availableWs = userAndWs.second
+    val availableWsNames=availableWs.map { it.workspaceName }
+    val user = userAndWs.first
+
     val onWsMainClick = {index:Int ->
-        featureActions.navigateToMainWithContext(availableWs[index])}
+        featureActions.navigateToMainWithContext(availableWs[index]._id)}
     val onWsChatClick = {index:Int ->
-        featureActions.navigateToChat(availableWs[index])}
+        featureActions.navigateToChat(availableWs[index]._id)}
     val onWsTemplateClick = {index:Int ->
-        featureActions.navigateToTemplate(availableWs[index])}
+        featureActions.navigateToTemplate(availableWs[index]._id)}
     val onPersonalProfileClick = {} //TODO: for now before the situation with profile clarifies
     val onPersonalChatClick={ featureActions.navigateToChat(
-        "") } //TODO: before we get actual profile info
+        user._id) } //TODO: before we get actual profile info
     val onPersonalContentClick={ featureActions.navigateToMainWithContext(
-        "") }
+        user._id) }
     val onPersonalTemplateClick={ featureActions.navigateToTemplate(
-        "") }
+        user._id) }
 
     WsContent(onWsMainClick = onWsMainClick,
         onBackClick = onBackClick,
-        availableWs = availableWs,
+        availableWs = availableWsNames,
+        username = user.name,
         onWsChatClick= onWsChatClick,
         onWsTemplateClick = onWsTemplateClick,
         onPersonalProfileClick = onPersonalProfileClick,
@@ -54,6 +59,7 @@ private fun WsContent(
     onWsMainClick: (Int)-> Unit,
     onBackClick: ()->Unit,
     availableWs: List<String>,
+    username:String,
     onWsTemplateClick: (Int)->Unit,
     onWsChatClick: (Int)->Unit,
     onPersonalProfileClick: ()->Unit,
@@ -71,6 +77,7 @@ private fun WsContent(
         }
     ) { paddingValues ->
         WsBody(
+            username = username,
             availableWs = availableWs,
             paddingValues = paddingValues,
             onWsMainClick = onWsMainClick,
@@ -87,6 +94,7 @@ private fun WsContent(
 @Composable
 private fun WsBody(
     availableWs: List<String>,
+    username: String,
     paddingValues: PaddingValues,
     onWsMainClick: (Int) -> Unit,
     onWsChatClick: (Int) -> Unit,
@@ -104,7 +112,7 @@ private fun WsBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WorkspaceRow(
-            workspaceName = "personal", //TODO: for now
+            workspaceName = username, //TODO: for now
             onContentClick = onPersonalContentClick,
             onTemplatesClick = onPersonalTemplateClick,
             onProfileClick = onPersonalProfileClick,

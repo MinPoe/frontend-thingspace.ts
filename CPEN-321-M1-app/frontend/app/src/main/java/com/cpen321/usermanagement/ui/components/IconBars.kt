@@ -30,7 +30,8 @@ fun WorkspaceRow(
         Button(
             onClick=onProfileClick,
             modifier=modifier) {
-            Text(workspaceName) }
+            Text(
+            if(workspaceName.length<11) workspaceName else workspaceName.take(10)+"...")}
         ContentNoteActionButton(
             onClick = onContentClick,
             modifier=modifier
