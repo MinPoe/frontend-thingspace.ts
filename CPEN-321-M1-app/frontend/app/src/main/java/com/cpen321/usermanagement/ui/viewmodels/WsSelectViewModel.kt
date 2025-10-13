@@ -2,12 +2,14 @@ package com.cpen321.usermanagement.ui.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -21,10 +23,25 @@ class WsSelectViewModel@Inject constructor(
         private const val TAG = "WsSelectionViewModel"
     }
 
+    val wsSelectUIState = WsSelectUIState(null, null)
+
     fun getUserAndWorkspaces(): Pair<User, List<Workspace>>{
-        val user = runBlocking { getUser() }
-        val workspaces = runBlocking { getWorkspaces(user._id) }
-        return Pair(user, workspaces)
+        if (wsSelectUIState.user==null || wsSelectUIState.workspaces==null){
+            loadUserAndWorkspaces()
+        }
+        //TODO: think abt the default user
+        return Pair(wsSelectUIState.user ?: User(_id = "",
+            email = "", bio="", name="", profilePicture = ""),
+            wsSelectUIState.workspaces ?: emptyList())
+    }
+
+    private fun loadUserAndWorkspaces(){
+        viewModelScope.launch{
+            val user = getUser()
+            wsSelectUIState.user = user
+            wsSelectUIState.workspaces = getWorkspaces(user._id)
+        }
+
     }
 
     private suspend fun getUser():User{
@@ -56,3 +73,8 @@ class WsSelectViewModel@Inject constructor(
         }
     }
 }
+
+data class WsSelectUIState(
+    var user:User?,
+    var workspaces:List<Workspace>?
+)

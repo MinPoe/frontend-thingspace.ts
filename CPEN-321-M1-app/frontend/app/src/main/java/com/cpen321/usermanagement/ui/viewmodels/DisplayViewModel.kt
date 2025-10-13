@@ -5,9 +5,11 @@ import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.remote.dto.Workspace
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @HiltViewModel
@@ -27,7 +29,7 @@ open class DisplayViewModel @Inject constructor(
 
     fun getWorkspaceName():String{
         val workspaceId = navigationStateManager.getWorkspaceId()
-        runBlocking{cacheUpdateWorkspaceOrUser(workspaceId)}
+        viewModelScope.launch{cacheUpdateWorkspaceOrUser(workspaceId)}
         return _wsname //TODO: if "" should move to userId
     }
 
