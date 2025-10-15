@@ -23,6 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
+import com.cpen321.usermanagement.ui.navigation.FeatureActions
+
 @Composable
 fun SearchBar(
     onQueryChange: (String)->Unit,

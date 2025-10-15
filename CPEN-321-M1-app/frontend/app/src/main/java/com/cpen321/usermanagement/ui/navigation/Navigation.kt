@@ -42,6 +42,7 @@ import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.data.remote.dto.NoteType
+import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 object NavRoutes {
@@ -550,6 +551,15 @@ private fun AppNavHost(
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
                 featureActions = FeatureActions(navigationStateManager)
+            )
+        }
+
+        composable(NavRoutes.FILTER){
+            FilterScreen(
+                filterViewModel = filterViewModel,
+                //TODO: change 'personal' to user id once we have access to
+                featureActions = FeatureActions(navigationStateManager),
+                onBackClick = { navigationStateManager.navigateBack() }
             )
         }
     }

@@ -55,7 +55,17 @@ fun MainScreen(
         onTemplateClick = {  featureActions.navigateToTemplate(
             featureActions.getWorkspaceId())},
         onWorkspaceClick = { featureActions.navigateToWsSelect()},
-        onFilterClick = {  },
+        onFilterClick = { featureActions.navigateToFilter(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected()
+        ) },
+        onQueryChange = { query:String -> featureActions.navigateToMainWithContext(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected(),
+            searchQuery = query
+        )},
         onChatClick = { featureActions.navigateToChat(
             featureActions.getWorkspaceId()) },
         workspaceName = wsname,
@@ -73,6 +83,7 @@ private fun MainContent(
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
     onChatClick: ()->Unit,
+    onQueryChange: (String)-> Unit,
     onSuccessMessageShown: () -> Unit,
     workspaceName: String,
     modifier: Modifier = Modifier
@@ -102,7 +113,9 @@ private fun MainContent(
         MainBody(
             paddingValues = paddingValues,
             workspaceName = workspaceName,
-            onFilterClick = onFilterClick)
+            onFilterClick = onFilterClick,
+            onQueryChange = onQueryChange
+        )
     }
 }
 
@@ -185,6 +198,7 @@ private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
     workspaceName: String,
+    onQueryChange: (String)-> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -195,8 +209,8 @@ private fun MainBody(
     ) {
         WorkspaceName(workspaceName)
         SearchBar(
-            onQueryChange = {},//TODO: for now
-            onFilterClick = {}
+            onQueryChange = onQueryChange,//TODO: for now
+            onFilterClick = onFilterClick
         )
         Button(
             fullWidth = true,
