@@ -46,24 +46,35 @@ fun TemplateScreen(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
-    MainContent(
+    TemplateContent(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
         onContentClick = {  featureActions.navigateToMainWithContext(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
-        onFilterClick = {  },
+        onFilterClick = { featureActions.navigateToFilter(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected()
+        )},
         onChatClick={
             featureActions.navigateToChat(
                 featureActions.getWorkspaceId()
             )
-        }
+        },
+        onQueryChange = { featureActions.navigateToTemplate(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected(),
+            searchQuery = featureActions.getSearchQuery()
+        ) },
+        query = featureActions.getSearchQuery() // TODO: BAD
     )
 }
 
 @Composable
-private fun MainContent(
+private fun TemplateContent(
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onNoteClick: ()-> Unit,
@@ -71,6 +82,8 @@ private fun MainContent(
     onChatClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
+    query:String,
+    onQueryChange: (String)->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -90,7 +103,9 @@ private fun MainContent(
     ) { paddingValues ->
         MainBody(
             paddingValues = paddingValues,
-            onFilterClick = onFilterClick)
+            onFilterClick = onFilterClick,
+            onQueryChange = onQueryChange,
+            query = query)
     }
 }
 
@@ -172,6 +187,8 @@ private fun MainSnackbarHost(
 private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
+    query: String,
+    onQueryChange: (String)->Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -182,8 +199,9 @@ private fun MainBody(
     ) {
         WelcomeMessage()
         SearchBar(
-            onQueryChange = {},//TODO: for now
-            onFilterClick = {}
+            onQueryChange = onQueryChange,//TODO: for now
+            onFilterClick = onFilterClick,
+            query = query
         )
         Button(
             fullWidth = true,
