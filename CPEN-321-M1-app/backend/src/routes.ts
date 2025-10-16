@@ -5,6 +5,7 @@ import authRoutes from './auth.routes';
 import hobbiesRoutes from './hobbies.routes';
 import mediaRoutes from './media.routes';
 import usersRoutes from './user.routes';
+import noteRoutes from './notes.routes';
 
 const router = Router();
 
@@ -15,5 +16,7 @@ router.use('/hobbies', authenticateToken, hobbiesRoutes);
 router.use('/user', authenticateToken, usersRoutes);
 
 router.use('/media', authenticateToken, mediaRoutes);
+
+router.use('/notes', authenticateToken, noteRoutes);
 
 export default router;

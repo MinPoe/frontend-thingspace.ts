@@ -55,6 +55,10 @@ const userSchema = new Schema<IUser>(
           'Hobbies must be non-empty strings and must be in the available hobbies list',
       },
     },
+    notes: {
+      type: [Schema.Types.Mixed],
+      default: [],
+    },
   },
   {
     timestamps: true,
