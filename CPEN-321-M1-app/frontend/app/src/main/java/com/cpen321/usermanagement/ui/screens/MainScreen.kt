@@ -35,7 +35,6 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.utils.IFeatureActions
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun MainScreen(
@@ -46,6 +45,8 @@ fun MainScreen(
     val uiState by mainViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val wsname =  mainViewModel.getWorkspaceName()
+
+    mainViewModel.onLoad()
 
     MainContent(
         uiState = uiState,
@@ -60,15 +61,17 @@ fun MainScreen(
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected()
         ) },
-        onQueryChange = { query:String -> featureActions.navigateToMainWithContext(
+        onSearchClick = {featureActions.navigateToMainWithContext(
             workspaceId = featureActions.getWorkspaceId(),
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected(),
-            searchQuery = query
+            searchQuery = featureActions.getSearchQuery()
         )},
         onChatClick = { featureActions.navigateToChat(
             featureActions.getWorkspaceId()) },
+        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         workspaceName = wsname,
+        query = featureActions.getSearchQuery(),
         onSuccessMessageShown = mainViewModel::clearSuccessMessage
     )
 }
@@ -83,7 +86,9 @@ private fun MainContent(
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
     onChatClick: ()->Unit,
+    onSearchClick: ()-> Unit,
     onQueryChange: (String)-> Unit,
+    query: String,
     onSuccessMessageShown: () -> Unit,
     workspaceName: String,
     modifier: Modifier = Modifier
@@ -114,7 +119,9 @@ private fun MainContent(
             paddingValues = paddingValues,
             workspaceName = workspaceName,
             onFilterClick = onFilterClick,
-            onQueryChange = onQueryChange
+            onSearchClick = onSearchClick,
+            onQueryChange = onQueryChange,
+            query = query
         )
     }
 }
@@ -198,7 +205,9 @@ private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
     workspaceName: String,
-    onQueryChange: (String)-> Unit,
+    query: String,
+    onSearchClick: ()-> Unit,
+    onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -209,24 +218,11 @@ private fun MainBody(
     ) {
         WorkspaceName(workspaceName)
         SearchBar(
-            onQueryChange = onQueryChange,//TODO: for now
-            onFilterClick = onFilterClick
+            onSearchClick = onSearchClick,//TODO: for now
+            onFilterClick = onFilterClick,
+            onQueryChange = onQueryChange,
+            query = query
         )
-        Button(
-            fullWidth = true,
-            enabled = true,
-            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
-            onClick = { onFilterClick() },
-        ) {
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = "filter",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
-            )
-        }
     }
 }
 @Composable

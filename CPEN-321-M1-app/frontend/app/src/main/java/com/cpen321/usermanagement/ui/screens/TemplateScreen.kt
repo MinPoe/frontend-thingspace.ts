@@ -44,10 +44,10 @@ fun TemplateScreen(
     onProfileClick: () -> Unit,
     featureActions: IFeatureActions
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
+
+    templateViewModel.onLoad()
 
     TemplateContent(
-        snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         onNoteClick = { }, //TODO: for now
         onContentClick = {  featureActions.navigateToMainWithContext(
@@ -63,19 +63,19 @@ fun TemplateScreen(
                 featureActions.getWorkspaceId()
             )
         },
-        onQueryChange = { featureActions.navigateToTemplate(
+        onSearchClick = { featureActions.navigateToTemplate(
             workspaceId = featureActions.getWorkspaceId(),
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected(),
             searchQuery = featureActions.getSearchQuery()
         ) },
+        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         query = featureActions.getSearchQuery() // TODO: BAD
     )
 }
 
 @Composable
 private fun TemplateContent(
-    snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     onNoteClick: ()-> Unit,
     onContentClick: ()->Unit,
@@ -83,7 +83,8 @@ private fun TemplateContent(
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
     query:String,
-    onQueryChange: (String)->Unit,
+    onSearchClick: ()->Unit,
+    onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -104,6 +105,7 @@ private fun TemplateContent(
         MainBody(
             paddingValues = paddingValues,
             onFilterClick = onFilterClick,
+            onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
             query = query)
     }
@@ -188,6 +190,7 @@ private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
     query: String,
+    onSearchClick: ()->Unit,
     onQueryChange: (String)->Unit,
     modifier: Modifier = Modifier
 ) {
@@ -199,25 +202,11 @@ private fun MainBody(
     ) {
         WelcomeMessage()
         SearchBar(
-            onQueryChange = onQueryChange,//TODO: for now
+            onSearchClick = onSearchClick,//TODO: for now
             onFilterClick = onFilterClick,
+            onQueryChange = onQueryChange,
             query = query
         )
-        Button(
-            fullWidth = true,
-            enabled = true,
-            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
-            onClick = { onFilterClick() },
-        ) {
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = "filter",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
-            )
-        }
     }
 }
 @Composable

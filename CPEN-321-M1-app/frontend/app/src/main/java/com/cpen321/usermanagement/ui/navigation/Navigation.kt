@@ -350,6 +350,10 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         return navigationStateManager.getSearchQuery()
     }
 
+    override fun setSearchQuery(query: String){
+        navigationStateManager.setSearchQuery(query)
+    }
+
     // --- Navigation delegation ---
     override fun navigateToChat(
         workspaceId: String,

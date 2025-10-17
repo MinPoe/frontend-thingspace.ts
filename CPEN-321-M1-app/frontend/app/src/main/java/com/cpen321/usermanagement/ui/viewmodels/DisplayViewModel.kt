@@ -6,31 +6,55 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.remote.dto.Workspace
+import com.cpen321.usermanagement.data.repository.NoteRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.chunked
 
 @HiltViewModel
 open class DisplayViewModel @Inject constructor(
     private val navigationStateManager: NavigationStateManager,
     private val workspaceRepository: WorkspaceRepository,
-    private val profileRepository: ProfileRepository) : ViewModel() {
+    private val profileRepository: ProfileRepository,
+    private val noteRepository: NoteRepository) : ViewModel() {
 
     private var _wsname = "personal"
     private var _wsid = ""
     private var _wsdescr = ""
     private var _wspic = ""
 
+    private var _notesPerPage = 10
+
+    private var _notesFound: List<List<Note>> = emptyList()
+
     companion object {
         private const val TAG = "DisplayViewModel"
+    }
+
+    fun getNotesFound(page: Int):List<Note>{
+        return _notesFound[page]
+    }
+
+    fun onLoad(){
+        viewModelScope.launch{
+            cacheUpdateWorkspaceOrUser(navigationStateManager.getWorkspaceId())
+            searchResults()
+        }
     }
 
     fun getWorkspaceName():String{
         val workspaceId = navigationStateManager.getWorkspaceId()
         viewModelScope.launch{cacheUpdateWorkspaceOrUser(workspaceId)}
         return _wsname //TODO: if "" should move to userId
+    }
+
+    fun searchedNotesUpdate(){
+        //TODO: Add pagination later
+        viewModelScope.launch { searchResults() }
     }
 
     private suspend fun cacheUpdateWorkspaceOrUser(workspaceId:String){
@@ -61,6 +85,25 @@ open class DisplayViewModel @Inject constructor(
                     error?.message ?: "Failed to load workspace/profile"
                 }
             }
+        }
+    }
+
+    private suspend fun searchResults(){
+        val tags = navigationStateManager.getSelectedTags() //TODO: Add TAG logic
+
+        val noteSearchResult = noteRepository.findNotes( //TODO: Pagination later
+            workspaceId = navigationStateManager.getWorkspaceId(),
+            noteType = navigationStateManager.getNoteType(),
+            searchQuery = navigationStateManager.getSearchQuery(),
+            tagsToInclude = tags,
+            notesPerPage = _notesPerPage
+            )
+        if (noteSearchResult.isSuccess){
+            val rawNotesFound = noteSearchResult.getOrNull()!!
+            _notesFound = rawNotesFound.chunked(_notesPerPage)
+        }
+        else{
+            _notesFound = emptyList()
         }
     }
 }

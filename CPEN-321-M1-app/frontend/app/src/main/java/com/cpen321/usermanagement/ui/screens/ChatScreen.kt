@@ -46,6 +46,8 @@ fun ChatScreen(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
+    chatViewModel.onLoad()
+
     MainContent(
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
@@ -53,7 +55,18 @@ fun ChatScreen(
         onContentClick = {  featureActions.navigateToMainWithContext(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
-        onFilterClick = {  },
+        onFilterClick = { featureActions.navigateToFilter(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected()
+        ) },
+        onSearchClick = {featureActions.navigateToMainWithContext(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected(),
+            searchQuery = featureActions.getSearchQuery()) },
+        query = featureActions.getSearchQuery(),
+        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         onTemplateClick={ featureActions.navigateToTemplate(
             featureActions.getWorkspaceId()) }
     )
@@ -68,6 +81,9 @@ private fun MainContent(
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
+    onSearchClick: ()->Unit,
+    onQueryChange: (String)->Unit,
+    query: String,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -87,7 +103,10 @@ private fun MainContent(
     ) { paddingValues ->
         MainBody(
             paddingValues = paddingValues,
-            onFilterClick = onFilterClick)
+            onFilterClick = onFilterClick,
+            onSearchClick = onSearchClick,
+            onQueryChange = onQueryChange,
+            query = query)
     }
 }
 
@@ -147,28 +166,12 @@ private fun ProfileIcon() {
 }
 
 @Composable
-private fun MainSnackbarHost(
-    hostState: SnackbarHostState,
-    successMessage: String?,
-    onSuccessMessageShown: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    MessageSnackbar(
-        hostState = hostState,
-        messageState = MessageSnackbarState(
-            successMessage = successMessage,
-            errorMessage = null,
-            onSuccessMessageShown = onSuccessMessageShown,
-            onErrorMessageShown = { }
-        ),
-        modifier = modifier
-    )
-}
-
-@Composable
 private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    query: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -179,24 +182,11 @@ private fun MainBody(
     ) {
         WelcomeMessage()
         SearchBar(
-            onQueryChange = {},//TODO: for now
-            onFilterClick = {}
+            onSearchClick = onSearchClick,//TODO: for now
+            onFilterClick = onFilterClick,
+            onQueryChange = onQueryChange,
+            query =  query
         )
-        Button(
-            fullWidth = true,
-            enabled = true,
-            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
-            onClick = { onFilterClick() },
-        ) {
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = "filter",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
-            )
-        }
     }
 }
 @Composable

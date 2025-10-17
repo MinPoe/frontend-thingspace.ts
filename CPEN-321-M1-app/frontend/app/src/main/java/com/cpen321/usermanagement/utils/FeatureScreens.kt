@@ -1,7 +1,7 @@
 package com.cpen321.usermanagement.utils
 import com.cpen321.usermanagement.data.remote.dto.NoteType
 interface IFeatureActions {
-    // --- Common navigation state getters ---
+    // --- Common navigation state getters and setters---
     fun getWorkspaceId(): String
     fun getOtherUserId(): String
     fun getNoteType(): NoteType
@@ -9,6 +9,7 @@ interface IFeatureActions {
     fun getSelectedTags(): List<String>
     fun getAllTagsSelected(): Boolean
     fun getSearchQuery(): String
+    fun setSearchQuery(query: String): Unit
 
     // --- Navigation methods ---
 

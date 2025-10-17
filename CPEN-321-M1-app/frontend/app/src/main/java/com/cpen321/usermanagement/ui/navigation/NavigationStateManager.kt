@@ -130,6 +130,10 @@ class NavigationStateManager @Inject constructor() {
         return _navigationState.value.searchQuery
     }
 
+    fun setSearchQuery(query: String){
+        _navigationState.value = _navigationState.value.copy(searchQuery = query)
+    }
+
     /**
      * Updates the authentication state and triggers appropriate navigation
      */
