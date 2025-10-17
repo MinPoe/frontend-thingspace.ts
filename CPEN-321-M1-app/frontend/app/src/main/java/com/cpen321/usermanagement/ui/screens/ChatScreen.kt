@@ -34,6 +34,7 @@ import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
+import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.IFeatureActions
@@ -48,10 +49,9 @@ fun ChatScreen(
 
     chatViewModel.onLoad()
 
-    MainContent(
-        snackBarHostState = snackBarHostState,
+    ChatContent(
         onProfileClick = onProfileClick,
-        onNoteClick = { }, //TODO: for now
+        onNoteClick = {noteId: String -> featureActions.navigateToNote(noteId)}, //TODO: for now
         onContentClick = {  featureActions.navigateToMainWithContext(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
@@ -60,11 +60,13 @@ fun ChatScreen(
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected()
         ) },
-        onSearchClick = {featureActions.navigateToMainWithContext(
+        onSearchClick = {featureActions.navigateToChat(
             workspaceId = featureActions.getWorkspaceId(),
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected(),
             searchQuery = featureActions.getSearchQuery()) },
+        notes = chatViewModel.getNotesTitlesFound(0),
+        onCreateNoteClick = { featureActions.navigateToNote("") },
         query = featureActions.getSearchQuery(),
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         onTemplateClick={ featureActions.navigateToTemplate(
@@ -73,10 +75,9 @@ fun ChatScreen(
 }
 
 @Composable
-private fun MainContent(
-    snackBarHostState: SnackbarHostState,
+private fun ChatContent(
     onProfileClick: () -> Unit,
-    onNoteClick: ()-> Unit,
+    onNoteClick: (String)-> Unit,
     onContentClick: ()->Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
@@ -84,6 +85,8 @@ private fun MainContent(
     onSearchClick: ()->Unit,
     onQueryChange: (String)->Unit,
     query: String,
+    notes: List<String>,
+    onCreateNoteClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -93,7 +96,7 @@ private fun MainContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = onNoteClick,
+                onCreateNoteClick = onCreateNoteClick,
                 onWorkspacesClick = onWorkspaceClick,
                 onChatClick = {  },
                 onContentClick = onContentClick,
@@ -101,11 +104,13 @@ private fun MainContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        MainBody(
+        ChatBody(
             paddingValues = paddingValues,
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
+            onNoteClick = onNoteClick,
+            notes = notes,
             query = query)
     }
 }
@@ -166,11 +171,13 @@ private fun ProfileIcon() {
 }
 
 @Composable
-private fun MainBody(
+private fun ChatBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
     onSearchClick: () -> Unit,
     onQueryChange: (String) -> Unit,
+    onNoteClick: (String) -> Unit,
+    notes: List<String>,
     query: String,
     modifier: Modifier = Modifier
 ) {
@@ -186,6 +193,10 @@ private fun MainBody(
             onFilterClick = onFilterClick,
             onQueryChange = onQueryChange,
             query =  query
+        )
+        NoteDisplayList(
+            onNoteClick = onNoteClick,
+            notes = notes
         )
     }
 }

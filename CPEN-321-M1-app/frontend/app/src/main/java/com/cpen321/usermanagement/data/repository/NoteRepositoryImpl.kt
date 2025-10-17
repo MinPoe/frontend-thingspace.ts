@@ -5,6 +5,7 @@ import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.data.remote.dto.TextField
 import com.cpen321.usermanagement.data.remote.dto.Field
+import kotlin.math.max
 
 /**
  * !!! MOCK IMPL 4 NOW !!!
@@ -56,7 +57,7 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         searchQuery: String,
         notesPerPage: Int
     ): Result<List<Note>> {
-        val notes = (1..notesPerPage).map {
+        val notes = (1..max(2, notesPerPage-searchQuery.length)).map {
             val id = "note_${workspaceId}_$it"
             Note(
                 _id = id,

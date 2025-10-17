@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
@@ -33,6 +32,7 @@ import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
+import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.utils.IFeatureActions
 
@@ -52,7 +52,6 @@ fun MainScreen(
         uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
-        onNoteClick = { }, //TODO: for now
         onTemplateClick = {  featureActions.navigateToTemplate(
             featureActions.getWorkspaceId())},
         onWorkspaceClick = { featureActions.navigateToWsSelect()},
@@ -72,7 +71,10 @@ fun MainScreen(
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         workspaceName = wsname,
         query = featureActions.getSearchQuery(),
-        onSuccessMessageShown = mainViewModel::clearSuccessMessage
+        onSuccessMessageShown = mainViewModel::clearSuccessMessage,
+        onCreateNoteClick = { featureActions.navigateToNote("") },
+        onNoteClick = {noteId:String -> featureActions.navigateToNote(noteId)},
+        notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )
 }
 
@@ -81,7 +83,6 @@ private fun MainContent(
     uiState: MainUiState,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
-    onNoteClick: ()-> Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
@@ -91,6 +92,9 @@ private fun MainContent(
     query: String,
     onSuccessMessageShown: () -> Unit,
     workspaceName: String,
+    onCreateNoteClick: ()-> Unit,
+    onNoteClick: (String)->Unit,
+    notes:List<String>,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -107,7 +111,7 @@ private fun MainContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = onNoteClick,
+                onCreateNoteClick = onCreateNoteClick,
                 onWorkspacesClick = onWorkspaceClick,
                 onTemplatesClick = onTemplateClick,
                 onContentClick = {  },
@@ -121,6 +125,8 @@ private fun MainContent(
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
+            onNoteClick = onNoteClick,
+            notes = notes,
             query = query
         )
     }
@@ -208,6 +214,8 @@ private fun MainBody(
     query: String,
     onSearchClick: ()-> Unit,
     onQueryChange: (String) -> Unit,
+    onNoteClick: (String) -> Unit,
+    notes: List<String>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -218,10 +226,15 @@ private fun MainBody(
     ) {
         WorkspaceName(workspaceName)
         SearchBar(
-            onSearchClick = onSearchClick,//TODO: for now
+            onSearchClick = onSearchClick,
             onFilterClick = onFilterClick,
             onQueryChange = onQueryChange,
             query = query
+        )
+        NoteDisplayList(
+            onNoteClick = onNoteClick,
+            notes = notes,
+            modifier = modifier.padding(paddingValues)
         )
     }
 }

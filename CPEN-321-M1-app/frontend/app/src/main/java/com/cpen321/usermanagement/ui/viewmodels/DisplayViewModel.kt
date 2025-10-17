@@ -35,8 +35,8 @@ open class DisplayViewModel @Inject constructor(
         private const val TAG = "DisplayViewModel"
     }
 
-    fun getNotesFound(page: Int):List<Note>{
-        return _notesFound[page]
+    fun getNotesTitlesFound(page: Int):List<String>{
+        return  _notesFound[page].map{it._id} //TODO: for now
     }
 
     fun onLoad(){

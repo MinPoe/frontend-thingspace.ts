@@ -34,6 +34,7 @@ import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
+import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.IFeatureActions
@@ -49,7 +50,7 @@ fun TemplateScreen(
 
     TemplateContent(
         onProfileClick = onProfileClick,
-        onNoteClick = { }, //TODO: for now
+        onNoteClick = { noteId:String -> featureActions.navigateToNote(noteId) }, //TODO: for now
         onContentClick = {  featureActions.navigateToMainWithContext(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
@@ -70,6 +71,8 @@ fun TemplateScreen(
             searchQuery = featureActions.getSearchQuery()
         ) },
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
+        onCreateNoteClick = { featureActions.navigateToNote("") },
+        notes = templateViewModel.getNotesTitlesFound(0),
         query = featureActions.getSearchQuery() // TODO: BAD
     )
 }
@@ -77,7 +80,9 @@ fun TemplateScreen(
 @Composable
 private fun TemplateContent(
     onProfileClick: () -> Unit,
-    onNoteClick: ()-> Unit,
+    onNoteClick: (String)-> Unit,
+    onCreateNoteClick: ()-> Unit,
+    notes: List<String>,
     onContentClick: ()->Unit,
     onChatClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
@@ -94,7 +99,7 @@ private fun TemplateContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = onNoteClick,
+                onCreateNoteClick = onCreateNoteClick,
                 onWorkspacesClick = onWorkspaceClick,
                 onTemplatesClick = {  },
                 onContentClick = onContentClick,
@@ -107,6 +112,8 @@ private fun TemplateContent(
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
+            onNoteClick = onNoteClick,
+            notes = notes,
             query = query)
     }
 }
@@ -167,31 +174,14 @@ private fun ProfileIcon() {
 }
 
 @Composable
-private fun MainSnackbarHost(
-    hostState: SnackbarHostState,
-    successMessage: String?,
-    onSuccessMessageShown: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    MessageSnackbar(
-        hostState = hostState,
-        messageState = MessageSnackbarState(
-            successMessage = successMessage,
-            errorMessage = null,
-            onSuccessMessageShown = onSuccessMessageShown,
-            onErrorMessageShown = { }
-        ),
-        modifier = modifier
-    )
-}
-
-@Composable
 private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
     query: String,
     onSearchClick: ()->Unit,
     onQueryChange: (String)->Unit,
+    onNoteClick: (String)-> Unit,
+    notes: List<String>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -206,6 +196,10 @@ private fun MainBody(
             onFilterClick = onFilterClick,
             onQueryChange = onQueryChange,
             query = query
+        )
+        NoteDisplayList(
+            onNoteClick = onNoteClick,
+            notes = notes
         )
     }
 }

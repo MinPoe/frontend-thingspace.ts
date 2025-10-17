@@ -43,6 +43,7 @@ import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.screens.FilterScreen
+import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 object NavRoutes {
@@ -564,6 +565,14 @@ private fun AppNavHost(
                 //TODO: change 'personal' to user id once we have access to
                 featureActions = FeatureActions(navigationStateManager),
                 onBackClick = { navigationStateManager.navigateBack() }
+            )
+        }
+
+        composable (NavRoutes.NOTE){
+            NoteScreen(
+                noteViewModel = noteViewModel,
+                featureActions = FeatureActions(navigationStateManager),
+                onBackClick = {navigationStateManager.navigateBack() }
             )
         }
     }
