@@ -1,8 +1,6 @@
 package com.cpen321.usermanagement.ui.screens
 
-import Button
 import Icon
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -234,7 +232,6 @@ private fun MainBody(
         NoteDisplayList(
             onNoteClick = onNoteClick,
             notes = notes,
-            modifier = modifier.padding(paddingValues)
         )
     }
 }

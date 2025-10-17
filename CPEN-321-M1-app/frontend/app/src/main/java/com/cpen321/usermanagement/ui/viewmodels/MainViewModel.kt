@@ -1,6 +1,5 @@
 package com.cpen321.usermanagement.ui.viewmodels
 
-import androidx.lifecycle.ViewModel
 import com.cpen321.usermanagement.data.repository.NoteRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.data.repository.ProfileRepository
