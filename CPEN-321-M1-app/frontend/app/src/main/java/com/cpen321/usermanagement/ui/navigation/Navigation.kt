@@ -45,6 +45,7 @@ import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
+import kotlinx.coroutines.runBlocking
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -77,6 +78,7 @@ fun AppNavigation(
     val navigationViewModel: NavigationViewModel = hiltViewModel()
     val navigationStateManager = navigationViewModel.navigationStateManager
     val navigationEvent by navigationStateManager.navigationEvent.collectAsState()
+    val featureActions = FeatureActions(navigationStateManager)
 
     // Initialize view models required for navigation-level scope
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -141,7 +143,8 @@ fun AppNavigation(
         wsProfileManagerViewModel = wsProfileManagerViewModel,
         wsProfileViewModel = wsProfileViewModel,
         wsSelectViewModel = wsSelectViewModel,
-        navigationStateManager = navigationStateManager
+        navigationStateManager = navigationStateManager,
+        featureActions = featureActions
     )
 }
 
@@ -187,6 +190,7 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToMainWithMessage -> {
@@ -195,6 +199,7 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToProfileCompletion -> {
@@ -485,7 +490,8 @@ private fun AppNavHost(
     wsProfileManagerViewModel: WsProfileManagerViewModel,
     wsProfileViewModel: WsProfileViewModel,
     wsSelectViewModel: WsSelectViewModel,
-    navigationStateManager: NavigationStateManager
+    navigationStateManager: NavigationStateManager,
+    featureActions: FeatureActions
 ) {
     NavHost(
         navController = navController,
@@ -515,7 +521,7 @@ private fun AppNavHost(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
-                featureActions = FeatureActions(navigationStateManager)
+                featureActions = featureActions
             )
         }
 
@@ -524,7 +530,7 @@ private fun AppNavHost(
                 templateViewModel = templateViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
-                featureActions = FeatureActions(navigationStateManager)
+                featureActions = featureActions
             )
         }
 
@@ -552,7 +558,7 @@ private fun AppNavHost(
             WorkspacesScreen(
                 workspacesViewModel = wsSelectViewModel,
                 onBackClick = {navigationStateManager.navigateBack()},
-                featureActions = FeatureActions(navigationStateManager))
+                featureActions = featureActions)
         }
 
         composable(NavRoutes.CHAT){
@@ -560,7 +566,7 @@ private fun AppNavHost(
                 chatViewModel = chatViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
-                featureActions = FeatureActions(navigationStateManager)
+                featureActions = featureActions
             )
         }
 
@@ -568,7 +574,7 @@ private fun AppNavHost(
             FilterScreen(
                 filterViewModel = filterViewModel,
                 //TODO: change 'personal' to user id once we have access to
-                featureActions = FeatureActions(navigationStateManager),
+                featureActions = featureActions,
                 onBackClick = { navigationStateManager.navigateBack() }
             )
         }
@@ -576,7 +582,7 @@ private fun AppNavHost(
         composable (NavRoutes.NOTE){
             NoteScreen(
                 noteViewModel = noteViewModel,
-                featureActions = FeatureActions(navigationStateManager),
+                featureActions = featureActions,
                 onBackClick = {navigationStateManager.navigateBack() }
             )
         }
