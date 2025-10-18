@@ -134,6 +134,11 @@ class NavigationStateManager @Inject constructor() {
         _navigationState.value = _navigationState.value.copy(searchQuery = query)
     }
 
+    fun updateTagSelection(selectedTags: List<String>, allTagsSelected: Boolean){
+        _navigationState.value = _navigationState.value.copy(selectedTags = selectedTags,
+           allTagsSelected = allTagsSelected)
+    }
+
     /**
      * Updates the authentication state and triggers appropriate navigation
      */

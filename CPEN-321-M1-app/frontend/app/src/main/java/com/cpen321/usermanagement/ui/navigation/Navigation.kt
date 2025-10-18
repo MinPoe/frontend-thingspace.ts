@@ -355,6 +355,11 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         navigationStateManager.setSearchQuery(query)
     }
 
+    override fun updateTagSelection(selectedTags: List<String>, allTagsSelected: Boolean) {
+        navigationStateManager.updateTagSelection(selectedTags = selectedTags,
+            allTagsSelected = allTagsSelected)
+    }
+
     // --- Navigation delegation ---
     override fun navigateToChat(
         workspaceId: String,

@@ -10,6 +10,7 @@ interface IFeatureActions {
     fun getAllTagsSelected(): Boolean
     fun getSearchQuery(): String
     fun setSearchQuery(query: String): Unit
+    fun updateTagSelection(selectedTags:List<String>, allTagsSelected: Boolean): Unit
 
     // --- Navigation methods ---
 
