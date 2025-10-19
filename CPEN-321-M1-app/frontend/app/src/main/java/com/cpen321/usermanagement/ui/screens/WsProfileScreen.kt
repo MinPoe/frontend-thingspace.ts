@@ -46,6 +46,7 @@ import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
+import com.cpen321.usermanagement.ui.components.WsProfileBar
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileUiState
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
@@ -67,8 +68,14 @@ fun WsProfileScreen(
         }
     }
 
+    //events - 4 now leave empty
+    val onMembersClick = {}
+    val onInviteClick = {}
+    val onLeaveClick = {}
+
     Scaffold(
-        topBar = { ViewProfileTopBar(onBackClick = onBackClick) }
+        topBar = { ViewProfileTopBar(onBackClick = onBackClick) },
+        bottomBar = { WsProfileBar(onMembersClick, onInviteClick, onLeaveClick) }
     ) { paddingValues ->
         Box(
             modifier = Modifier

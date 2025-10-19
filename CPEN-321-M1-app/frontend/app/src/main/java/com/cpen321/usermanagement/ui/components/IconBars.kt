@@ -15,6 +15,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
 
 @Composable
+fun WsProfileBar(
+    onMembersClick: ()->Unit,
+    onInviteClick: ()->Unit,
+    onLeaveClick: ()->Unit,
+    modifier: Modifier = Modifier
+){
+    BottomAppBar(
+        actions = {
+            MembersActionButton(onClick = onMembersClick)
+            InviteActionButton(onClick = onInviteClick)
+            LeaveActionButton(onClick = onLeaveClick)
+                  },
+        modifier = modifier
+    )
+}
+
+@Composable
 fun WorkspaceRow(
     workspaceName:String,
     onProfileClick: ()->Unit,
@@ -174,5 +191,74 @@ private fun WorkspaceActionButton(
 private fun WorkspaceIcon() {
     Icon(
         name = R.drawable.ic_heart_smile, //TODO: change the icon to sth more meaningful
+    )
+}
+
+
+@Composable
+private fun MembersActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        MembersIcon()
+    }
+}
+
+@Composable
+private fun MembersIcon() {
+    Icon(
+        name = R.drawable.ic_account_circle,
+    )
+}
+
+
+@Composable
+private fun InviteActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        InviteIcon()
+    }
+}
+
+@Composable
+private fun InviteIcon() {
+    Icon(
+        name = R.drawable.ic_manage_profile,
+    )
+}
+
+
+@Composable
+private fun LeaveActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        LeaveIcon()
+    }
+}
+
+@Composable
+private fun LeaveIcon() {
+    Icon(
+        name = R.drawable.ic_sign_out,
     )
 }
