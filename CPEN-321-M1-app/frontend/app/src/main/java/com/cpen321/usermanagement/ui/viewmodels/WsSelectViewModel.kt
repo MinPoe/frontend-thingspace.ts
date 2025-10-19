@@ -9,6 +9,9 @@ import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -23,23 +26,27 @@ class WsSelectViewModel@Inject constructor(
         private const val TAG = "WsSelectionViewModel"
     }
 
-    val wsSelectUIState = WsSelectUIState(null, null)
+    private val _uiState = MutableStateFlow<WsSelectUIState>(WsSelectUIState())
+    val uiState: StateFlow<WsSelectUIState> = _uiState.asStateFlow()
 
     fun getUserAndWorkspaces(): Pair<User, List<Workspace>>{
-        if (wsSelectUIState.user==null || wsSelectUIState.workspaces==null){
+        if (uiState.value.user==null || uiState.value.workspaces==null){
             loadUserAndWorkspaces()
         }
         //TODO: think abt the default user
-        return Pair(wsSelectUIState.user ?: User(_id = "",
+        return Pair(uiState.value.user ?: User(_id = "",
             email = "", bio="", name="", profilePicture = ""),
-            wsSelectUIState.workspaces ?: emptyList())
+            uiState.value.workspaces ?: emptyList())
     }
 
-    private fun loadUserAndWorkspaces(){
+    fun loadUserAndWorkspaces(){
         viewModelScope.launch{
+            _uiState.value = _uiState.value.copy(isLoading = true)
             val user = getUser()
-            wsSelectUIState.user = user
-            wsSelectUIState.workspaces = getWorkspaces(user._id)
+            _uiState.value = _uiState.value.copy(user = getUser())
+            _uiState.value = _uiState.value.copy(workspaces = getWorkspaces(user._id))
+            Log.d(TAG, "loading workspaces done ${uiState.value.workspaces}, ${uiState.value.user}")
+            _uiState.value = _uiState.value.copy(isLoading = false)
         }
 
     }
@@ -75,6 +82,7 @@ class WsSelectViewModel@Inject constructor(
 }
 
 data class WsSelectUIState(
-    var user:User?,
-    var workspaces:List<Workspace>?
+    var user:User? = null,
+    var workspaces:List<Workspace>? = null,
+    var isLoading:Boolean = false
 )

@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement.ui.navigation
 
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -414,7 +415,6 @@ class NavigationStateManager @Inject constructor() {
             searchQuery = searchQuery
         )
         _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.MAIN,
             workspaceId = workspaceId,
             selectedTags = selectedTags,
             allTagsSelected = allTagsSelected,
@@ -445,6 +445,7 @@ class NavigationStateManager @Inject constructor() {
      * Navigate to profile screen
      */
     fun navigateToProfile() {
+        Log.d("navstatemanager", "navigating to profile...")
         _navigationEvent.value = NavigationEvent.NavigateToProfile
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.PROFILE)
     }
@@ -466,8 +467,9 @@ class NavigationStateManager @Inject constructor() {
         _navigationEvent.value = NavigationEvent.NavigateBack
     }
 
-    /**
-     * Handle account deletion
+/**
+ * Handle account deletion
+            currentRoute = NavRoutes.MAIN,
      */
     fun handleAccountDeletion() {
         _navigationState.value = _navigationState.value.copy(isNavigating = true)

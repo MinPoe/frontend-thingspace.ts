@@ -45,6 +45,7 @@ import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.NoteScreen
+import com.cpen321.usermanagement.ui.screens.WsProfileScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
 import kotlinx.coroutines.runBlocking
 
@@ -63,7 +64,7 @@ object NavRoutes {
     const val MEMBERS_MANAGER = "members_manager"
     const val MEMBERS = "members"
     const val NOTE = "note"
-    const val OTHER_PROFILE = "profile"
+    const val OTHER_PROFILE = "other_profile"
     const val SHARING = "sharing"
     const val TEMPLATE = "template"
     const val WS_CREATION = "ws_creation"
@@ -211,6 +212,7 @@ private fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToProfile -> {
+            Log.d("navigation", "navigationToProfileRegistered")
             navController.navigate(NavRoutes.PROFILE)
             navigationStateManager.clearNavigationEvent()
         }
@@ -536,6 +538,7 @@ private fun AppNavHost(
         }
 
         composable(NavRoutes.PROFILE) {
+            Log.d("navigation", "Navigating to profile")
             ProfileScreen(
                 authViewModel = authViewModel,
                 profileViewModel = profileViewModel,
@@ -559,7 +562,8 @@ private fun AppNavHost(
             WorkspacesScreen(
                 workspacesViewModel = wsSelectViewModel,
                 onBackClick = {navigationStateManager.navigateBack()},
-                featureActions = featureActions)
+                featureActions = featureActions,
+                onPersonalProfileClick = { navigationStateManager.navigateToProfile() })
         }
 
         composable(NavRoutes.CHAT){
@@ -589,11 +593,17 @@ private fun AppNavHost(
         }
 
         composable ( NavRoutes.OTHER_PROFILE ){
+            Log.d("navigation", "navigating to other profile instead")
             OtherProfileScreen(
                 profileViewModel = profileViewModel,
                 onBackClick = { navigationStateManager.navigateBack() },
                 otherProfileId = navigationStateManager.getOtherUserId()
             )
+        }
+
+        composable (route = NavRoutes.WS_PROFILE ){
+            WsProfileScreen(wsProfileViewModel,
+                onBackClick = { navigationStateManager.navigateBack() })
         }
     }
 }

@@ -1,14 +1,18 @@
 package com.cpen321.usermanagement.ui.screens
 
 import Button
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.cpen321.usermanagement.ui.components.BackActionButton
@@ -17,42 +21,57 @@ import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.utils.IFeatureActions
 
+
 @Composable
 fun WorkspacesScreen(
     workspacesViewModel: WsSelectViewModel,
     onBackClick: () -> Unit,
+    onPersonalProfileClick: () -> Unit,
     featureActions: IFeatureActions
 ){
-    val userAndWs = workspacesViewModel.getUserAndWorkspaces()
-    val availableWs = userAndWs.second
-    val availableWsNames=availableWs.map { it.workspaceName }
-    val user = userAndWs.first
+    val uiState by workspacesViewModel.uiState.collectAsState()
+    val isLoading = uiState.isLoading
+    when {
+        isLoading -> {
+            Box(modifier = Modifier, contentAlignment = Alignment.Center){
+                CircularProgressIndicator()}
+        }
+        else -> {
+            val userAndWs = workspacesViewModel.getUserAndWorkspaces()
+            val availableWs = userAndWs.second
+            val availableWsNames=availableWs.map { it.workspaceName }
+            val user = userAndWs.first
 
-    val onWsMainClick = {index:Int ->
-        featureActions.navigateToMainWithContext(availableWs[index]._id)}
-    val onWsChatClick = {index:Int ->
-        featureActions.navigateToChat(availableWs[index]._id)}
-    val onWsTemplateClick = {index:Int ->
-        featureActions.navigateToTemplate(availableWs[index]._id)}
-    val onPersonalProfileClick = {} //TODO: for now before the situation with profile clarifies
-    val onPersonalChatClick={ featureActions.navigateToChat(
-        user._id) } //TODO: before we get actual profile info
-    val onPersonalContentClick={ featureActions.navigateToMainWithContext(
-        user._id) }
-    val onPersonalTemplateClick={ featureActions.navigateToTemplate(
-        user._id) }
+            val onWsMainClick = {index:Int ->
+                featureActions.navigateToMainWithContext(availableWs[index]._id)}
+            val onWsChatClick = {index:Int ->
+                featureActions.navigateToChat(availableWs[index]._id)}
+            val onWsTemplateClick = {index:Int ->
+                featureActions.navigateToTemplate(availableWs[index]._id)}
+            val onPersonalProfileClick = onPersonalProfileClick
+            val onPersonalChatClick={ featureActions.navigateToChat(
+                user._id) } //TODO: before we get actual profile info
+            val onPersonalContentClick={ featureActions.navigateToMainWithContext(
+                user._id) }
+            val onPersonalTemplateClick={ featureActions.navigateToTemplate(
+                user._id) }
+            val onWsProfileClick = {index:Int -> featureActions.navigateToWsProfile(
+                availableWs[index]._id) }
 
-    WsContent(onWsMainClick = onWsMainClick,
-        onBackClick = onBackClick,
-        availableWs = availableWsNames,
-        username = user.name,
-        onWsChatClick= onWsChatClick,
-        onWsTemplateClick = onWsTemplateClick,
-        onPersonalProfileClick = onPersonalProfileClick,
-        onPersonalContentClick = onPersonalContentClick,
-        onPersonalChatClick = onPersonalChatClick,
-        onPersonalTemplateClick = onPersonalTemplateClick
-    )
+            WsContent(onWsMainClick = onWsMainClick,
+                onBackClick = onBackClick,
+                availableWs = availableWsNames,
+                username = user.name,
+                onWsChatClick= onWsChatClick,
+                onWsTemplateClick = onWsTemplateClick,
+                onWsProfileClick = onWsProfileClick,
+                onPersonalProfileClick = onPersonalProfileClick,
+                onPersonalContentClick = onPersonalContentClick,
+                onPersonalChatClick = onPersonalChatClick,
+                onPersonalTemplateClick = onPersonalTemplateClick
+            )
+        }
+    }
 }
 @Composable
 private fun WsContent(
@@ -62,6 +81,7 @@ private fun WsContent(
     username:String,
     onWsTemplateClick: (Int)->Unit,
     onWsChatClick: (Int)->Unit,
+    onWsProfileClick: (Int)->Unit,
     onPersonalProfileClick: ()->Unit,
     onPersonalContentClick: ()->Unit,
     onPersonalChatClick: ()->Unit,
@@ -83,6 +103,7 @@ private fun WsContent(
             onWsMainClick = onWsMainClick,
             onWsChatClick = onWsChatClick,
             onWsTemplateClick = onWsTemplateClick,
+            onWsProfileClick = onWsProfileClick,
             onPersonalProfileClick = onPersonalProfileClick,
             onPersonalContentClick = onPersonalContentClick,
             onPersonalChatClick = onPersonalChatClick,
@@ -99,6 +120,7 @@ private fun WsBody(
     onWsMainClick: (Int) -> Unit,
     onWsChatClick: (Int) -> Unit,
     onWsTemplateClick: (Int) -> Unit,
+    onWsProfileClick: (Int) -> Unit,
     onPersonalProfileClick: ()->Unit,
     onPersonalContentClick: ()->Unit,
     onPersonalChatClick: ()->Unit,
@@ -122,7 +144,7 @@ private fun WsBody(
             WorkspaceRow(
                 workspaceName = availableWs[i],
                 onContentClick = {onWsMainClick(i)},
-                onProfileClick = {},//TODO: for Now,
+                onProfileClick = {onWsProfileClick(i)},//TODO: for Now,
                 onChatClick = {onWsChatClick(i)},
                 onTemplatesClick = {onWsTemplateClick(i)}
             )
