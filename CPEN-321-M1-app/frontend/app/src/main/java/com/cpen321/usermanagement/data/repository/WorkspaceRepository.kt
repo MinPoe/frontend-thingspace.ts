@@ -18,6 +18,7 @@ interface WorkspaceRepository {
                                workspaceProfilePicture:String):Result<Unit>
     suspend fun deleteWorkspace(workspaceId: String): Result<Unit>
     suspend fun addMember(userId:String, workspaceId: String): Result<Unit>
+    suspend fun leave(userId:String, workspaceId: String): Result<Unit>
     suspend fun banMember(userId:String, workspaceId: String): Result<Unit>
     suspend fun getMembershipStatus(userId:String): Result<WsMembershipStatus>
     suspend fun getAllTags(workspaceId: String): Result<List<String>>

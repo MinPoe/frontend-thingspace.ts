@@ -71,9 +71,10 @@ fun WsProfileScreen(
     }
 
     //events - 4 now leave empty
-    val onMembersClick = {}
+    val onMembersClick = {featureActions.navigateToMembers()}
     val onInviteClick = {featureActions.navigateToInvite()}
-    val onLeaveClick = {}
+    val onLeaveClick = {val result:Boolean = wsProfileViewModel.leaveWorkspace()
+    onBackClick()}
 
     Scaffold(
         topBar = { ViewProfileTopBar(onBackClick = onBackClick) },

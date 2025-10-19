@@ -46,6 +46,7 @@ import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.WsInviteScreen
+import com.cpen321.usermanagement.ui.screens.WsMembersScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
 import kotlinx.coroutines.runBlocking
@@ -613,6 +614,15 @@ private fun AppNavHost(
                 wsInviteViewModel = inviteViewModel,
                 featureActions = featureActions,
                 onBackClick = { navigationStateManager.navigateBack() })
+        }
+
+        composable(route = NavRoutes.MEMBERS){
+            WsMembersScreen(
+                membersViewModel = membersViewModel,
+                featureActions = featureActions,
+                onBackClick = { navigationStateManager.navigateBack() },
+                onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
+            )
         }
     }
 }

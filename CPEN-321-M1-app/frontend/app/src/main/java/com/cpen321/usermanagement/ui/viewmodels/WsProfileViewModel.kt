@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Workspace
+import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +32,7 @@ data class WsProfileUiState(
 @HiltViewModel
 class WsProfileViewModel@Inject constructor(
     private val workspaceRepository: WorkspaceRepository,
+    private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -47,7 +50,8 @@ class WsProfileViewModel@Inject constructor(
 
             val profileResult: Result<Workspace>
             profileResult = workspaceRepository.getWorkspace(
-                navigationStateManager.getWorkspaceId())
+                navigationStateManager.getWorkspaceId()
+            )
 
 
             if (profileResult.isSuccess) {
@@ -77,13 +81,26 @@ class WsProfileViewModel@Inject constructor(
                 )
             }
         }
-
-        fun clearError() {
-            _uiState.value = _uiState.value.copy(errorMessage = null)
-        }
-
-        fun setLoadingPhoto(isLoading: Boolean) {
-            _uiState.value = _uiState.value.copy(isLoadingPhoto = isLoading)
-        }
     }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    fun setLoadingPhoto(isLoading: Boolean) {
+        _uiState.value = _uiState.value.copy(isLoadingPhoto = isLoading)
+    }
+
+    fun leaveWorkspace():Boolean{
+        var leaveSuccessful = false
+        viewModelScope.launch {
+            val profileRequest = profileRepository.getProfile()
+            if (profileRequest.isSuccess){
+              leaveSuccessful = workspaceRepository.leave(profileRequest.getOrNull()!!._id,
+                   navigationStateManager.getWorkspaceId(),).isSuccess
+            }
+        } //TODO: handle errors and messaging later
+        return leaveSuccessful
+    }
+
 }

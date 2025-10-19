@@ -128,9 +128,9 @@ private fun InviteWsBody(
         modifier = modifier.fillMaxSize()){
         var textValue by remember { mutableStateOf(uiState.typedEmail) }
         OutlinedTextField(
-            value = textValue, // Current text from the state
-            onValueChange = { newText -> textValue = newText }, // Update state on change
-            label = { Text("Enter the email of the user to invite") }, // Optional label
+            value = textValue,
+            onValueChange = { newText -> textValue = newText },
+            label = { Text("Enter the email of the user to invite") },
             modifier = modifier
         )
         Button(onClick = {onInviteClick(textValue)}){

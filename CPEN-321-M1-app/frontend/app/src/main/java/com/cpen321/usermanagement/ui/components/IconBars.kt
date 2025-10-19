@@ -32,6 +32,24 @@ fun WsProfileBar(
 }
 
 @Composable
+fun WorkspaceMembersRow(
+    profileName:String,
+    onProfileClick: ()->Unit,
+    modifier:Modifier = Modifier
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ){
+        Button(
+            onClick=onProfileClick,
+            modifier=modifier) {
+            Text(
+                if(profileName.length<11) profileName else profileName.take(10)+"...")}
+    }
+}
+
+@Composable
 fun WorkspaceRow(
     workspaceName:String,
     onProfileClick: ()->Unit,

@@ -98,4 +98,8 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         val tags = listOf("tag1_$workspaceId", "tag2_$workspaceId", "tag3_$workspaceId")
         return Result.success(tags)
     }
+
+    override suspend fun leave(userId: String, workspaceId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
 }
