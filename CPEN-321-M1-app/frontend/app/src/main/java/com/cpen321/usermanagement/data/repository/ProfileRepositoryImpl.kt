@@ -114,4 +114,9 @@ class ProfileRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun getOtherProfile(userId: String): Result<User> {
+        //TODO for now, just the same as the other profile
+        return getProfile()
+    }
 }

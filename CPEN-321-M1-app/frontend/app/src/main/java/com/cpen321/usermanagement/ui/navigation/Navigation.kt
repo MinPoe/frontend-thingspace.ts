@@ -18,6 +18,7 @@ import com.cpen321.usermanagement.ui.screens.LoadingScreen
 import com.cpen321.usermanagement.ui.screens.MainScreen
 //import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
 import com.cpen321.usermanagement.ui.screens.ManageProfileScreen
+import com.cpen321.usermanagement.ui.screens.OtherProfileScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
@@ -583,7 +584,15 @@ private fun AppNavHost(
             NoteScreen(
                 noteViewModel = noteViewModel,
                 featureActions = featureActions,
-                onBackClick = {navigationStateManager.navigateBack() }
+                onBackClick = { navigationStateManager.navigateBack() }
+            )
+        }
+
+        composable ( NavRoutes.OTHER_PROFILE ){
+            OtherProfileScreen(
+                profileViewModel = profileViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                otherProfileId = navigationStateManager.getOtherUserId()
             )
         }
     }

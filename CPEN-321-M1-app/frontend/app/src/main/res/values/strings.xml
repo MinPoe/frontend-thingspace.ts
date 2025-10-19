@@ -40,4 +40,5 @@
     <string name="personal_workspace">Personal Notes</string>
     <string name="chat">chat</string>
     <string name="main_workspace_content">main workspace content</string>
+    <string name="view_profile">Profile View</string>
 </resources>

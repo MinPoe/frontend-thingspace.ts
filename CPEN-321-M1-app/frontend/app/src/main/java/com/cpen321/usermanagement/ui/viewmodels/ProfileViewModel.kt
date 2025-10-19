@@ -39,11 +39,18 @@ class ProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    fun loadProfile() {
+    fun loadProfile(otherProfileId:String?=null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingProfile = true, errorMessage = null)
 
-            val profileResult = profileRepository.getProfile()
+            val profileResult: Result<User>
+            if (otherProfileId != null){
+                profileResult = profileRepository.getOtherProfile(otherProfileId)
+            }
+            else
+            {
+                profileResult = profileRepository.getProfile()
+            }
 
             if (profileResult.isSuccess) {
                 val user = profileResult.getOrNull()!!

@@ -53,7 +53,8 @@ fun ChatScreen(
 
     ChatContent(
         onProfileClick = onProfileClick,
-        onOtherProfileClick = {noteId: String -> featureActions.navigateToNote(noteId)}, //TODO: for now
+        onOtherProfileClick = {profileId: String -> featureActions.navigateToOtherProfile(
+            profileId)},
         onContentClick = {  featureActions.navigateToMainWithContext(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
