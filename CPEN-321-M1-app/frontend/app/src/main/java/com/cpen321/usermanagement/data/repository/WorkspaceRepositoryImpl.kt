@@ -85,7 +85,7 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
     }
 
     override suspend fun getMembershipStatus(userId: String): Result<WsMembershipStatus> {
-        val status = when (userId.hashCode() % 4) {
+        val status = when (userId.length % 4) {
             0 -> WsMembershipStatus.MEMBER
             1 -> WsMembershipStatus.MANAGER
             2 -> WsMembershipStatus.NONMEMBER

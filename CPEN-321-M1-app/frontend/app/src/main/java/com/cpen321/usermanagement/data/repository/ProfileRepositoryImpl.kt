@@ -119,4 +119,9 @@ class ProfileRepositoryImpl @Inject constructor(
         //TODO for now, just the same as the other profile
         return getProfile()
     }
+
+    override suspend fun getProfileByEmail(email: String): Result<User> {
+        //TODO("Not yet implemented")
+        return  getProfile()
+    }
 }

@@ -47,6 +47,7 @@ import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.components.WsProfileBar
+import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileUiState
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
@@ -57,6 +58,7 @@ import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
 @Composable
 fun WsProfileScreen(
     wsProfileViewModel: WsProfileViewModel,
+    featureActions: FeatureActions,
     onBackClick: () -> Unit,
 ) {
     val uiState by wsProfileViewModel.uiState.collectAsState()
@@ -70,7 +72,7 @@ fun WsProfileScreen(
 
     //events - 4 now leave empty
     val onMembersClick = {}
-    val onInviteClick = {}
+    val onInviteClick = {featureActions.navigateToInvite()}
     val onLeaveClick = {}
 
     Scaffold(
