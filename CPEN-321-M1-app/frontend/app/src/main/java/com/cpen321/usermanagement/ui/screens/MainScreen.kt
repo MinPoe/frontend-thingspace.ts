@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
+import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
@@ -92,7 +93,7 @@ private fun MainContent(
     workspaceName: String,
     onCreateNoteClick: ()-> Unit,
     onNoteClick: (String)->Unit,
-    notes:List<String>,
+    notes:List<Note>,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -213,7 +214,7 @@ private fun MainBody(
     onSearchClick: ()-> Unit,
     onQueryChange: (String) -> Unit,
     onNoteClick: (String) -> Unit,
-    notes: List<String>,
+    notes:List<Note>,
     modifier: Modifier = Modifier
 ) {
     Column(

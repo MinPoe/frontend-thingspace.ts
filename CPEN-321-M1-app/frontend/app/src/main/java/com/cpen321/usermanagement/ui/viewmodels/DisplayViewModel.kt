@@ -29,14 +29,14 @@ open class DisplayViewModel @Inject constructor(
 
     private var _notesPerPage = 10
 
-    private var _notesFound: List<List<Note>> = emptyList()
+    protected var _notesFound: List<List<Note>> = emptyList()
 
     companion object {
         private const val TAG = "DisplayViewModel"
     }
 
-    fun getNotesTitlesFound(page: Int):List<String>{
-        return  _notesFound[page].map{it._id} //TODO: for now
+    fun getNotesTitlesFound(page: Int):List<Note>{
+        return  _notesFound[page] //TODO: for now
     }
 
     fun onLoad(){
@@ -88,7 +88,7 @@ open class DisplayViewModel @Inject constructor(
         }
     }
 
-    private suspend fun searchResults(){
+    protected open suspend fun searchResults(){
         val tags = navigationStateManager.getSelectedTags() //TODO: Add TAG logic
 
         val noteSearchResult = noteRepository.findNotes( //TODO: Pagination later

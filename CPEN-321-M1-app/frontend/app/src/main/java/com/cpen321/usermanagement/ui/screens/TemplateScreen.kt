@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
+import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
@@ -82,7 +83,7 @@ private fun TemplateContent(
     onProfileClick: () -> Unit,
     onNoteClick: (String)-> Unit,
     onCreateNoteClick: ()-> Unit,
-    notes: List<String>,
+    notes:List<Note>,
     onContentClick: ()->Unit,
     onChatClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
@@ -181,7 +182,7 @@ private fun MainBody(
     onSearchClick: ()->Unit,
     onQueryChange: (String)->Unit,
     onNoteClick: (String)-> Unit,
-    notes: List<String>,
+    notes:List<Note>,
     modifier: Modifier = Modifier
 ) {
     Column(

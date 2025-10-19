@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
+import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
@@ -34,7 +36,7 @@ import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
-import com.cpen321.usermanagement.ui.components.NoteDisplayList
+import com.cpen321.usermanagement.ui.components.ChatDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.IFeatureActions
@@ -51,7 +53,7 @@ fun ChatScreen(
 
     ChatContent(
         onProfileClick = onProfileClick,
-        onNoteClick = {noteId: String -> featureActions.navigateToNote(noteId)}, //TODO: for now
+        onOtherProfileClick = {noteId: String -> featureActions.navigateToNote(noteId)}, //TODO: for now
         onContentClick = {  featureActions.navigateToMainWithContext(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
@@ -68,6 +70,7 @@ fun ChatScreen(
         notes = chatViewModel.getNotesTitlesFound(0),
         onCreateNoteClick = { featureActions.navigateToNote("") },
         query = featureActions.getSearchQuery(),
+        authors = chatViewModel.getNoteAuthors(),
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         onTemplateClick={ featureActions.navigateToTemplate(
             featureActions.getWorkspaceId()) }
@@ -77,7 +80,7 @@ fun ChatScreen(
 @Composable
 private fun ChatContent(
     onProfileClick: () -> Unit,
-    onNoteClick: (String)-> Unit,
+    onOtherProfileClick: (String)-> Unit,
     onContentClick: ()->Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
@@ -85,7 +88,8 @@ private fun ChatContent(
     onSearchClick: ()->Unit,
     onQueryChange: (String)->Unit,
     query: String,
-    notes: List<String>,
+    notes: List<Note>,
+    authors: List<User>?,
     onCreateNoteClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
@@ -109,8 +113,9 @@ private fun ChatContent(
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
-            onNoteClick = onNoteClick,
+            onOtherProfileClick = onOtherProfileClick,
             notes = notes,
+            authors = authors,
             query = query)
     }
 }
@@ -176,8 +181,9 @@ private fun ChatBody(
     onFilterClick: () -> Unit,
     onSearchClick: () -> Unit,
     onQueryChange: (String) -> Unit,
-    onNoteClick: (String) -> Unit,
-    notes: List<String>,
+    onOtherProfileClick: (String) -> Unit,
+    notes: List<Note>,
+    authors: List<User>?,
     query: String,
     modifier: Modifier = Modifier
 ) {
@@ -194,9 +200,10 @@ private fun ChatBody(
             onQueryChange = onQueryChange,
             query =  query
         )
-        NoteDisplayList(
-            onNoteClick = onNoteClick,
-            notes = notes
+        ChatDisplayList(
+            onProfileClick = onOtherProfileClick,
+            notes = notes,
+            profiles = authors
         )
     }
 }
