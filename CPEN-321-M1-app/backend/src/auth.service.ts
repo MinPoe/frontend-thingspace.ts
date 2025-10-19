@@ -88,6 +88,33 @@ export class AuthService {
       throw error;
     }
   }
+
+  // DEV ONLY - Create test user and return token
+  async devLogin(email: string): Promise<AuthResult> {
+    try {
+      // Create a test user with Google user info format
+      const testUserInfo: GoogleUserInfo = {
+        googleId: `dev-${Date.now()}`,
+        email: email,
+        name: 'Test User',
+        profilePicture: 'https://via.placeholder.com/150',
+      };
+
+      // Try to find or create user
+      let user = await userModel.findByGoogleId(testUserInfo.googleId);
+      
+      if (!user) {
+        user = await userModel.create(testUserInfo);
+      }
+
+      const token = this.generateAccessToken(user);
+
+      return { token, user };
+    } catch (error) {
+      logger.error('Dev login failed:', error);
+      throw error;
+    }
+  }
 }
 
 export const authService = new AuthService();

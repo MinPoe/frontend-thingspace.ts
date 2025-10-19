@@ -12,7 +12,6 @@ export interface IUser extends Document {
   profilePicture?: string;
   bio?: string;
   hobbies: string[];
-  notes?: any[]; // Array of note objects
   createdAt: Date;
   updatedAt: Date;
 }

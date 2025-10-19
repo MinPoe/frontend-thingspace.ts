@@ -19,4 +19,10 @@ router.post(
   authController.signIn
 );
 
+// DEV ONLY - Remove in production!
+router.post(
+  '/dev-login',
+  authController.devLogin
+);
+
 export default router;

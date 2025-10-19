@@ -1,45 +1,77 @@
 import { z } from 'zod';
 
+export interface BaseField {
+  _id: string;
+  fieldType: 'title' | 'textbox' | 'datetime'; 
+}
+
+export interface TitleField extends BaseField {
+  fieldType: 'title';
+  content: string;
+}
+
+export interface TextBoxField extends BaseField {
+  fieldType: 'textbox';
+  content: string;
+}
+
+export interface DateTimeField extends BaseField {
+  fieldType: 'datetime';
+  dateTime: Date; 
+}
+
+export type Field = TitleField | TextBoxField | DateTimeField;
+
+export enum NoteType {
+  CONTENT = "CONTENT",
+  CHAT = "CHAT",
+  TEMPLATE = "TEMPLATE"
+}
+
 export interface Note {
   _id: string;
-  title: string;
-  content: string;
   userId: string;
+  fields: Field[];
+  noteType: NoteType;
+  tags?: string[];
+  authors?: string[];
+  workspaceId?: string;
+  vectorData: number[];
   createdAt: Date;
   updatedAt: Date;
-  tags?: string[];
-  workspaceId?: string;
 }
 
 export interface CreateNoteRequest {
-  title: string;
-  content: string;
   tags?: string[];
-  workspaceId?: string;
+  fields: Field[];
+  noteType?: NoteType;
+  workspaceId: string;
 }
 
 export interface UpdateNoteRequest {
-  title?: string;
-  content?: string;
   tags?: string[];
+  fields?: Field[];
+  noteType?: NoteType;
   workspaceId?: string;
 }
 
-// Flexible schemas - only validate what we know, allow anything else
+export interface GetNoteRequest {
+  authorId: string;
+  tags?: string[];
+  fields: Field[];
+  noteType?: NoteType;
+  workspaceId: string;
+}
+
 export const createNoteSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
-  content: z.string().min(1, 'Content is required').max(5000, 'Content too long'),
-}).passthrough(); // This allows any additional fields
+  fields: z.array(z.any()),
+  workspaceId: z.string().min(1, 'workspaceId is required'),
+  tags: z.array(z.string()).optional(),
+  noteType: z.enum([NoteType.CONTENT, NoteType.CHAT, NoteType.TEMPLATE]).optional(),
+}).strict();
 
 export const updateNoteSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(100, 'Title too long').optional(),
-  content: z.string().min(1, 'Content is required').max(5000, 'Content too long').optional(),
-}).passthrough(); // This allows any additional fields
-
-// Alternative: Very minimal validation
-export const minimalCreateNoteSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  content: z.string().min(1, 'Content is required'),
-}).passthrough();
-
-export const minimalUpdateNoteSchema = z.record(z.any()); // Accepts any object
+  tags: z.array(z.string()).optional(),
+  fields: z.array(z.any()).optional(),
+  noteType: z.enum([NoteType.CONTENT, NoteType.CHAT, NoteType.TEMPLATE]).optional(),
+}).strict();

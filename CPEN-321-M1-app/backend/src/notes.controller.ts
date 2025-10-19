@@ -1,54 +1,20 @@
 import { Request, Response } from 'express';
-import { Note, CreateNoteRequest, UpdateNoteRequest } from './notes.types';
-import { userModel } from './user.model';
+import { CreateNoteRequest, UpdateNoteRequest } from './notes.types';
+import { noteService } from './notes.service';
 
 export class NotesController {
   async createNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?._id;
       if (!userId) {
         res.status(401).json({ error: 'User not authenticated' });
         return;
       }
 
-      const noteData = req.body;
-      
-      if (!noteData.title || !noteData.content) {
-        res.status(400).json({ error: 'Title and content are required' });
-        return;
-      }
+      const noteData = req.body as CreateNoteRequest;
 
-      const { title, content, tags, workspaceId } = noteData;
-      
-      // Okay this part idk what the obvject will look like
-      const noteObject = {
-        title,
-        content,
-        userId,
-        tags: tags || [],
-        workspaceId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-
-      const user = await userModel.findById(userId);
-      if (!user) {
-        res.status(404).json({ error: 'User not found' });
-        return;
-      }
-
-      if (!user.notes) {
-        user.notes = [];
-      }
-
-      const newNote = {
-        _id: new Date().toISOString(), 
-        ...noteObject,
-      };
-
-      user.notes.push(newNote);
-      await user.save();
+      // NOTE: We probably need to add some verification thing checking if the author id has access to the workspace
+      const newNote = await noteService.createNote(userId, noteData);
 
       res.status(201).json({
         message: 'Note created successfully',
@@ -62,41 +28,19 @@ export class NotesController {
 
   async updateNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
-      const noteId = req.params.id;
-
+      const userId = req.user?._id;
       if (!userId) {
         res.status(401).json({ error: 'User not authenticated' });
         return;
       }
 
-      const user = await userModel.findById(userId);
-      if (!user || !user.notes) {
-        res.status(404).json({ error: 'User or notes not found' });
-        return;
-      }
+      const noteId = req.params.id;
+      const updateData = req.body as UpdateNoteRequest;
 
-      const noteIndex = user.notes.findIndex(
-        (note: any) => note._id === noteId && note.userId === userId
-      );
+      const updatedNote = await noteService.updateNote(noteId, userId, updateData);
 
-      if (noteIndex === -1) {
-        res.status(404).json({ error: 'Note not found' });
-        return;
-      }
-
-      const updateData: UpdateNoteRequest = req.body;
-      const updatedNote = {
-        ...user.notes[noteIndex],
-        ...updateData,
-        updatedAt: new Date(),
-      };
-
-      user.notes[noteIndex] = updatedNote;
-      await user.save();
-
-      res.json({
-        message: 'Note updated successfully',
+      res.status(200).json({
+        message: 'Note successfully updated',
         note: updatedNote,
       });
     } catch (error) {
@@ -107,58 +51,126 @@ export class NotesController {
 
   async deleteNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
-      const noteId = req.params.id;
-
+      const userId = req.user?._id;
       if (!userId) {
         res.status(401).json({ error: 'User not authenticated' });
         return;
       }
+      const noteId = req.params.id;
+      const deletedNote = await noteService.deleteNote(noteId, userId);
 
-      const user = await userModel.findById(userId);
-      if (!user || !user.notes) {
-        res.status(404).json({ error: 'User or notes not found' });
-        return;
-      }
-
-      const noteIndex = user.notes.findIndex(
-        (note: any) => note._id === noteId && note.userId === userId
-      );
-
-      if (noteIndex === -1) {
-        res.status(404).json({ error: 'Note not found' });
-        return;
-      }
-
-      user.notes.splice(noteIndex, 1);
-      await user.save();
-
-      res.json({ message: 'Note deleted successfully' });
+      res.status(200).json({
+        message: 'Note successfully deleted',
+        note: deletedNote,
+      });
     } catch (error) {
       console.error('Error deleting note:', error);
       res.status(500).json({ error: 'Failed to delete note' });
     }
   }
 
-  async getNotes(req: Request, res: Response): Promise<void> {
+  async getNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?._id;
+      if (!userId) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+      const noteId = req.params.id;
+      const note = await noteService.getNote(noteId, userId);
 
+      if (!note) {
+        res.status(404).json({ error: 'Note not found' });
+        return;
+      }
+
+      res.status(200).json({
+        message: 'Note successfully retrieved',
+        note: note,
+      });
+    } catch (error) {
+      console.error('Error retrieving note:', error);
+      res.status(500).json({ error: 'Failed to retrieve note' });
+    }
+  }
+
+  async getAuthors(req: Request, res: Response): Promise<void> {
+    try {
+      const noteId = req.params.id;
+      const authors = await noteService.getAuthors(noteId);
+
+      res.status(200).json({
+        message: 'Authors retrieved successfully',
+        authors: authors,
+      });
+    } catch (error) {
+      console.error('Error retrieving authors:', error);
+      res.status(500).json({ error: 'Failed to retrieve authors' });
+    }
+  }
+
+  async shareNoteToWorkspace(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id;
       if (!userId) {
         res.status(401).json({ error: 'User not authenticated' });
         return;
       }
 
-      const user = await userModel.findById(userId);
-      if (!user || !user.notes) {
-        res.json({ notes: [] });
+      const noteId = req.params.id;
+      const { workspaceId } = req.body;
+
+      if (!workspaceId) {
+        res.status(400).json({ error: 'workspaceId is required' });
         return;
       }
 
-      res.json({ notes: user.notes });
+      const sharedNote = await noteService.shareNoteToWorkspace(noteId, userId, workspaceId);
+
+      res.status(200).json({
+        message: 'Note shared to workspace successfully',
+        note: sharedNote,
+      });
     } catch (error) {
-      console.error('Error fetching notes:', error);
-      res.status(500).json({ error: 'Failed to fetch notes' });
+      console.error('Error sharing note:', error);
+      res.status(500).json({ error: 'Failed to share note' });
     }
   }
+
+  async getWorkspacesForNote(req: Request, res: Response): Promise<void> {
+    try {
+      const noteId = req.params.id;
+      const workspaceId = await noteService.getWorkspacesForNote(noteId);
+
+      res.status(200).json({
+        message: 'Workspace retrieved successfully',
+        workspaceId: workspaceId,
+      });
+    } catch (error) {
+      console.error('Error retrieving workspace:', error);
+      res.status(500).json({ error: 'Failed to retrieve workspace' });
+    }
+  }
+
+  async findNotes(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id;
+      if (!userId) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+
+      // TODO: Implement filtering by workspaceId, noteType, tags, searchQuery, pagination
+      const notes = await noteService.getNotesByUserId(userId);
+
+      res.status(200).json({
+        message: 'Notes retrieved successfully',
+        notes: notes,
+      });
+    } catch (error) {
+      console.error('Error retrieving notes:', error);
+      res.status(500).json({ error: 'Failed to retrieve notes' });
+    }
+  }
+
 }
