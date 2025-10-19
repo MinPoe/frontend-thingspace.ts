@@ -55,8 +55,18 @@ fun WorkspacesScreen(
                 user._id) }
             val onPersonalTemplateClick={ featureActions.navigateToTemplate(
                 user._id) }
-            val onWsProfileClick = {index:Int -> featureActions.navigateToWsProfile(
-                availableWs[index]._id) }
+            val onWsProfileClick = {index:Int ->
+                if (uiState.workspaceManager != null){
+                    val wsMan = uiState.workspaceManager!!
+                    if (wsMan[index]){
+                        featureActions.navigateToWsProfileManager(availableWs[index]._id)
+                    }
+                    else{
+                        featureActions.navigateToWsProfile(availableWs[index]._id)
+                    }
+                }
+                else featureActions.navigateToWsProfile(availableWs[index]._id) }
+
 
             WsContent(onWsMainClick = onWsMainClick,
                 onBackClick = onBackClick,

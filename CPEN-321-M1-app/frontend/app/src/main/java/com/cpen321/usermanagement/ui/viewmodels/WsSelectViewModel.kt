@@ -7,6 +7,7 @@ import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
+import com.cpen321.usermanagement.data.repository.WsMembershipStatus
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,9 +47,27 @@ class WsSelectViewModel@Inject constructor(
             _uiState.value = _uiState.value.copy(user = getUser())
             _uiState.value = _uiState.value.copy(workspaces = getWorkspaces(user._id))
             Log.d(TAG, "loading workspaces done ${uiState.value.workspaces}, ${uiState.value.user}")
-            _uiState.value = _uiState.value.copy(isLoading = false)
-        }
 
+            if(_uiState.value.workspaces != null && _uiState.value.user != null) { //todo parallelize later or make a grouped backend call
+                val workspaceManager = mutableListOf<Boolean>()
+                val user = _uiState.value.user!!
+                for (workspace in _uiState.value.workspaces) {
+                    val membershipStatusRequest = workspaceRepository.getMembershipStatus(
+                        user._id, workspaceId = workspace._id
+                    )
+                    if (membershipStatusRequest.isSuccess &&
+                        membershipStatusRequest.getOrNull()!! == WsMembershipStatus.MANAGER
+                    ) {
+                        workspaceManager.add(true)
+                    }
+                    else{
+                        workspaceManager.add(false)
+                    }
+                }
+                _uiState.value = _uiState.value.copy(workspaceManager = workspaceManager)
+            }
+        }
+        _uiState.value = _uiState.value.copy(isLoading = false)
     }
 
     private suspend fun getUser():User{
@@ -79,10 +98,12 @@ class WsSelectViewModel@Inject constructor(
             return emptyList()
         }
     }
+
 }
 
 data class WsSelectUIState(
     var user:User? = null,
     var workspaces:List<Workspace>? = null,
-    var isLoading:Boolean = false
+    var isLoading:Boolean = false,
+    var workspaceManager:List<Boolean>? = null
 )

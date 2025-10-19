@@ -47,6 +47,7 @@ import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.WsInviteScreen
 import com.cpen321.usermanagement.ui.screens.WsMembersScreen
+import com.cpen321.usermanagement.ui.screens.WsProfileManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
 import kotlinx.coroutines.runBlocking
@@ -622,6 +623,13 @@ private fun AppNavHost(
                 featureActions = featureActions,
                 onBackClick = { navigationStateManager.navigateBack() },
                 onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
+            )
+        }
+
+        composable(route = NavRoutes.WS_PROFILE_MANAGER){
+            WsProfileManagerScreen(
+                wsProfileManagerViewModel = wsProfileManagerViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
             )
         }
     }

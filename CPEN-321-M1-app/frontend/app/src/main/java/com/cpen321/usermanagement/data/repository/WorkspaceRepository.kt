@@ -20,7 +20,7 @@ interface WorkspaceRepository {
     suspend fun addMember(userId:String, workspaceId: String): Result<Unit>
     suspend fun leave(userId:String, workspaceId: String): Result<Unit>
     suspend fun banMember(userId:String, workspaceId: String): Result<Unit>
-    suspend fun getMembershipStatus(userId:String): Result<WsMembershipStatus>
+    suspend fun getMembershipStatus(userId:String, workspaceId: String): Result<WsMembershipStatus>
     suspend fun getAllTags(workspaceId: String): Result<List<String>>
 }
 

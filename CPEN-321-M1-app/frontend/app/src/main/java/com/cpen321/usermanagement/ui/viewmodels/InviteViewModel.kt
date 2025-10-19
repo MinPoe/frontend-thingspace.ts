@@ -45,7 +45,8 @@ class InviteViewModel@Inject constructor(
             val profileRequest = profileRepository.getProfileByEmail(_uiState.value.typedEmail)
             if (profileRequest.isSuccess){
                 val user = profileRequest.getOrNull()!!
-                val membershipStatusRequest = workspaceRepository.getMembershipStatus(user._id)
+                val membershipStatusRequest = workspaceRepository.getMembershipStatus(
+                    user._id, workspaceId = navigationStateManager.getWorkspaceId())
                 if (membershipStatusRequest.isSuccess){
                     val membershipStatus = membershipStatusRequest.getOrNull()!!
                     when (membershipStatus) {

@@ -4,13 +4,10 @@ import Button
 import Icon
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,16 +46,16 @@ import coil.compose.AsyncImage
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.api.RetrofitClient
 import com.cpen321.usermanagement.data.remote.dto.User
+import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.ui.components.ImagePicker
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
-import com.cpen321.usermanagement.ui.viewmodels.ProfileUiState
-import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerUiState
+import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
 
-private data class ProfileFormState(
+private data class WsProfileFormState(
     val name: String = "",
-    val email: String = "",
     val description: String = "",
     val originalName: String = "",
     val originalDescription: String = ""
@@ -70,10 +66,10 @@ private data class ProfileFormState(
     }
 }
 
-private data class ManageProfileScreenActions(
+private data class WsManageProfileScreenActions(
     val onBackClick: () -> Unit,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onDescriptionChange: (String) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onImagePickerDismiss: () -> Unit,
@@ -83,99 +79,87 @@ private data class ManageProfileScreenActions(
     val onErrorMessageShown: () -> Unit
 )
 
-private data class ProfileFormData(
-    val formState: ProfileFormState,
+
+private data class WorkspaceProfileFormData(
+    val workspace: Workspace,
+    val formState: WsProfileFormState,
     val isLoadingPhoto: Boolean,
     val isSavingProfile: Boolean,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onDescriptionChange: (String) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
 )
 
-private data class UserProfileFormData(
-    val user: User,
-    val formState: ProfileFormState,
-    val isLoadingPhoto: Boolean,
-    val isSavingProfile: Boolean,
+private data class WsProfileBodyData(
+    val uiState: WsProfileManagerUiState,
+    val formState: WsProfileFormState,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
+    val onDescriptionChange: (String) -> Unit,
     val onEditPictureClick: () -> Unit,
     val onSaveClick: () -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit
 )
 
-private data class ProfileBodyData(
-    val uiState: ProfileUiState,
-    val formState: ProfileFormState,
-    val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit,
-    val onEditPictureClick: () -> Unit,
-    val onSaveClick: () -> Unit,
-    val onLoadingPhotoChange: (Boolean) -> Unit
-)
-
-private data class ProfileFieldsData(
+private data class WsProfileFieldsData(
     val name: String,
-    val email: String,
     val description: String,
     val onNameChange: (String) -> Unit,
-    val onBioChange: (String) -> Unit
+    val onDescriptionChange: (String) -> Unit
 )
 
 @Composable
-fun ManageProfileScreen(
-    profileViewModel: ProfileViewModel,
+fun WsProfileManagerScreen(
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
     onBackClick: () -> Unit
 ) {
-    val uiState by profileViewModel.uiState.collectAsState()
+    val uiState by wsProfileManagerViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
 
     var showImagePickerDialog by remember { mutableStateOf(false) }
 
     // Form state
     var formState by remember {
-        mutableStateOf(ProfileFormState())
+        mutableStateOf(WsProfileFormState())
     }
 
     // Side effects
     LaunchedEffect(Unit) {
-        profileViewModel.clearSuccessMessage()
-        profileViewModel.clearError()
-        if (uiState.user == null) {
-            profileViewModel.loadProfile()
+        wsProfileManagerViewModel.clearSuccessMessage()
+        wsProfileManagerViewModel.clearError()
+        if (uiState.workspace == null) {
+            wsProfileManagerViewModel.loadProfile()
         }
     }
 
-    LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
-            formState = ProfileFormState(
-                name = user.name,
-                email = user.email,
-                description = user.bio ?: "",
-                originalName = user.name,
-                originalDescription = user.bio ?: ""
+    LaunchedEffect(uiState.workspace) {
+        uiState.workspace?.let { workspace ->
+            formState = WsProfileFormState(
+                name = workspace.workspaceName,
+                description = workspace.workspaceDescription ?: "",
+                originalName = workspace.workspaceName,
+                originalDescription = workspace.workspaceDescription ?: ""
             )
         }
     }
 
-    val actions = ManageProfileScreenActions(
+    val actions = WsManageProfileScreenActions(
         onBackClick = onBackClick,
         onNameChange = { formState = formState.copy(name = it) },
-        onBioChange = { formState = formState.copy(description = it) },
+        onDescriptionChange = { formState = formState.copy(description = it) },
         onEditPictureClick = { showImagePickerDialog = true },
         onSaveClick = {
-            profileViewModel.updateProfile(formState.name, formState.description)
+            wsProfileManagerViewModel.updateProfile(formState.name, formState.description)
         },
         onImagePickerDismiss = { showImagePickerDialog = false },
         onImageSelected = { uri ->
             showImagePickerDialog = false
-            profileViewModel.uploadProfilePicture(uri)
+            wsProfileManagerViewModel.uploadProfilePicture(uri)
         },
-        onLoadingPhotoChange = profileViewModel::setLoadingPhoto,
-        onSuccessMessageShown = profileViewModel::clearSuccessMessage,
-        onErrorMessageShown = profileViewModel::clearError
+        onLoadingPhotoChange = wsProfileManagerViewModel::setLoadingPhoto,
+        onSuccessMessageShown = wsProfileManagerViewModel::clearSuccessMessage,
+        onErrorMessageShown = wsProfileManagerViewModel::clearError
     )
 
     ManageProfileContent(
@@ -190,11 +174,11 @@ fun ManageProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ManageProfileContent(
-    uiState: ProfileUiState,
-    formState: ProfileFormState,
+    uiState: WsProfileManagerUiState,
+    formState: WsProfileFormState,
     snackBarHostState: SnackbarHostState,
     showImagePickerDialog: Boolean,
-    actions: ManageProfileScreenActions,
+    actions: WsManageProfileScreenActions,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -216,11 +200,11 @@ private fun ManageProfileContent(
     ) { paddingValues ->
         ProfileBody(
             paddingValues = paddingValues,
-            data = ProfileBodyData(
+            data = WsProfileBodyData(
                 uiState = uiState,
                 formState = formState,
                 onNameChange = actions.onNameChange,
-                onBioChange = actions.onBioChange,
+                onDescriptionChange = actions.onDescriptionChange,
                 onEditPictureClick = actions.onEditPictureClick,
                 onSaveClick = actions.onSaveClick,
                 onLoadingPhotoChange = actions.onLoadingPhotoChange
@@ -266,7 +250,7 @@ private fun ProfileTopBar(
 @Composable
 private fun ProfileBody(
     paddingValues: PaddingValues,
-    data: ProfileBodyData,
+    data: WsProfileBodyData,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -281,15 +265,15 @@ private fun ProfileBody(
                 )
             }
 
-            data.uiState.user != null -> {
+            data.uiState.workspace != null -> {
                 ProfileForm(
-                    data = UserProfileFormData(
-                        user = data.uiState.user,
+                    data = WorkspaceProfileFormData(
+                        workspace = data.uiState.workspace,
                         formState = data.formState,
                         isLoadingPhoto = data.uiState.isLoadingPhoto,
                         isSavingProfile = data.uiState.isSavingProfile,
                         onNameChange = data.onNameChange,
-                        onBioChange = data.onBioChange,
+                        onDescriptionChange = data.onDescriptionChange,
                         onEditPictureClick = data.onEditPictureClick,
                         onSaveClick = data.onSaveClick,
                         onLoadingPhotoChange = data.onLoadingPhotoChange
@@ -302,7 +286,7 @@ private fun ProfileBody(
 
 @Composable
 private fun ProfileForm(
-    data: UserProfileFormData,
+    data: WorkspaceProfileFormData,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -317,19 +301,18 @@ private fun ProfileForm(
         verticalArrangement = Arrangement.spacedBy(spacing.large)
     ) {
         ProfilePictureCard(
-            profilePicture = data.user.profilePicture,
+            profilePicture = data.workspace.workspacePicture ?: "",
             isLoadingPhoto = data.isLoadingPhoto,
             onEditClick = data.onEditPictureClick,
             onLoadingChange = data.onLoadingPhotoChange
         )
 
         ProfileFields(
-            data = ProfileFieldsData(
+            data = WsProfileFieldsData(
                 name = data.formState.name,
-                email = data.user.email,
                 description = data.formState.description,
                 onNameChange = data.onNameChange,
-                onBioChange = data.onBioChange
+                onDescriptionChange = data.onDescriptionChange
             )
         )
 
@@ -433,7 +416,7 @@ private fun ProfilePictureWithEdit(
 
 @Composable
 private fun ProfileFields(
-    data: ProfileFieldsData,
+    data: WsProfileFieldsData,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -448,19 +431,10 @@ private fun ProfileFields(
             singleLine = true
         )
 
-        OutlinedTextField(
-            value = data.email,
-            onValueChange = { /* Read-only */ },
-            label = { Text(stringResource(R.string.email)) },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            enabled = false
-        )
-
         //Row(Modifier.focusProperties { canFocus = false }) {
         OutlinedTextField(
             value = data.description,
-            onValueChange = data.onBioChange,
+            onValueChange = data.onDescriptionChange,
             label = { Text(stringResource(R.string.bio)) },
             placeholder = { Text(stringResource(R.string.bio_placeholder)) },
             modifier = Modifier.fillMaxWidth(),

@@ -30,7 +30,7 @@ data class WsProfileUiState(
 )
 
 @HiltViewModel
-class WsProfileViewModel@Inject constructor(
+open class WsProfileViewModel@Inject constructor(
     private val workspaceRepository: WorkspaceRepository,
     private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager

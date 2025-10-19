@@ -84,14 +84,14 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(Unit)
     }
 
-    override suspend fun getMembershipStatus(userId: String): Result<WsMembershipStatus> {
+    override suspend fun getMembershipStatus(userId: String, workspaceId: String): Result<WsMembershipStatus> {
         val status = when (userId.length % 4) {
             0 -> WsMembershipStatus.MEMBER
             1 -> WsMembershipStatus.MANAGER
             2 -> WsMembershipStatus.NONMEMBER
             else -> WsMembershipStatus.BANNED
         }
-        return Result.success(status)
+        return Result.success(WsMembershipStatus.MANAGER)//4 testing
     }
 
     override suspend fun getAllTags(workspaceId: String): Result<List<String>> {
