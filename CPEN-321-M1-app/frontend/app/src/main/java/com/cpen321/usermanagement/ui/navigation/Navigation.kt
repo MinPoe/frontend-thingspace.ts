@@ -46,6 +46,7 @@ import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.screens.FilterScreen
 import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.WsInviteScreen
+import com.cpen321.usermanagement.ui.screens.WsMembersManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsMembersScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileScreen
@@ -630,6 +631,16 @@ private fun AppNavHost(
             WsProfileManagerScreen(
                 wsProfileManagerViewModel = wsProfileManagerViewModel,
                 onBackClick = { navigationStateManager.navigateBack() },
+                featureActions = featureActions
+            )
+        }
+
+        composable (route = NavRoutes.MEMBERS_MANAGER){
+            WsMembersManagerScreen(
+                membersManagerViewModel = membersManagerViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                onPersonalProfileClick = { navigationStateManager.navigateToProfile() },
+                featureActions = featureActions
             )
         }
     }

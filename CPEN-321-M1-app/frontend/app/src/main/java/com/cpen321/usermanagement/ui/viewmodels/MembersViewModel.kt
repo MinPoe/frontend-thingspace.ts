@@ -23,7 +23,7 @@ data class MembersUiState(
 )
 
 @HiltViewModel
-class MembersViewModel@Inject constructor(
+open class MembersViewModel@Inject constructor(
     private val workspaceRepository: WorkspaceRepository,
     private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
@@ -32,7 +32,7 @@ class MembersViewModel@Inject constructor(
         private const val TAG = "WsSelectionViewModel"
     }
 
-    private val _uiState = MutableStateFlow<MembersUiState>(MembersUiState())
+    protected val _uiState = MutableStateFlow<MembersUiState>(MembersUiState())
     val uiState: StateFlow<MembersUiState> = _uiState.asStateFlow()
 
     fun getUsers(): Pair<User, List<User>> {

@@ -149,4 +149,16 @@ class WsProfileManagerViewModel@Inject constructor(
             }
         }
     }
+
+    fun deleteWorkspace():Boolean{
+        var deleteSuccessful = false
+        viewModelScope.launch {
+            val delRequest = workspaceRepository.deleteWorkspace(
+                navigationStateManager.getWorkspaceId())
+            if (delRequest.isSuccess){
+                deleteSuccessful = true
+            }
+        } //TODO: handle errors and messaging later
+        return deleteSuccessful
+    }
 }

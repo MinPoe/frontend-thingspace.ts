@@ -32,6 +32,44 @@ fun WsProfileBar(
 }
 
 @Composable
+fun WsProfileManagerBar(
+    onMembersClick: ()->Unit,
+    onInviteClick: ()->Unit,
+    onDeleteClick: ()->Unit,
+    modifier: Modifier = Modifier
+){
+    BottomAppBar(
+        actions = {
+            MembersActionButton(onClick = onMembersClick)
+            InviteActionButton(onClick = onInviteClick)
+            DeleteActionButton(onClick = onDeleteClick)
+        },
+        modifier = modifier
+    )
+}
+
+
+@Composable
+fun WorkspaceMembersManagerRow(
+    profileName:String,
+    onProfileClick: ()->Unit,
+    onBanClick: ()-> Unit,
+    modifier:Modifier = Modifier
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ){
+        Button(
+            onClick=onProfileClick,
+            modifier=modifier) {
+            Text(
+                if(profileName.length<11) profileName else profileName.take(10)+"...")}
+        BanActionButton(onClick = onBanClick)
+    }
+}
+
+@Composable
 fun WorkspaceMembersRow(
     profileName:String,
     onProfileClick: ()->Unit,
@@ -278,5 +316,49 @@ private fun LeaveActionButton(
 private fun LeaveIcon() {
     Icon(
         name = R.drawable.ic_sign_out,
+    )
+}
+
+@Composable
+private fun DeleteActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        DeleteIcon()
+    }
+}
+
+@Composable
+private fun DeleteIcon() {
+    Icon(
+        name = R.drawable.ic_delete_forever,
+    )
+}
+
+@Composable
+private fun BanActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        BanIcon()
+    }
+}
+
+@Composable
+private fun BanIcon() {
+    Icon(
+        name = R.drawable.ic_delete_forever,
     )
 }

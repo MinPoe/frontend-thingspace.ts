@@ -50,6 +50,8 @@ import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.ui.components.ImagePicker
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
+import com.cpen321.usermanagement.ui.components.WsProfileManagerBar
+import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerUiState
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
@@ -76,7 +78,11 @@ private data class WsManageProfileScreenActions(
     val onImageSelected: (Uri) -> Unit,
     val onLoadingPhotoChange: (Boolean) -> Unit,
     val onSuccessMessageShown: () -> Unit,
-    val onErrorMessageShown: () -> Unit
+    val onErrorMessageShown: () -> Unit,
+
+    val onInviteClick: ()-> Unit,
+    val onMembersClick: ()->Unit,
+    val onDeleteClick: ()->Unit
 )
 
 
@@ -112,6 +118,7 @@ private data class WsProfileFieldsData(
 @Composable
 fun WsProfileManagerScreen(
     wsProfileManagerViewModel: WsProfileManagerViewModel,
+    featureActions: FeatureActions,
     onBackClick: () -> Unit
 ) {
     val uiState by wsProfileManagerViewModel.uiState.collectAsState()
@@ -159,7 +166,11 @@ fun WsProfileManagerScreen(
         },
         onLoadingPhotoChange = wsProfileManagerViewModel::setLoadingPhoto,
         onSuccessMessageShown = wsProfileManagerViewModel::clearSuccessMessage,
-        onErrorMessageShown = wsProfileManagerViewModel::clearError
+        onErrorMessageShown = wsProfileManagerViewModel::clearError,
+        onInviteClick = {featureActions.navigateToInvite()},
+        onMembersClick = {featureActions.navigateToMembersManager()},
+        onDeleteClick = {wsProfileManagerViewModel.deleteWorkspace()
+        onBackClick()}
     )
 
     ManageProfileContent(
@@ -196,6 +207,12 @@ private fun ManageProfileContent(
                     onErrorMessageShown = actions.onErrorMessageShown
                 )
             )
+        },
+        bottomBar = {
+            WsProfileManagerBar(
+                onMembersClick = actions.onMembersClick,
+                onInviteClick = actions.onInviteClick,
+                onDeleteClick = actions.onDeleteClick)
         }
     ) { paddingValues ->
         ProfileBody(
