@@ -19,7 +19,8 @@ import javax.inject.Inject
 data class MembersUiState(
     val members:List<User> = emptyList(),
     val isLoading:Boolean = false,
-    val user:User? = null
+    val user:User? = null,
+    val workspaceId:String? = null
 )
 
 @HiltViewModel
@@ -36,8 +37,10 @@ open class MembersViewModel@Inject constructor(
     val uiState: StateFlow<MembersUiState> = _uiState.asStateFlow()
 
     fun getUsers(): Pair<User, List<User>> {
-        if (uiState.value.members.isEmpty()) {
+        if (uiState.value.workspaceId != navigationStateManager.getWorkspaceId()) {
             viewModelScope.launch { loadUsers() }
+            _uiState.value = _uiState.value.copy(
+                workspaceId = navigationStateManager.getWorkspaceId())
         }
         //TODO: think abt the default user
         return Pair(uiState.value.user ?: User("",
