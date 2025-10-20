@@ -38,6 +38,7 @@ interface IFeatureActions {
     fun navigateToMembers()
 
     fun navigateToNote(noteId: String)
+    fun navigateToNoteCreation()
 
     fun navigateToOtherProfile(otherUserId: String)
 

@@ -35,6 +35,8 @@ import com.cpen321.usermanagement.ui.viewmodels.MembersManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MembersViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NoteViewModel
+import com.cpen321.usermanagement.ui.screens.NoteCreationScreen
+import com.cpen321.usermanagement.ui.viewmodels.NoteCreationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
 import com.cpen321.usermanagement.ui.viewmodels.SharingViewModel
 import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
@@ -64,6 +66,7 @@ object NavRoutes {
     const val MEMBERS_MANAGER = "members_manager"
     const val MEMBERS = "members"
     const val NOTE = "note"
+    const val NOTE_CREATION = "note_creation"
     const val OTHER_PROFILE = "other_profile"
     const val SHARING = "sharing"
     const val TEMPLATE = "template"
@@ -94,6 +97,7 @@ fun AppNavigation(
     val membersManagerViewModel: MembersManagerViewModel = hiltViewModel()
     val membersViewModel: MembersViewModel = hiltViewModel()
     val noteViewModel: NoteViewModel = hiltViewModel()
+    val noteCreationViewModel: NoteCreationViewModel = hiltViewModel()
     val sharingViewModel: SharingViewModel = hiltViewModel()
     val templateViewModel: TemplateViewModel = hiltViewModel()
     val wsCreationViewModel: WsCreationViewModel = hiltViewModel()
@@ -116,6 +120,7 @@ fun AppNavigation(
             membersManagerViewModel = membersManagerViewModel,
             membersViewModel = membersViewModel,
             noteViewModel = noteViewModel,
+            noteCreationViewModel = noteCreationViewModel,
             sharingViewModel = sharingViewModel,
             templateViewModel = templateViewModel,
             wsCreationViewModel = wsCreationViewModel,
@@ -139,6 +144,7 @@ fun AppNavigation(
         membersManagerViewModel = membersManagerViewModel,
         membersViewModel = membersViewModel,
         noteViewModel = noteViewModel,
+        noteCreationViewModel = noteCreationViewModel,
         sharingViewModel = sharingViewModel,
         templateViewModel = templateViewModel,
         wsCreationViewModel = wsCreationViewModel,
@@ -163,6 +169,7 @@ private fun handleNavigationEvent(
     membersManagerViewModel: MembersManagerViewModel,
     membersViewModel: MembersViewModel,
     noteViewModel: NoteViewModel,
+    noteCreationViewModel: NoteCreationViewModel,
     sharingViewModel: SharingViewModel,
     templateViewModel: TemplateViewModel,
     wsCreationViewModel: WsCreationViewModel,
@@ -277,6 +284,11 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToNote -> {
             navController.navigate(NavRoutes.NOTE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToNoteCreation -> {
+            navController.navigate(NavRoutes.NOTE_CREATION)
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -419,6 +431,10 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         navigationStateManager.navigateToNote(noteId)
     }
 
+    override fun navigateToNoteCreation() {
+        navigationStateManager.navigateToNoteCreation()
+    }
+
     override fun navigateToOtherProfile(otherUserId: String) {
         navigationStateManager.navigateToOtherProfile(otherUserId)
     }
@@ -487,6 +503,7 @@ private fun AppNavHost(
     membersManagerViewModel: MembersManagerViewModel,
     membersViewModel: MembersViewModel,
     noteViewModel: NoteViewModel,
+    noteCreationViewModel: NoteCreationViewModel,
     sharingViewModel: SharingViewModel,
     templateViewModel: TemplateViewModel,
     wsCreationViewModel: WsCreationViewModel,
@@ -589,6 +606,17 @@ private fun AppNavHost(
                 noteViewModel = noteViewModel,
                 featureActions = featureActions,
                 onBackClick = { navigationStateManager.navigateBack() }
+            )
+        }
+
+        composable(NavRoutes.NOTE_CREATION) {
+            LaunchedEffect(Unit) {
+                noteCreationViewModel.reset()
+            }
+            NoteCreationScreen(
+                noteCreationViewModel = noteCreationViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                featureActions = featureActions
             )
         }
 

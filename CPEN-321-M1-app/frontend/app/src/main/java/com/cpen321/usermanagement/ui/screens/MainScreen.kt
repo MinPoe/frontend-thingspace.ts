@@ -71,7 +71,7 @@ fun MainScreen(
         workspaceName = wsname,
         query = featureActions.getSearchQuery(),
         onSuccessMessageShown = mainViewModel::clearSuccessMessage,
-        onCreateNoteClick = { featureActions.navigateToNote("") },
+        onCreateNoteClick = { featureActions.navigateToNoteCreation() },
         onNoteClick = {noteId:String -> featureActions.navigateToNote(noteId)},
         notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )
