@@ -57,6 +57,7 @@ sealed class NavigationEvent {
     /* for now, only needed note id TODO: might experiment later with workspace movement on copy*/
     data class NavigateToNote(val noteId: String) : NavigationEvent()
     object NavigateToNoteCreation : NavigationEvent()
+    object NavigateToNoteEdit : NavigationEvent()
 
 
     data class NavigateToOtherProfile(val otherUserId: String) : NavigationEvent()
@@ -333,6 +334,17 @@ class NavigationStateManager @Inject constructor() {
     fun navigateToNoteCreation() {
         _navigationEvent.value = NavigationEvent.NavigateToNoteCreation
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE_CREATION)
+    }
+
+    /**
+     * Navigate to note edit screen
+     */
+    fun navigateToNoteEdit(noteId: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToNoteEdit
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.NOTE_EDIT,
+            noteId = noteId
+        )
     }
 
     /**

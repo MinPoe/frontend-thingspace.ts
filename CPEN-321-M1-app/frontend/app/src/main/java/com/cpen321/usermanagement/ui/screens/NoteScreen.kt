@@ -9,15 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.*
-import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
-import com.cpen321.usermanagement.ui.viewmodels.NoteState
 import com.cpen321.usermanagement.ui.viewmodels.NoteViewModel
+import com.cpen321.usermanagement.ui.viewmodels.NoteState
 import com.cpen321.usermanagement.utils.IFeatureActions
 import java.time.format.DateTimeFormatter
 
@@ -33,9 +31,19 @@ fun NoteScreen(
         noteViewModel.loadNote(featureActions.getNoteId())
     }
 
+    // Handle successful deletion
+    LaunchedEffect(noteState.isDeleted) {
+        if (noteState.isDeleted) {
+            onBackClick()
+        }
+    }
+
+
     NoteContent(
         noteState = noteState,
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        onEditClick = { featureActions.navigateToNoteEdit(featureActions.getNoteId()) },
+        onDeleteClick = { noteViewModel.deleteNote(featureActions.getNoteId()) }
     )
 }
 
@@ -44,8 +52,13 @@ fun NoteScreen(
 fun NoteContent(
     noteState: NoteState,
     onBackClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    val spacing = LocalSpacing.current
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -62,6 +75,14 @@ fun NoteContent(
                         Icon(name = R.drawable.ic_arrow_back)
                     }
                 },
+                actions = {
+                    IconButton(onClick = onEditClick) {
+                        Icon(name = R.drawable.ic_edit)
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(name = R.drawable.ic_arrow_back) // Replace with delete icon if available
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -69,7 +90,7 @@ fun NoteContent(
         }
     ) { paddingValues ->
         when {
-            noteState.isLoading -> {
+            noteState.isLoading || noteState.isDeleting -> {
                 LoadingContent(paddingValues)
             }
             noteState.error != null -> {
@@ -86,6 +107,33 @@ fun NoteContent(
                 )
             }
         }
+    }
+
+    // Delete Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Note") },
+            text = { Text("Are you sure you want to delete this note? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -303,9 +351,10 @@ private fun TagsSection(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(spacing.small))
-            Row(
+            androidx.compose.foundation.layout.FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.small)
+                horizontalArrangement = Arrangement.spacedBy(spacing.small),
+                verticalArrangement = Arrangement.spacedBy(spacing.small)
             ) {
                 tags.forEach { tag ->
                     TagChip(tag = tag)
