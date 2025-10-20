@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authenticateToken } from './auth.middleware';
 import { WorkspaceController } from './workspace.controller';
+import { validateBody } from './validation.middleware';
+import { CreateWorkspaceRequest, UpdateWorkspaceProfileRequest, UpdateWorkspacePictureRequest, createWorkspaceSchema, updateWorkspaceProfileSchema, updateWorkspacePictureSchema } from './workspace.types';
 
 const router = Router();
 const workspaceController = new WorkspaceController();
@@ -26,7 +28,7 @@ router.get(
   workspaceController.getWorkspaceMembers
 );
 
-// Get all tags in a workspace
+// Get all tags in a workspace, NOTE: Lowkey idk wut this one rly means, right now it jsut checks all teh tagged notes
 router.get(
   '/:id/tags',
   authenticateToken,
@@ -44,6 +46,7 @@ router.get(
 router.post(
   '/',
   authenticateToken,
+  validateBody<CreateWorkspaceRequest>(createWorkspaceSchema),
   workspaceController.createWorkspace
 );
 
@@ -58,6 +61,7 @@ router.post(
 router.put(
   '/:id',
   authenticateToken,
+  validateBody<UpdateWorkspaceProfileRequest>(updateWorkspaceProfileSchema),
   workspaceController.updateWorkspaceProfile
 );
 
@@ -65,6 +69,7 @@ router.put(
 router.put(
   '/:id/picture',
   authenticateToken,
+  validateBody<UpdateWorkspacePictureRequest>(updateWorkspacePictureSchema),
   workspaceController.updateWorkspacePicture
 );
 

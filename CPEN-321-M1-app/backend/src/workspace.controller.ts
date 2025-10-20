@@ -2,6 +2,26 @@ import { Request, Response } from 'express';
 import { workspaceService } from './workspace.service';
 
 export class WorkspaceController {
+    async createWorkspace(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspace = await workspaceService.createWorkspace(userId, req.body);
+
+            res.status(201).json({
+                message: 'Workspace created successfully',
+                workspace: workspace,
+            });
+        } catch (error) {
+            console.error('Error creating workspace:', error);
+            res.status(500).json({ error: 'Failed to create workspace' });
+        }
+    }
+
     async getWorkspace(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.user?._id;
@@ -217,6 +237,116 @@ export class WorkspaceController {
             }
             
             res.status(500).json({ error: 'Failed to ban member' });
+        }
+    }
+
+    async updateWorkspaceProfile(req: Request, res: Response): Promise<void> {
+        try {
+            const requestingUserId = req.user?._id;
+            if (!requestingUserId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+
+            const workspace = await workspaceService.updateWorkspaceProfile(
+                workspaceId, 
+                requestingUserId, 
+                req.body
+            );
+
+            res.status(200).json({
+                message: 'Workspace profile updated successfully',
+                workspace: workspace,
+            });
+        } catch (error) {
+            console.error('Error updating workspace profile:', error);
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Only workspace owner')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: 'Failed to update workspace profile' });
+        }
+    }
+
+    async updateWorkspacePicture(req: Request, res: Response): Promise<void> {
+        try {
+            const requestingUserId = req.user?._id;
+            if (!requestingUserId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+
+            const workspace = await workspaceService.updateWorkspacePicture(
+                workspaceId, 
+                requestingUserId, 
+                req.body.profilePicture
+            );
+
+            res.status(200).json({
+                message: 'Workspace picture updated successfully',
+                workspace: workspace,
+            });
+        } catch (error) {
+            console.error('Error updating workspace picture:', error);
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Only workspace owner')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: 'Failed to update workspace picture' });
+        }
+    }
+
+    async deleteWorkspace(req: Request, res: Response): Promise<void> {
+        try {
+            const requestingUserId = req.user?._id;
+            if (!requestingUserId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+
+            const workspace = await workspaceService.deleteWorkspace(workspaceId, requestingUserId);
+
+            res.status(200).json({
+                message: 'Workspace and all its notes deleted successfully',
+                workspace: workspace,
+            });
+        } catch (error) {
+            console.error('Error deleting workspace:', error);
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Only workspace owner')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: 'Failed to delete workspace' });
         }
     }
 }

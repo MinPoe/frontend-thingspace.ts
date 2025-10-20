@@ -120,6 +120,11 @@ export class NoteService {
 
     // Share note to a different workspace
     async shareNoteToWorkspace(noteId: string, userId: mongoose.Types.ObjectId, workspaceId: string): Promise<Note> {
+        // Validate workspaceId format
+        if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
+            throw new Error('Invalid workspace ID format');
+        }
+
         const updatedNote = await noteModel.findOneAndUpdate(
             { _id: noteId, userId },
             { workspaceId },
@@ -158,6 +163,11 @@ export class NoteService {
             userId: note.userId.toString(),
             authors: note.authors?.map(id => id.toString()),
         } as Note));
+    }
+
+    // Delete all notes in a workspace
+    async deleteNotesByWorkspaceId(workspaceId: string): Promise<void> {
+        await noteModel.deleteMany({ workspaceId });
     }
 
 }

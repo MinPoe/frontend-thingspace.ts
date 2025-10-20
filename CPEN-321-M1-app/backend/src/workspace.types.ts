@@ -22,8 +22,8 @@ export interface Workspace {
 // Request types
 export interface CreateWorkspaceRequest {
   name: string;
-  profilePicture: string;
-  description: string;
+  profilePicture?: string;
+  description?: string;
 }
 
 export interface UpdateWorkspaceProfileRequest {

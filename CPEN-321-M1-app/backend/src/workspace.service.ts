@@ -1,10 +1,33 @@
 import mongoose from 'mongoose';
-import { Workspace, WsMembershipStatus } from './workspace.types';
+import { Workspace, WsMembershipStatus, CreateWorkspaceRequest } from './workspace.types';
 import { workspaceModel } from './workspace.model';
 import { noteModel } from './note.model';
 import { userModel } from './user.model';
 
 export class WorkspaceService {
+    async createWorkspace(userId: mongoose.Types.ObjectId, data: CreateWorkspaceRequest): Promise<Workspace> {
+        const newWorkspace = await workspaceModel.create({
+            name: data.name,
+            profile: {
+                imagePath: data.profilePicture || '',
+                name: data.name,
+                description: data.description || ''
+            },
+            ownerId: userId,
+            members: [userId] // Owner is automatically a member
+        });
+
+        return {
+            _id: newWorkspace._id.toString(),
+            name: newWorkspace.name,
+            profile: newWorkspace.profile,
+            ownerId: newWorkspace.ownerId.toString(),
+            members: newWorkspace.members.map(id => id.toString()),
+            createdAt: newWorkspace.createdAt,
+            updatedAt: newWorkspace.updatedAt,
+        };
+    }
+
     async getWorkspace(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<Workspace | null> {
         const workspace = await workspaceModel.findById(workspaceId);
         
@@ -12,11 +35,10 @@ export class WorkspaceService {
             return null;
         }
 
-        // Check if user is owner or member
+        // Check if user is a member
         const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
-        const isOwner = workspace.ownerId.toString() === userId.toString();
 
-        if (!isMember && !isOwner) {
+        if (!isMember) {
             throw new Error('Access denied: You are not a member of this workspace');
         }
 
@@ -58,11 +80,10 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
-        // Check if user has access to this workspace
+        // Check if user is a member
         const isMember = workspace.members.some((member: any) => member._id.toString() === userId.toString());
-        const isOwner = workspace.ownerId.toString() === userId.toString();
 
-        if (!isMember && !isOwner) {
+        if (!isMember) {
             throw new Error('Access denied: You are not a member of this workspace');
         }
 
@@ -76,11 +97,10 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
-        // Check if user has access
+        // Check if user is a member
         const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
-        const isOwner = workspace.ownerId.toString() === userId.toString();
 
-        if (!isMember && !isOwner) {
+        if (!isMember) {
             throw new Error('Access denied: You are not a member of this workspace');
         }
 
@@ -128,9 +148,10 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
-        // Only owner can add members
-        if (workspace.ownerId.toString() !== requestingUserId.toString()) {
-            throw new Error('Access denied: Only workspace owner can add members');
+        // Check if requesting user is a member
+        const isMember = workspace.members.some(memberId => memberId.toString() === requestingUserId.toString());
+        if (!isMember) {
+            throw new Error('Access denied: You are not a member of this workspace');
         }
 
         // Check if user to add exists
@@ -202,6 +223,96 @@ export class WorkspaceService {
         }
 
         await workspace.save();
+
+        return {
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        };
+    }
+
+    async updateWorkspaceProfile(workspaceId: string, requestingUserId: mongoose.Types.ObjectId, updateData: { name?: string; description?: string }): Promise<Workspace> {
+        const workspace = await workspaceModel.findById(workspaceId);
+        
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        // Only owner can update workspace profile
+        if (workspace.ownerId.toString() !== requestingUserId.toString()) {
+            throw new Error('Only workspace owner can update workspace profile');
+        }
+
+        // Update profile fields
+        if (updateData.name !== undefined) {
+            workspace.profile.name = updateData.name;
+            workspace.name = updateData.name; // Also update the top-level name field
+        }
+        if (updateData.description !== undefined) {
+            workspace.profile.description = updateData.description;
+        }
+
+        await workspace.save();
+
+        return {
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        };
+    }
+
+    async updateWorkspacePicture(workspaceId: string, requestingUserId: mongoose.Types.ObjectId, profilePicture: string): Promise<Workspace> {
+        const workspace = await workspaceModel.findById(workspaceId);
+        
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        // Only owner can update workspace picture
+        if (workspace.ownerId.toString() !== requestingUserId.toString()) {
+            throw new Error('Only workspace owner can update workspace picture');
+        }
+
+        // Update profile picture
+        workspace.profile.imagePath = profilePicture;
+        await workspace.save();
+
+        return {
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        };
+    }
+
+    async deleteWorkspace(workspaceId: string, requestingUserId: mongoose.Types.ObjectId): Promise<Workspace> {
+        const workspace = await workspaceModel.findById(workspaceId);
+        
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        // Only owner can delete workspace
+        if (workspace.ownerId.toString() !== requestingUserId.toString()) {
+            throw new Error('Only workspace owner can delete the workspace');
+        }
+
+        // Delete all notes in the workspace
+        await noteModel.deleteMany({ workspaceId });
+
+        // Delete the workspace
+        await workspaceModel.findByIdAndDelete(workspaceId);
 
         return {
             _id: workspace._id.toString(),
