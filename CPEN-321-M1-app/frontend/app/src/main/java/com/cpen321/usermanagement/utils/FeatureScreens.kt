@@ -64,4 +64,7 @@ interface IFeatureActions {
     )
 
     fun navigateToWsSelect()
+    fun navigateToMainTagReset(workspaceId: String)
+    fun navigateToChatTagReset(workspaceId: String)
+    fun navigateToTemplateTagReset(workspaceId: String)
 }

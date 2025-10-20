@@ -44,17 +44,17 @@ fun WorkspacesScreen(
             val user = userAndWs.first
 
             val onWsMainClick = {index:Int ->
-                featureActions.navigateToMainWithContext(availableWs[index]._id)}
+                featureActions.navigateToMainTagReset(availableWs[index]._id)}
             val onWsChatClick = {index:Int ->
-                featureActions.navigateToChat(availableWs[index]._id)}
+                featureActions.navigateToChatTagReset(availableWs[index]._id)}
             val onWsTemplateClick = {index:Int ->
-                featureActions.navigateToTemplate(availableWs[index]._id)}
+                featureActions.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
-            val onPersonalChatClick={ featureActions.navigateToChat(
+            val onPersonalChatClick={ featureActions.navigateToChatTagReset(
                 user._id) } //TODO: before we get actual profile info
-            val onPersonalContentClick={ featureActions.navigateToMainWithContext(
+            val onPersonalContentClick={ featureActions.navigateToMainTagReset(
                 user._id) }
-            val onPersonalTemplateClick={ featureActions.navigateToTemplate(
+            val onPersonalTemplateClick={ featureActions.navigateToTemplateTagReset(
                 user._id) }
             val onWsProfileClick = {index:Int ->
                 if (uiState.workspaceManager != null){

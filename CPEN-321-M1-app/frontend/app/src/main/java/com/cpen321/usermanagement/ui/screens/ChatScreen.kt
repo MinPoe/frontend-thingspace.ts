@@ -55,7 +55,7 @@ fun ChatScreen(
         onProfileClick = onProfileClick,
         onOtherProfileClick = {profileId: String -> featureActions.navigateToOtherProfile(
             profileId)},
-        onContentClick = {  featureActions.navigateToMainWithContext(
+        onContentClick = {  featureActions.navigateToMainTagReset(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
         onFilterClick = { featureActions.navigateToFilter(
@@ -73,7 +73,7 @@ fun ChatScreen(
         query = featureActions.getSearchQuery(),
         authors = chatViewModel.getNoteAuthors(),
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
-        onTemplateClick={ featureActions.navigateToTemplate(
+        onTemplateClick={ featureActions.navigateToTemplateTagReset(
             featureActions.getWorkspaceId()) }
     )
 }

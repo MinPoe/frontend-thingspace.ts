@@ -36,16 +36,4 @@ class MainViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(successMessage = null)
     }
 
-    suspend fun loadAllUserTags(){
-        val tagsRequest = workspaceRepository.getAllTags(
-            navigationStateManager.getWorkspaceId())
-        if (tagsRequest.isSuccess){
-            val allTags = tagsRequest.getOrNull()!!
-            navigationStateManager.updateTagSelection(allTags, true)
-        }
-        else{
-            navigationStateManager.updateTagSelection(emptyList(),
-                false)
-        }
-    }
 }

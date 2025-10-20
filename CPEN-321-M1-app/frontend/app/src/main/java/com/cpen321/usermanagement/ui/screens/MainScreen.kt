@@ -51,7 +51,7 @@ fun MainScreen(
         uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
-        onTemplateClick = {  featureActions.navigateToTemplate(
+        onTemplateClick = {  featureActions.navigateToTemplateTagReset(
             featureActions.getWorkspaceId())},
         onWorkspaceClick = { featureActions.navigateToWsSelect()},
         onFilterClick = { featureActions.navigateToFilter(
@@ -65,7 +65,7 @@ fun MainScreen(
             allTagsSelected = featureActions.getAllTagsSelected(),
             searchQuery = featureActions.getSearchQuery()
         )},
-        onChatClick = { featureActions.navigateToChat(
+        onChatClick = { featureActions.navigateToChatTagReset(
             featureActions.getWorkspaceId()) },
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         workspaceName = wsname,

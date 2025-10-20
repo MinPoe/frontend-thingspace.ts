@@ -52,7 +52,7 @@ fun TemplateScreen(
     TemplateContent(
         onProfileClick = onProfileClick,
         onNoteClick = { noteId:String -> featureActions.navigateToNote(noteId) }, //TODO: for now
-        onContentClick = {  featureActions.navigateToMainWithContext(
+        onContentClick = {  featureActions.navigateToMainTagReset(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
         onFilterClick = { featureActions.navigateToFilter(
@@ -61,7 +61,7 @@ fun TemplateScreen(
             allTagsSelected = featureActions.getAllTagsSelected()
         )},
         onChatClick={
-            featureActions.navigateToChat(
+            featureActions.navigateToChatTagReset(
                 featureActions.getWorkspaceId()
             )
         },

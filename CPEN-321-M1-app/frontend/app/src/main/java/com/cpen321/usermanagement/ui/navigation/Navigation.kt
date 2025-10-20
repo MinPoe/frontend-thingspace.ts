@@ -328,6 +328,30 @@ private fun handleNavigationEvent(
             }
             navigationStateManager.clearNavigationEvent()
         }
+
+        is NavigationEvent.NavigateToMainTagReset -> {
+            navController.navigate(NavRoutes.MAIN){
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+            runBlocking { mainViewModel.loadAllUserTags() }
+        }
+
+        is NavigationEvent.NavigateToChatTagReset -> {
+            navController.navigate(NavRoutes.CHAT){
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+            runBlocking { chatViewModel.loadAllUserTags() }
+        }
+
+        is NavigationEvent.NavigateToTemplateTagReset -> {
+            navController.navigate(NavRoutes.TEMPLATE){
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+            runBlocking { chatViewModel.loadAllUserTags() }
+        }
     }
 }
 
@@ -474,6 +498,18 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
 
     override fun navigateToWsSelect() {
         navigationStateManager.navigateToWsSelect()
+    }
+
+    override fun navigateToChatTagReset(workspaceId: String) {
+        navigationStateManager.navigateToChatTagReset(workspaceId)
+    }
+
+    override fun navigateToTemplateTagReset(workspaceId: String) {
+        navigationStateManager.navigateToTemplateTagReset(workspaceId)
+    }
+
+    override fun navigateToMainTagReset(workspaceId: String) {
+        navigationStateManager.navigateToMainTagReset(workspaceId)
     }
 
 }

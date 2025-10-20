@@ -76,6 +76,10 @@ sealed class NavigationEvent {
 
     //we get there from display screens and do not have to change any state data
     object NavigateToWsSelect: NavigationEvent()
+
+    data class NavigateToMainTagReset(val workspaceId: String): NavigationEvent()
+    data class NavigateToChatTagReset(val workspaceId: String): NavigationEvent()
+    data class NavigateToTemplateTagReset(val workspaceId: String): NavigationEvent()
 }
 
 data class NavigationState(
@@ -420,6 +424,51 @@ class NavigationStateManager @Inject constructor() {
             allTagsSelected = allTagsSelected,
             searchQuery = searchQuery,
             noteType = NoteType.CONTENT
+        )
+    }
+
+    fun navigateToMainTagReset(
+        workspaceId: String,
+    ){
+        _navigationEvent.value = NavigationEvent.NavigateToMainTagReset(
+            workspaceId = workspaceId
+        )
+        _navigationState.value = _navigationState.value.copy(
+            workspaceId = workspaceId,
+            selectedTags = emptyList(),
+            allTagsSelected = true,
+            searchQuery = "",
+            noteType = NoteType.CONTENT
+        )
+    }
+
+    fun navigateToChatTagReset(
+        workspaceId: String,
+    ){
+        _navigationEvent.value = NavigationEvent.NavigateToChatTagReset(
+            workspaceId = workspaceId
+        )
+        _navigationState.value = _navigationState.value.copy(
+            workspaceId = workspaceId,
+            selectedTags = emptyList(),
+            allTagsSelected = true,
+            searchQuery = "",
+            noteType = NoteType.CHAT
+        )
+    }
+
+    fun navigateToTemplateTagReset(
+        workspaceId: String,
+    ){
+        _navigationEvent.value = NavigationEvent.NavigateToTemplateTagReset(
+            workspaceId = workspaceId
+        )
+        _navigationState.value = _navigationState.value.copy(
+            workspaceId = workspaceId,
+            selectedTags = emptyList(),
+            allTagsSelected = true,
+            searchQuery = "",
+            noteType = NoteType.TEMPLATE
         )
     }
 

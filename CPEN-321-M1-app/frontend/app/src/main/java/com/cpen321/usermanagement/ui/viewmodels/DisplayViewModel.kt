@@ -106,4 +106,17 @@ open class DisplayViewModel @Inject constructor(
             _notesFound = emptyList()
         }
     }
+
+    suspend fun loadAllUserTags(){
+        val tagsRequest = workspaceRepository.getAllTags(
+            navigationStateManager.getWorkspaceId())
+        if (tagsRequest.isSuccess){
+            val allTags = tagsRequest.getOrNull()!!
+            navigationStateManager.updateTagSelection(allTags, true)
+        }
+        else{
+            navigationStateManager.updateTagSelection(emptyList(),
+                false)
+        }
+    }
 }
