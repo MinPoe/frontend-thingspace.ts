@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Note, CreateNoteRequest, NoteType, UpdateNoteRequest } from './notes.types';
 import { noteModel } from './note.model';
 import OpenAI from 'openai';
+import { workspaceModel } from './workspace.model';
 
 
 export class NoteService {
@@ -120,11 +121,31 @@ export class NoteService {
 
     // Share note to a different workspace
     async shareNoteToWorkspace(noteId: string, userId: mongoose.Types.ObjectId, workspaceId: string): Promise<Note> {
-        // Validate workspaceId format
-        if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
-            throw new Error('Invalid workspace ID format');
+        // Verify note exists and the requester is the owner of the note
+        const note = await noteModel.findById(noteId);
+        if (!note) {
+            throw new Error('Note not found');
+        }
+        if (note.userId.toString() !== userId.toString()) {
+            throw new Error('Access denied: Only the note owner can share');
         }
 
+        // Verify target workspace exists and the user is allowed (owner or member and not banned)
+        const workspace = await workspaceModel.findById(workspaceId);
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
+        const isBanned = workspace.bannedMembers?.some(id => id.toString() === userId.toString());
+
+        if (isBanned) {
+            throw new Error('Access denied: You are banned from this workspace');
+        }
+
+        if (!isMember) {
+            throw new Error('Access denied: You are not a member of this workspace');
+        }
         const updatedNote = await noteModel.findOneAndUpdate(
             { _id: noteId, userId },
             { workspaceId },
@@ -154,10 +175,73 @@ export class NoteService {
         return note.workspaceId;
     }
 
-    // Get all notes for a user
-    async getNotesByUserId(userId: mongoose.Types.ObjectId): Promise<Note[]> {
-        const notes = await noteModel.find({ userId }).sort({ createdAt: -1 });
-        return notes.map(note => ({
+    // Get notes for a user with filters
+    async getNotes(
+        userId: mongoose.Types.ObjectId,
+        workspaceId: string,
+        noteType: string,
+        tags: string[],
+        queryString: string
+    ): Promise<Note[]> {
+        const query: any = { 
+            userId,
+            workspaceId,
+            noteType
+        };
+
+        if (tags.length > 0) {
+            query.tags = { $all: tags };
+        }
+
+        const notes = await noteModel.find(query).sort({ createdAt: -1 });
+
+        // If query string is empty, return as-is (mapped)
+        if (queryString.trim().length === 0) {
+            return notes.map(note => ({
+                ...note.toObject(),
+                _id: note._id.toString(),
+                userId: note.userId.toString(),
+                authors: note.authors?.map(id => id.toString()),
+            } as Note));
+        }
+
+        // Generate embedding for the query and rank notes by cosine similarity
+        let queryEmbedding: number[] = [];
+
+        const vectorResponse = await this.getClient().embeddings.create({
+            model: "text-embedding-3-small",
+            input: queryString.trim(),
+        });
+        queryEmbedding = vectorResponse.data[0].embedding as unknown as number[];
+
+        
+        const cosineSimilarity = (a: number[], b: number[]): number => {
+            const len = Math.min(a.length, b.length);
+            if (len === 0) return -1;
+            let dot = 0;
+            let normA = 0;
+            let normB = 0;
+            for (let i = 0; i < len; i++) {
+                const va = a[i];
+                const vb = b[i];
+                dot += va * vb;
+                normA += va * va;
+                normB += vb * vb;
+            }
+            if (normA === 0 || normB === 0) return -1;
+            return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+        };
+
+        const notesWithScores = notes.map(n => ({
+            note: n,
+            score: Array.isArray(n.vectorData) && n.vectorData.length > 0
+                ? cosineSimilarity(queryEmbedding, n.vectorData as unknown as number[])
+                : -1,
+        }));
+
+        notesWithScores.sort((a, b) => b.score - a.score);
+
+        return notesWithScores.map(({ note }) => ({
             ...note.toObject(),
             _id: note._id.toString(),
             userId: note.userId.toString(),

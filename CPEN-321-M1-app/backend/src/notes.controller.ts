@@ -133,6 +133,20 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error sharing note:', error);
+      if (error instanceof Error) {
+        if (error.message === 'Workspace not found') {
+          res.status(404).json({ error: 'Workspace not found' });
+          return;
+        }
+        if (error.message === 'Note not found') {
+          res.status(404).json({ error: 'Note not found' });
+          return;
+        }
+        if (error.message.includes('Access denied')) {
+          res.status(403).json({ error: error.message });
+          return;
+        }
+      }
       res.status(500).json({ error: 'Failed to share note' });
     }
   }
@@ -160,8 +174,22 @@ export class NotesController {
         return;
       }
 
+      // Required filters: workspaceId, noteType, tags (array of strings, can be empty)
       // TODO: Implement filtering by workspaceId, noteType, tags, searchQuery, pagination
-      const notes = await noteService.getNotesByUserId(userId);
+      const { workspaceId, noteType, tags, query } = req.query;
+
+      if (!workspaceId || typeof workspaceId !== 'string') {
+        res.status(400).json({ error: 'workspaceId is required' });
+        return;
+      }
+      if (!noteType || typeof noteType !== 'string') {
+        res.status(400).json({ error: 'noteType is required' });
+        return;
+      }
+
+
+      const q = typeof query === 'string' ? query : '';
+      const notes = await noteService.getNotes(userId, workspaceId, noteType, tags as string[] || [], q);
 
       res.status(200).json({
         message: 'Notes retrieved successfully',
