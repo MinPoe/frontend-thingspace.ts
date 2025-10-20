@@ -53,8 +53,8 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         workspaceName: String,
         workspaceProfilePicture: String,
         workspaceDescription: String
-    ): Result<Unit> {
-        return Result.success(Unit)
+    ): Result<String> {
+        return Result.success("an id of a new workspace")
     }
 
     override suspend fun updateWorkspaceProfile(

@@ -10,7 +10,7 @@ interface WorkspaceRepository {
     suspend fun createWorkspace(managerId:String,
                         workspaceName:String,
                         workspaceProfilePicture:String,
-                        workspaceDescription:String): Result<Unit>
+                        workspaceDescription:String): Result<String>
     suspend fun updateWorkspaceProfile(workspaceId: String,
                         workspaceName:String,
                         workspaceDescription:String): Result<Unit>

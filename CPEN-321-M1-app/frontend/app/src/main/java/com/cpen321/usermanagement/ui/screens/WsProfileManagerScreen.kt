@@ -119,7 +119,6 @@ private data class WsProfileFieldsData(
 fun WsProfileManagerScreen(
     wsProfileManagerViewModel: WsProfileManagerViewModel,
     featureActions: FeatureActions,
-    onBackClick: () -> Unit
 ) {
     val uiState by wsProfileManagerViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -152,7 +151,7 @@ fun WsProfileManagerScreen(
     }
 
     val actions = WsManageProfileScreenActions(
-        onBackClick = onBackClick,
+        onBackClick = {featureActions.navigateToWsSelect()},
         onNameChange = { formState = formState.copy(name = it) },
         onDescriptionChange = { formState = formState.copy(description = it) },
         onEditPictureClick = { showImagePickerDialog = true },
@@ -170,7 +169,7 @@ fun WsProfileManagerScreen(
         onInviteClick = {featureActions.navigateToInvite()},
         onMembersClick = {featureActions.navigateToMembersManager()},
         onDeleteClick = {wsProfileManagerViewModel.deleteWorkspace()
-        onBackClick()}
+        featureActions.navigateToWsSelect()}
     )
 
     ManageProfileContent(

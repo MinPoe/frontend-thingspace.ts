@@ -1,6 +1,7 @@
 package com.cpen321.usermanagement.ui.screens
 
 import Button
+import android.widget.Button
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -66,6 +67,7 @@ fun WorkspacesScreen(
                     }
                 }
                 else featureActions.navigateToWsProfile(availableWs[index]._id) }
+            val onCreateClick = {featureActions.navigateToWsCreation()}
 
 
             WsContent(onWsMainClick = onWsMainClick,
@@ -78,7 +80,8 @@ fun WorkspacesScreen(
                 onPersonalProfileClick = onPersonalProfileClick,
                 onPersonalContentClick = onPersonalContentClick,
                 onPersonalChatClick = onPersonalChatClick,
-                onPersonalTemplateClick = onPersonalTemplateClick
+                onPersonalTemplateClick = onPersonalTemplateClick,
+                onCreateClick = onCreateClick
             )
         }
     }
@@ -96,6 +99,7 @@ private fun WsContent(
     onPersonalContentClick: ()->Unit,
     onPersonalChatClick: ()->Unit,
     onPersonalTemplateClick: ()->Unit,
+    onCreateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -117,7 +121,8 @@ private fun WsContent(
             onPersonalProfileClick = onPersonalProfileClick,
             onPersonalContentClick = onPersonalContentClick,
             onPersonalChatClick = onPersonalChatClick,
-            onPersonalTemplateClick = onPersonalTemplateClick
+            onPersonalTemplateClick = onPersonalTemplateClick,
+            onCreateClick = onCreateClick
             )
     }
 }
@@ -135,6 +140,7 @@ private fun WsBody(
     onPersonalContentClick: ()->Unit,
     onPersonalChatClick: ()->Unit,
     onPersonalTemplateClick: ()->Unit,
+    onCreateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -158,5 +164,6 @@ private fun WsBody(
                 onChatClick = {onWsChatClick(i)},
                 onTemplatesClick = {onWsTemplateClick(i)}
             )
+        Button(onClick = onCreateClick) {Text("Create a new workspace...") }
     }
 }
