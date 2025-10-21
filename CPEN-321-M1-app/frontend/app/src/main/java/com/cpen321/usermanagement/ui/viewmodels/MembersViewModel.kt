@@ -41,9 +41,9 @@ open class MembersViewModel@Inject constructor(
                 workspaceId = navigationStateManager.getWorkspaceId())
         }
         //TODO: think abt the default user
-        return Pair(uiState.value.user ?: User(_id = "",
+        return Pair(uiState.value.user ?: User(_id = "", googleId = "",
             email = "", createdAt = null, updatedAt = null,
-            profile = Profile(imagePath = null, name = "", description = null)), uiState.value.members)
+            profile = Profile(imagePath = null, name = "", description = null), hobbies = emptyList()), uiState.value.members)
     }
 
     private suspend fun loadUsers() {

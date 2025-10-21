@@ -21,6 +21,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
     override suspend fun getNote(noteId: String): Result<Note> {
         val note = Note(
             _id = noteId,
+            userId = "user_$noteId",
+            workspaceId = "workspace_$noteId",
             dateCreation = LocalDateTime.now().minusDays(noteId.length.toLong()),
             dateLastEdit = LocalDateTime.now(),
             tags = arrayListOf("mock", "note_$noteId"),
@@ -29,7 +31,9 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
                 _id = "field_$noteId",
                 label = "Title of $noteId",
                 placeholder = "Placeholder for $noteId"
-            ))
+            )),
+            authors = listOf("author_$noteId"),
+            vectorData = listOf(0.1, 0.2, 0.3)
         )
         return Result.success(note)
     }
@@ -62,6 +66,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
             val id = "note_${workspaceId}_$it"
             Note(
                 _id = id,
+                userId = "user_$id",
+                workspaceId = workspaceId,
                 dateCreation = LocalDateTime.now().minusDays(it.toLong()),
                 dateLastEdit = LocalDateTime.now(),
                 tags = arrayListOf("tag_$it", "workspace_$workspaceId"),
@@ -70,7 +76,9 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
                     _id = "field_$id",
                     label = "Field for $id",
                     placeholder = "Generated for query '$searchQuery'"
-                ))
+                )),
+                authors = listOf("author_$it"),
+                vectorData = listOf(0.1, 0.2, 0.3)
             )
         }
         return Result.success(notes)
@@ -80,6 +88,7 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         val authors = noteIds.mapIndexed { index, id ->
             User(
                 _id = "author_$id",
+                googleId = "google_author_$id",
                 email = "author${index + 1}@${id}.com",
                 createdAt = null,
                 updatedAt = null,
@@ -87,7 +96,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
                     imagePath = "author_pic_$id.png",
                     name = "Author of $id",
                     description = "Bio for author of note $id"
-                )
+                ),
+                hobbies = listOf("writing", "coding")
             )
         }
         return Result.success(authors)

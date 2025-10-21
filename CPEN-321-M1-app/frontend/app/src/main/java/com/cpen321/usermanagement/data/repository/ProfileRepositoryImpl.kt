@@ -17,6 +17,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.cpen321.usermanagement.data.remote.dto.ProfileUpdate
 
 @Singleton
 class ProfileRepositoryImpl @Inject constructor(
@@ -60,7 +61,9 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun updateProfile(name: String, bio: String): Result<User> {
         return try {
-            val updateRequest = UpdateProfileRequest(name = name, bio = bio)
+            val updateRequest = UpdateProfileRequest(
+                profile = ProfileUpdate(name = name, description = bio)
+            )
             val response = userInterface.updateProfile("", updateRequest) // Auth header is handled by interceptor
             if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!.user)
@@ -87,7 +90,9 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun updatePhoto(profilePicture:String): Result<User> {
         return try {
-            val updateRequest = UpdateProfileRequest(profilePicture = profilePicture)
+            val updateRequest = UpdateProfileRequest(
+                profile = ProfileUpdate(imagePath = profilePicture)
+            )
             val response = userInterface.updateProfile(
                 "", // Auth header is handled by interceptor
                 updateRequest

@@ -1,9 +1,13 @@
 package com.cpen321.usermanagement.data.remote.dto
 
 data class UpdateProfileRequest(
+    val profile: ProfileUpdate? = null
+)
+
+data class ProfileUpdate(
+    val imagePath: String? = null,
     val name: String? = null,
-    val bio: String? = null,
-    val profilePicture: String? = null
+    val description: String? = null
 )
 
 data class ProfileData(
@@ -18,6 +22,7 @@ data class Profile(
 
 data class User(
     val _id: String,
+    val googleId: String? = null,
     val email: String,
     val createdAt: String? = null,
     val updatedAt: String? = null,
