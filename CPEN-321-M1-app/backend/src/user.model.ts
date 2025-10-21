@@ -25,21 +25,23 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
     },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    profilePicture: {
-      type: String,
-      required: false,
-      trim: true,
-    },
-    bio: {
-      type: String,
-      required: false,
-      trim: true,
-      maxlength: 500,
+    profile: {
+      imagePath: {
+        type: String,
+        required: false,
+        trim: true,
+      },
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      description: {
+        type: String,
+        required: false,
+        trim: true,
+        maxlength: 500,
+      },
     },
     hobbies: {
       type: [String],
@@ -70,7 +72,19 @@ export class UserModel {
 
   async create(userInfo: GoogleUserInfo): Promise<IUser> {
     try {
-      const validatedData = createUserSchema.parse(userInfo);
+      // Convert GoogleUserInfo to the new structure
+      const userData = {
+        email: userInfo.email,
+        googleId: userInfo.googleId,
+        profile: {
+          imagePath: userInfo.profilePicture,
+          name: userInfo.name,
+          description: '',
+        },
+        hobbies: [],
+      };
+      
+      const validatedData = createUserSchema.parse(userData);
 
       return await this.user.create(validatedData);
     } catch (error) {
