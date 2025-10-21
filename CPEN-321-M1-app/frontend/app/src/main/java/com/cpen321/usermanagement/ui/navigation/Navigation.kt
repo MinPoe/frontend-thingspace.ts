@@ -8,30 +8,51 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.screens.AuthScreen
-import com.cpen321.usermanagement.ui.screens.FilterScreen
+import com.cpen321.usermanagement.ui.screens.ChatScreen
 import com.cpen321.usermanagement.ui.screens.LoadingScreen
 import com.cpen321.usermanagement.ui.screens.MainScreen
-import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
+//import com.cpen321.usermanagement.ui.screens.ManageHobbiesScreen
 import com.cpen321.usermanagement.ui.screens.ManageProfileScreen
-import com.cpen321.usermanagement.ui.screens.NoteScreen
+import com.cpen321.usermanagement.ui.screens.OtherProfileScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreenActions
 import com.cpen321.usermanagement.ui.screens.ProfileCompletionScreen
 import com.cpen321.usermanagement.ui.screens.ProfileScreen
 import com.cpen321.usermanagement.ui.screens.TemplateScreen
-import com.cpen321.usermanagement.ui.screens.WorkspaceChatScreen
-import com.cpen321.usermanagement.ui.screens.WorkspaceInteriorScreen
-import com.cpen321.usermanagement.ui.screens.WorkspaceListScreen
+import com.cpen321.usermanagement.ui.screens.WorkspacesScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
+import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
+import com.cpen321.usermanagement.ui.viewmodels.CopyViewModel
+import com.cpen321.usermanagement.ui.viewmodels.FieldsViewModel
+import com.cpen321.usermanagement.ui.viewmodels.FilterViewModel
+import com.cpen321.usermanagement.ui.viewmodels.InviteViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
+import com.cpen321.usermanagement.ui.viewmodels.MembersManagerViewModel
+import com.cpen321.usermanagement.ui.viewmodels.MembersViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
+import com.cpen321.usermanagement.ui.viewmodels.NoteViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
+import com.cpen321.usermanagement.ui.viewmodels.SharingViewModel
+import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
+import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
+import com.cpen321.usermanagement.data.remote.dto.NoteType
+import com.cpen321.usermanagement.ui.screens.CreateWorkspaceScreen
+import com.cpen321.usermanagement.ui.screens.FilterScreen
+import com.cpen321.usermanagement.ui.screens.NoteScreen
+import com.cpen321.usermanagement.ui.screens.WsInviteScreen
+import com.cpen321.usermanagement.ui.screens.WsMembersManagerScreen
+import com.cpen321.usermanagement.ui.screens.WsMembersScreen
+import com.cpen321.usermanagement.ui.screens.WsProfileManagerScreen
+import com.cpen321.usermanagement.ui.screens.WsProfileScreen
+import com.cpen321.usermanagement.utils.IFeatureActions
+import kotlinx.coroutines.runBlocking
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -39,14 +60,22 @@ object NavRoutes {
     const val MAIN = "main"
     const val PROFILE = "profile"
     const val MANAGE_PROFILE = "manage_profile"
-    const val MANAGE_HOBBIES = "manage_hobbies"
     const val PROFILE_COMPLETION = "profile_completion"
-    const val NOTE = "note"
-    const val TEMPLATE = "template"
-    const val WORKSPACE_LIST = "workspace_list"
-    const val WORKSPACE_INTERIOR = "workspace_interior"
-    const val WORKSPACE_CHAT = "workspace_chat"
+    const val CHAT = "chat"
+    const val COPY = "copy"
+    const val FIELDS = "fields"
     const val FILTER = "filter"
+    const val INVITE = "invite"
+    const val MEMBERS_MANAGER = "members_manager"
+    const val MEMBERS = "members"
+    const val NOTE = "note"
+    const val OTHER_PROFILE = "other_profile"
+    const val SHARING = "sharing"
+    const val TEMPLATE = "template"
+    const val WS_CREATION = "ws_creation"
+    const val WS_PROFILE_MANAGER = "ws_profile_manager"
+    const val WS_PROFILE = "ws_profile"
+    const val WS_SELECT = "ws_select"
 }
 
 @Composable
@@ -56,11 +85,26 @@ fun AppNavigation(
     val navigationViewModel: NavigationViewModel = hiltViewModel()
     val navigationStateManager = navigationViewModel.navigationStateManager
     val navigationEvent by navigationStateManager.navigationEvent.collectAsState()
+    val featureActions = FeatureActions(navigationStateManager)
 
     // Initialize view models required for navigation-level scope
     val authViewModel: AuthViewModel = hiltViewModel()
     val profileViewModel: ProfileViewModel = hiltViewModel()
     val mainViewModel: MainViewModel = hiltViewModel()
+    val chatViewModel: ChatViewModel = hiltViewModel()
+    val copyViewModel: CopyViewModel = hiltViewModel()
+    val fieldsViewModel: FieldsViewModel = hiltViewModel()
+    val filterViewModel: FilterViewModel = hiltViewModel()
+    val inviteViewModel: InviteViewModel = hiltViewModel()
+    val membersManagerViewModel: MembersManagerViewModel = hiltViewModel()
+    val membersViewModel: MembersViewModel = hiltViewModel()
+    val noteViewModel: NoteViewModel = hiltViewModel()
+    val sharingViewModel: SharingViewModel = hiltViewModel()
+    val templateViewModel: TemplateViewModel = hiltViewModel()
+    val wsCreationViewModel: WsCreationViewModel = hiltViewModel()
+    val wsProfileManagerViewModel: WsProfileManagerViewModel = hiltViewModel()
+    val wsProfileViewModel: WsProfileViewModel = hiltViewModel()
+    val wsSelectViewModel: WsSelectViewModel = hiltViewModel()
 
     // Handle navigation events from NavigationStateManager
     LaunchedEffect(navigationEvent) {
@@ -69,7 +113,21 @@ fun AppNavigation(
             navController,
             navigationStateManager,
             authViewModel,
-            mainViewModel
+            chatViewModel = chatViewModel,
+            copyViewModel = copyViewModel,
+            fieldsViewModel = fieldsViewModel,
+            filterViewModel = filterViewModel,
+            inviteViewModel = inviteViewModel,
+            membersManagerViewModel = membersManagerViewModel,
+            membersViewModel = membersViewModel,
+            noteViewModel = noteViewModel,
+            sharingViewModel = sharingViewModel,
+            templateViewModel = templateViewModel,
+            wsCreationViewModel = wsCreationViewModel,
+            wsProfileManagerViewModel = wsProfileManagerViewModel,
+            wsProfileViewModel = wsProfileViewModel,
+            wsSelectViewModel = wsSelectViewModel,
+            mainViewModel = mainViewModel
         )
     }
 
@@ -78,7 +136,22 @@ fun AppNavigation(
         authViewModel = authViewModel,
         profileViewModel = profileViewModel,
         mainViewModel = mainViewModel,
-        navigationStateManager = navigationStateManager
+        chatViewModel = chatViewModel,
+        copyViewModel = copyViewModel,
+        fieldsViewModel = fieldsViewModel,
+        filterViewModel = filterViewModel,
+        inviteViewModel = inviteViewModel,
+        membersManagerViewModel = membersManagerViewModel,
+        membersViewModel = membersViewModel,
+        noteViewModel = noteViewModel,
+        sharingViewModel = sharingViewModel,
+        templateViewModel = templateViewModel,
+        wsCreationViewModel = wsCreationViewModel,
+        wsProfileManagerViewModel = wsProfileManagerViewModel,
+        wsProfileViewModel = wsProfileViewModel,
+        wsSelectViewModel = wsSelectViewModel,
+        navigationStateManager = navigationStateManager,
+        featureActions = featureActions
     )
 }
 
@@ -87,6 +160,20 @@ private fun handleNavigationEvent(
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
+    chatViewModel: ChatViewModel,
+    copyViewModel: CopyViewModel,
+    fieldsViewModel: FieldsViewModel,
+    filterViewModel: FilterViewModel,
+    inviteViewModel: InviteViewModel,
+    membersManagerViewModel: MembersManagerViewModel,
+    membersViewModel: MembersViewModel,
+    noteViewModel: NoteViewModel,
+    sharingViewModel: SharingViewModel,
+    templateViewModel: TemplateViewModel,
+    wsCreationViewModel: WsCreationViewModel,
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    wsProfileViewModel: WsProfileViewModel,
+    wsSelectViewModel: WsSelectViewModel,
     mainViewModel: MainViewModel
 ) {
     when (navigationEvent) {
@@ -110,14 +197,16 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToMainWithMessage -> {
-            mainViewModel.setSuccessMessage(navigationEvent.message)
+            mainViewModel.setSuccessMessage(navigationEvent.message) //NOTE: this is how to access context
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToProfileCompletion -> {
@@ -128,6 +217,7 @@ private fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToProfile -> {
+            Log.d("navigation", "navigationToProfileRegistered")
             navController.navigate(NavRoutes.PROFILE)
             navigationStateManager.clearNavigationEvent()
         }
@@ -137,55 +227,291 @@ private fun handleNavigationEvent(
             navigationStateManager.clearNavigationEvent()
         }
 
-        is NavigationEvent.NavigateToManageHobbies -> {
-            navController.navigate(NavRoutes.MANAGE_HOBBIES)
-            navigationStateManager.clearNavigationEvent()
-        }
-
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
             navigationStateManager.clearNavigationEvent()
         }
 
+        //feature screens navigation starts here
         is NavigationEvent.ClearBackStack -> {
             navController.popBackStack(navController.graph.startDestinationId, false)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToNote -> {
-            navController.navigate(route = NavRoutes.NOTE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToTemplate -> {
-            navController.navigate(route = NavRoutes.TEMPLATE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWorkspaceList ->{
-            navController.navigate(route = NavRoutes.WORKSPACE_LIST)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWorkspaceInterior -> {
-            navController.navigate(route = NavRoutes.WORKSPACE_INTERIOR)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWorkspaceChat -> {
-            navController.navigate(route = NavRoutes.WORKSPACE_CHAT)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToFilter -> {
-            navController.navigate(route = NavRoutes.FILTER)
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
+
+        //when cases for the feature events
+        is NavigationEvent.NavigateToChat -> {
+            navController.navigate(NavRoutes.CHAT) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToCopy -> {
+            navController.navigate(NavRoutes.COPY)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToFields -> {
+            navController.navigate(NavRoutes.FIELDS)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToFilter -> {
+            navController.navigate(NavRoutes.FILTER)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToInvite -> {
+            navController.navigate(NavRoutes.INVITE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMembersManager -> {
+            navController.navigate(NavRoutes.MEMBERS_MANAGER)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMembers -> {
+            navController.navigate(NavRoutes.MEMBERS)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToNote -> {
+            navController.navigate(NavRoutes.NOTE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToOtherProfile -> {
+            navController.navigate(NavRoutes.OTHER_PROFILE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToSharing -> {
+            navController.navigate(NavRoutes.SHARING)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToTemplate -> {
+            navController.navigate(NavRoutes.TEMPLATE) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsCreation -> {
+            navController.navigate(NavRoutes.WS_CREATION)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsProfileManager -> {
+            navController.navigate(NavRoutes.WS_PROFILE_MANAGER)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsProfile -> {
+            navController.navigate(NavRoutes.WS_PROFILE)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToWsSelect -> {
+            navController.navigate(NavRoutes.WS_SELECT)
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMainWithContext -> {
+            navController.navigate(NavRoutes.MAIN) {
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+        }
+
+        is NavigationEvent.NavigateToMainTagReset -> {
+            navController.navigate(NavRoutes.MAIN){
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+            runBlocking { mainViewModel.loadAllUserTags() }
+        }
+
+        is NavigationEvent.NavigateToChatTagReset -> {
+            navController.navigate(NavRoutes.CHAT){
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+            runBlocking { chatViewModel.loadAllUserTags() }
+        }
+
+        is NavigationEvent.NavigateToTemplateTagReset -> {
+            navController.navigate(NavRoutes.TEMPLATE){
+                popUpTo(0) { inclusive = true }
+            }
+            navigationStateManager.clearNavigationEvent()
+            runBlocking { chatViewModel.loadAllUserTags() }
+        }
     }
+}
+
+
+class FeatureActions(private val navigationStateManager: NavigationStateManager) :
+    IFeatureActions {
+
+    // --- Getters delegation ---
+    override fun getWorkspaceId(): String {
+        return navigationStateManager.getWorkspaceId()
+    }
+
+    override fun getOtherUserId(): String {
+        return navigationStateManager.getOtherUserId()
+    }
+
+    override fun getNoteType(): NoteType {
+        return navigationStateManager.getNoteType()
+    }
+
+    override fun getNoteId(): String {
+        return navigationStateManager.getNoteId()
+    }
+
+    override fun getSelectedTags(): List<String> {
+        return navigationStateManager.getSelectedTags()
+    }
+
+    override fun getAllTagsSelected(): Boolean {
+        return navigationStateManager.getAllTagsSelected()
+    }
+
+    override fun getSearchQuery(): String {
+        return navigationStateManager.getSearchQuery()
+    }
+
+    override fun setSearchQuery(query: String){
+        navigationStateManager.setSearchQuery(query)
+    }
+
+    override fun updateTagSelection(selectedTags: List<String>, allTagsSelected: Boolean) {
+        navigationStateManager.updateTagSelection(selectedTags = selectedTags,
+            allTagsSelected = allTagsSelected)
+    }
+
+    // --- Navigation delegation ---
+    override fun navigateToChat(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean,
+        searchQuery: String
+    ) {
+        navigationStateManager.navigateToChat(
+            workspaceId,
+            selectedTags,
+            allTagsSelected,
+            searchQuery
+        )
+    }
+
+    override fun navigateToCopy() {
+        navigationStateManager.navigateToCopy()
+    }
+
+    override fun navigateToFields() {
+        navigationStateManager.navigateToFields()
+    }
+
+    override fun navigateToFilter(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean
+    ) {
+        navigationStateManager.navigateToFilter(
+            workspaceId,
+            selectedTags,
+            allTagsSelected
+        )
+    }
+
+    override fun navigateToInvite() {
+        navigationStateManager.navigateToInvite()
+    }
+
+    override fun navigateToMembersManager() {
+        navigationStateManager.navigateToMembersManager()
+    }
+
+    override fun navigateToMembers() {
+        navigationStateManager.navigateToMembers()
+    }
+
+    override fun navigateToNote(noteId: String) {
+        navigationStateManager.navigateToNote(noteId)
+    }
+
+    override fun navigateToOtherProfile(otherUserId: String) {
+        navigationStateManager.navigateToOtherProfile(otherUserId)
+    }
+
+    override fun navigateToSharing() {
+        navigationStateManager.navigateToSharing()
+    }
+
+    override fun navigateToTemplate(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean,
+        searchQuery: String
+    ) {
+        navigationStateManager.navigateToTemplate(
+            workspaceId,
+            selectedTags,
+            allTagsSelected,
+            searchQuery
+        )
+    }
+
+    override fun navigateToWsCreation() {
+        navigationStateManager.navigateToWsCreation()
+    }
+
+    override fun navigateToWsProfileManager(workspaceId: String) {
+        navigationStateManager.navigateToWsProfileManager(workspaceId)
+    }
+
+    override fun navigateToWsProfile(workspaceId: String) {
+        navigationStateManager.navigateToWsProfile(workspaceId)
+    }
+
+    override fun navigateToMainWithContext(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean,
+        searchQuery: String
+    ) {
+        navigationStateManager.navigateToMainWithContext(
+            workspaceId,
+            selectedTags,
+            allTagsSelected,
+            searchQuery
+        )
+    }
+
+    override fun navigateToWsSelect() {
+        navigationStateManager.navigateToWsSelect()
+    }
+
+    override fun navigateToChatTagReset(workspaceId: String) {
+        navigationStateManager.navigateToChatTagReset(workspaceId)
+    }
+
+    override fun navigateToTemplateTagReset(workspaceId: String) {
+        navigationStateManager.navigateToTemplateTagReset(workspaceId)
+    }
+
+    override fun navigateToMainTagReset(workspaceId: String) {
+        navigationStateManager.navigateToMainTagReset(workspaceId)
+    }
+
 }
 
 @Composable
@@ -194,7 +520,22 @@ private fun AppNavHost(
     authViewModel: AuthViewModel,
     profileViewModel: ProfileViewModel,
     mainViewModel: MainViewModel,
-    navigationStateManager: NavigationStateManager
+    chatViewModel: ChatViewModel,
+    copyViewModel: CopyViewModel,
+    fieldsViewModel: FieldsViewModel,
+    filterViewModel: FilterViewModel,
+    inviteViewModel: InviteViewModel,
+    membersManagerViewModel: MembersManagerViewModel,
+    membersViewModel: MembersViewModel,
+    noteViewModel: NoteViewModel,
+    sharingViewModel: SharingViewModel,
+    templateViewModel: TemplateViewModel,
+    wsCreationViewModel: WsCreationViewModel,
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    wsProfileViewModel: WsProfileViewModel,
+    wsSelectViewModel: WsSelectViewModel,
+    navigationStateManager: NavigationStateManager,
+    featureActions: FeatureActions
 ) {
     NavHost(
         navController = navController,
@@ -224,21 +565,27 @@ private fun AppNavHost(
                 mainViewModel = mainViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
                 //TODO: change 'personal' to user id once we have access to
-                onNoteClick = {navigationStateManager.navigateToNote("personal") },
-                onTemplateClick = {navigationStateManager.navigateToTemplate("personal")},
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
-                onFilterClick = {navigationStateManager.navigateToFilter("personal")}
+                featureActions = featureActions
+            )
+        }
+
+        composable(NavRoutes.TEMPLATE){
+            TemplateScreen(
+                templateViewModel = templateViewModel,
+                onProfileClick = { navigationStateManager.navigateToProfile() },
+                //TODO: change 'personal' to user id once we have access to
+                featureActions = featureActions
             )
         }
 
         composable(NavRoutes.PROFILE) {
+            Log.d("navigation", "Navigating to profile")
             ProfileScreen(
                 authViewModel = authViewModel,
                 profileViewModel = profileViewModel,
                 actions = ProfileScreenActions(
                     onBackClick = { navigationStateManager.navigateBack() },
                     onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                    onManageHobbiesClick = { navigationStateManager.navigateToManageHobbies() },
                     onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
                     onSignOut = { navigationStateManager.handleSignOut() }
                 )
@@ -252,85 +599,91 @@ private fun AppNavHost(
             )
         }
 
-        composable(NavRoutes.MANAGE_HOBBIES) {
-            ManageHobbiesScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
-
-        composable(NavRoutes.NOTE){
-            NoteScreen(
+        composable(NavRoutes.WS_SELECT) {
+            WorkspacesScreen(
+                workspacesViewModel = wsSelectViewModel,
                 onBackClick = {navigationStateManager.navigateBack()},
-                context_workspace = navigationStateManager.getContextWorkspace()
-            )
+                featureActions = featureActions,
+                onPersonalProfileClick = { navigationStateManager.navigateToProfile() })
         }
 
-        composable(NavRoutes.TEMPLATE){
-            TemplateScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                context_workspace = navigationStateManager.getContextWorkspace()
-            )
-        }
-
-        composable(NavRoutes.WORKSPACE_LIST){
-            WorkspaceListScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                onWorkspaceClick = {
-                    workspace_name -> navigationStateManager.navigateToWorkspaceInterior(workspace_name)
-                },
-                onBackToMainClick = {navigationStateManager.navigateToMain()}
-            )
-        }
-
-        composable(NavRoutes.WORKSPACE_INTERIOR){
-            val context_workspace:String? = navigationStateManager.getContextWorkspace()
-            WorkspaceInteriorScreen(
-                context_workspace = context_workspace,
-                onProfileClick = {navigationStateManager.navigateToProfile()},
-                onNoteClick = {navigationStateManager.navigateToNote(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )},
-                onTemplateClick = {navigationStateManager.navigateToTemplate(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )
-                },
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
-                onChatClick ={navigationStateManager.navigateToWorkspaceChat(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )}
-            )
-        }
-
-        composable(NavRoutes.WORKSPACE_CHAT){
-            val context_workspace:String? = navigationStateManager.getContextWorkspace()
-            WorkspaceChatScreen(
-                context_workspace = context_workspace,
-                onProfileClick = {navigationStateManager.navigateToProfile()},
-                onNoteClick = {navigationStateManager.navigateToNote(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )},
-                onTemplateClick = {navigationStateManager.navigateToTemplate(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )
-                },
-                onWorkspaceClick = {navigationStateManager.navigateToWorkspaceList()},
-                onMainContentClick = {navigationStateManager.navigateToWorkspaceInterior(
-                    //TODO: implement the default null value or raise error
-                    context_workspace?.toString() ?: "no_workspace_info"
-                )}
+        composable(NavRoutes.CHAT){
+            ChatScreen(
+                chatViewModel = chatViewModel,
+                onProfileClick = { navigationStateManager.navigateToProfile() },
+                //TODO: change 'personal' to user id once we have access to
+                featureActions = featureActions
             )
         }
 
         composable(NavRoutes.FILTER){
             FilterScreen(
-                onBackClick = {navigationStateManager.navigateBack()},
-                context_workspace = navigationStateManager.getContextWorkspace()
+                filterViewModel = filterViewModel,
+                //TODO: change 'personal' to user id once we have access to
+                featureActions = featureActions,
+                onBackClick = { navigationStateManager.navigateBack() }
+            )
+        }
+
+        composable (NavRoutes.NOTE){
+            NoteScreen(
+                noteViewModel = noteViewModel,
+                featureActions = featureActions,
+                onBackClick = { navigationStateManager.navigateBack() }
+            )
+        }
+
+        composable ( NavRoutes.OTHER_PROFILE ){
+            Log.d("navigation", "navigating to other profile instead")
+            OtherProfileScreen(
+                profileViewModel = profileViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                otherProfileId = navigationStateManager.getOtherUserId()
+            )
+        }
+
+        composable (route = NavRoutes.WS_PROFILE ){
+            WsProfileScreen(wsProfileViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                featureActions = featureActions)
+        }
+
+        composable(route = NavRoutes.INVITE) {
+            WsInviteScreen(
+                wsInviteViewModel = inviteViewModel,
+                featureActions = featureActions,
+                onBackClick = { navigationStateManager.navigateBack() })
+        }
+
+        composable(route = NavRoutes.MEMBERS){
+            WsMembersScreen(
+                membersViewModel = membersViewModel,
+                featureActions = featureActions,
+                onBackClick = { navigationStateManager.navigateBack() },
+                onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
+            )
+        }
+
+        composable(route = NavRoutes.WS_PROFILE_MANAGER){
+            WsProfileManagerScreen(
+                wsProfileManagerViewModel = wsProfileManagerViewModel,
+                featureActions = featureActions
+            )
+        }
+
+        composable (route = NavRoutes.MEMBERS_MANAGER){
+            WsMembersManagerScreen(
+                membersManagerViewModel = membersManagerViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                onPersonalProfileClick = { navigationStateManager.navigateToProfile() },
+                featureActions = featureActions
+            )
+        }
+        composable(NavRoutes.WS_CREATION){
+            CreateWorkspaceScreen(
+                wsCreationViewModel = wsCreationViewModel,
+                onBackClick = { navigationStateManager.navigateBack() },
+                featureActions = featureActions
             )
         }
     }

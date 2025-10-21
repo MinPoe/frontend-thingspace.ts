@@ -28,30 +28,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
-import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
+import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
-import com.cpen321.usermanagement.ui.components.NoteDisplayList
+import com.cpen321.usermanagement.ui.components.ChatDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.IFeatureActions
 
 @Composable
-fun TemplateScreen(
-    templateViewModel: TemplateViewModel,
+fun ChatScreen(
+    chatViewModel: ChatViewModel,
     onProfileClick: () -> Unit,
     featureActions: IFeatureActions
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
 
-    templateViewModel.onLoad()
+    chatViewModel.onLoad()
 
-    TemplateContent(
+    ChatContent(
         onProfileClick = onProfileClick,
-        onNoteClick = { noteId:String -> featureActions.navigateToNote(noteId) }, //TODO: for now
+        onOtherProfileClick = {profileId: String -> featureActions.navigateToOtherProfile(
+            profileId)},
         onContentClick = {  featureActions.navigateToMainTagReset(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
@@ -59,38 +62,36 @@ fun TemplateScreen(
             workspaceId = featureActions.getWorkspaceId(),
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected()
-        )},
-        onChatClick={
-            featureActions.navigateToChatTagReset(
-                featureActions.getWorkspaceId()
-            )
-        },
-        onSearchClick = { featureActions.navigateToTemplate(
+        ) },
+        onSearchClick = {featureActions.navigateToChat(
             workspaceId = featureActions.getWorkspaceId(),
             selectedTags = featureActions.getSelectedTags(),
             allTagsSelected = featureActions.getAllTagsSelected(),
-            searchQuery = featureActions.getSearchQuery()
-        ) },
-        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
+            searchQuery = featureActions.getSearchQuery()) },
+        notes = chatViewModel.getNotesTitlesFound(0),
         onCreateNoteClick = { featureActions.navigateToNote("") },
-        notes = templateViewModel.getNotesTitlesFound(0),
-        query = featureActions.getSearchQuery() // TODO: BAD
+        query = featureActions.getSearchQuery(),
+        authors = chatViewModel.getNoteAuthors(),
+        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
+        onTemplateClick={ featureActions.navigateToTemplateTagReset(
+            featureActions.getWorkspaceId()) }
     )
 }
 
 @Composable
-private fun TemplateContent(
+private fun ChatContent(
     onProfileClick: () -> Unit,
-    onNoteClick: (String)-> Unit,
-    onCreateNoteClick: ()-> Unit,
-    notes:List<Note>,
+    onOtherProfileClick: (String)-> Unit,
     onContentClick: ()->Unit,
-    onChatClick: ()-> Unit,
+    onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
-    query:String,
     onSearchClick: ()->Unit,
-    onQueryChange: (String) -> Unit,
+    onQueryChange: (String)->Unit,
+    query: String,
+    notes: List<Note>,
+    authors: List<User>?,
+    onCreateNoteClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -102,19 +103,20 @@ private fun TemplateContent(
             MainBottomBar(
                 onCreateNoteClick = onCreateNoteClick,
                 onWorkspacesClick = onWorkspaceClick,
-                onTemplatesClick = {  },
+                onChatClick = {  },
                 onContentClick = onContentClick,
-                onChatClick = onChatClick,
+                onTemplatesClick = onTemplateClick,
                 modifier = modifier)
         }
     ) { paddingValues ->
-        MainBody(
+        ChatBody(
             paddingValues = paddingValues,
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
-            onNoteClick = onNoteClick,
+            onOtherProfileClick = onOtherProfileClick,
             notes = notes,
+            authors = authors,
             query = query)
     }
 }
@@ -175,14 +177,15 @@ private fun ProfileIcon() {
 }
 
 @Composable
-private fun MainBody(
+private fun ChatBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onQueryChange: (String) -> Unit,
+    onOtherProfileClick: (String) -> Unit,
+    notes: List<Note>,
+    authors: List<User>?,
     query: String,
-    onSearchClick: ()->Unit,
-    onQueryChange: (String)->Unit,
-    onNoteClick: (String)-> Unit,
-    notes:List<Note>,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -196,11 +199,12 @@ private fun MainBody(
             onSearchClick = onSearchClick,//TODO: for now
             onFilterClick = onFilterClick,
             onQueryChange = onQueryChange,
-            query = query
+            query =  query
         )
-        NoteDisplayList(
-            onNoteClick = onNoteClick,
-            notes = notes
+        ChatDisplayList(
+            onProfileClick = onOtherProfileClick,
+            notes = notes,
+            profiles = authors
         )
     }
 }

@@ -4,8 +4,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cpen321.usermanagement.data.remote.dto.User
-import com.cpen321.usermanagement.data.repository.ProfileRepository
+import com.cpen321.usermanagement.data.remote.dto.Workspace
+import com.cpen321.usermanagement.data.repository.WorkspaceRepository
+import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,14 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class ProfileUiState(
+data class WsProfileManagerUiState(
     // Loading states
     val isLoadingProfile: Boolean = false,
     val isSavingProfile: Boolean = false,
     val isLoadingPhoto: Boolean = false,
 
     // Data states
-    val user: User? = null,
+    val workspace: Workspace? = null,
 
     // Message states
     val errorMessage: String? = null,
@@ -28,43 +29,38 @@ data class ProfileUiState(
 )
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
-    private val profileRepository: ProfileRepository
+class WsProfileManagerViewModel@Inject constructor(
+    private val workspaceRepository: WorkspaceRepository,
+    private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
     companion object {
         private const val TAG = "ProfileViewModel"
     }
 
-    private val _uiState = MutableStateFlow(ProfileUiState())
-    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(WsProfileManagerUiState())
+    val uiState: StateFlow<WsProfileManagerUiState> = _uiState.asStateFlow()
 
     fun loadProfile(otherProfileId:String?=null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingProfile = true, errorMessage = null)
 
-            val profileResult: Result<User>
-            if (otherProfileId != null){
-                profileResult = profileRepository.getOtherProfile(otherProfileId)
-            }
-            else
-            {
-                profileResult = profileRepository.getProfile()
-            }
+            val profileResult: Result<Workspace> = workspaceRepository.getWorkspace(
+                navigationStateManager.getWorkspaceId())
 
             if (profileResult.isSuccess) {
-                val user = profileResult.getOrNull()!!
+                val workspace = profileResult.getOrNull()!!
 
                 _uiState.value = _uiState.value.copy(
                     isLoadingProfile = false,
-                    user = user,
+                    workspace = workspace,
                 )
             } else {
                 val errorMessage = when {
                     profileResult.isFailure -> {
                         val error = profileResult.exceptionOrNull()
-                        Log.e(TAG, "Failed to load profile", error)
-                        error?.message ?: "Failed to load profile"
+                        Log.e(TAG, "Failed to load workspace profile", error)
+                        error?.message ?: "Failed to load workspace profile"
                     }
 
                     else -> {
@@ -96,11 +92,14 @@ class ProfileViewModel @Inject constructor(
 
     fun uploadProfilePicture(pictureUri: Uri) {
         viewModelScope.launch {
-            val result = profileRepository.updatePhoto(profilePicture = pictureUri.toString())
+            val result = workspaceRepository.updateWorkspacePicture(
+                workspaceProfilePicture = pictureUri.toString(),
+                workspaceId = navigationStateManager.getWorkspaceId()
+            )
             if (result.isSuccess) {
-                val currentUser = _uiState.value.user ?: return@launch
-                val updatedUser = currentUser.copy(profilePicture = pictureUri.toString())
-                _uiState.value = _uiState.value.copy(isLoadingPhoto = false, user= updatedUser, successMessage = "Profile picture updated successfully!")
+                val currentWorkspace = _uiState.value.workspace ?: return@launch
+                val updatedWorkspace = currentWorkspace.copy(workspacePicture = pictureUri.toString())
+                _uiState.value = _uiState.value.copy(isLoadingPhoto = false, workspace= updatedWorkspace, successMessage = "Profile picture updated successfully!")
             }else {
                 val error = result.exceptionOrNull()
                 Log.e(TAG, "Failed to update profile", error)
@@ -114,7 +113,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateProfile(name: String, bio: String, onSuccess: () -> Unit = {}) {
+    fun updateProfile(name: String, description: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _uiState.value =
                 _uiState.value.copy(
@@ -123,12 +122,19 @@ class ProfileViewModel @Inject constructor(
                     successMessage = null
                 )
 
-            val result = profileRepository.updateProfile(name, bio)
+            val result = workspaceRepository.updateWorkspaceProfile(
+                navigationStateManager.getWorkspaceId(),
+                name,
+                description)
             if (result.isSuccess) {
-                val updatedUser = result.getOrNull()!!
                 _uiState.value = _uiState.value.copy(
                     isSavingProfile = false,
-                    user = updatedUser,
+                    workspace = Workspace(
+                        navigationStateManager.getWorkspaceId(),
+                        name,
+                        _uiState.value.workspace?.workspacePicture,
+                        workspaceDescription = description
+                    ),
                     successMessage = "Profile updated successfully!"
                 )
                 onSuccess()
@@ -142,5 +148,17 @@ class ProfileViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun deleteWorkspace():Boolean{
+        var deleteSuccessful = false
+        viewModelScope.launch {
+            val delRequest = workspaceRepository.deleteWorkspace(
+                navigationStateManager.getWorkspaceId())
+            if (delRequest.isSuccess){
+                deleteSuccessful = true
+            }
+        } //TODO: handle errors and messaging later
+        return deleteSuccessful
     }
 }
