@@ -54,12 +54,9 @@ export class WorkspaceService {
     }
 
     async getWorkspacesForUser(userId: mongoose.Types.ObjectId): Promise<Workspace[]> {
-        // Find workspaces where user is owner or member
+        // Find workspaces where user is a member (includes owners)
         const workspaces = await workspaceModel.find({
-            $or: [
-                { ownerId: userId },
-                { members: userId }
-            ]
+            members: userId
         }).sort({ createdAt: -1 });
 
         return workspaces.map(workspace => ({

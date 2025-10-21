@@ -63,9 +63,9 @@ open class DisplayViewModel @Inject constructor(
             if (wsRequest.isSuccess) {
                 val ws: Workspace = wsRequest.getOrNull()!!
                 _wsid = workspaceId
-                _wsname = ws.workspaceName
-                _wspic = ws.workspacePicture ?: ""
-                _wsdescr = ws.workspaceDescription ?: ""
+                _wsname = ws.profile.name
+                _wspic = ws.profile.imagePath ?: ""
+                _wsdescr = ws.profile.description ?: ""
             }
             else{
                 val profileResult = profileRepository.getProfile()
@@ -73,9 +73,9 @@ open class DisplayViewModel @Inject constructor(
                     val user = profileResult.getOrNull()!!
                     if (user._id==workspaceId){
                         _wsid = workspaceId
-                        _wspic = user.profilePicture
-                        _wsdescr = user.bio ?: ""
-                        _wsname = user.name
+                        _wspic = user.profile.imagePath ?: ""
+                        _wsdescr = user.profile.description ?: ""
+                        _wsname = user.profile.name
                     }
                 }
                 else

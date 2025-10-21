@@ -49,7 +49,7 @@ fun ChatDisplayList(
             if (profiles!=null){
                 Button(onClick = {onProfileClick(profiles[i]._id)}){
                     Text(
-                        text = profiles[i].name, //TODO: for now just displays a note id, we need to add note header-ing
+                        text = profiles[i].profile.name, //TODO: for now just displays a note id, we need to add note header-ing
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = fontSizes.extraLarge3,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

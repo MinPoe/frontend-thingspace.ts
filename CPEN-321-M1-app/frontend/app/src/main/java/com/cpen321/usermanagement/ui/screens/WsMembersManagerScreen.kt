@@ -43,7 +43,7 @@ fun WsMembersManagerScreen(
         else -> {
             val userAndOthers =membersManagerViewModel.getUsers()
             val otherUsers = userAndOthers.second
-            val otherUsersNames= otherUsers.map { it.name }
+            val otherUsersNames= otherUsers.map { it.profile.name }
             val user = userAndOthers.first
 
             val onPersonalProfileClick = onPersonalProfileClick
@@ -55,7 +55,7 @@ fun WsMembersManagerScreen(
             MembersManagerContent(
                 onBackClick = onBackClick,
                 otherUsers = otherUsersNames,
-                username = user.name,
+                username = user.profile.name,
                 onBanClick = onBanClick,
                 onOtherProfileClick = onOtherProfileClick,
                 onPersonalProfileClick = onPersonalProfileClick,

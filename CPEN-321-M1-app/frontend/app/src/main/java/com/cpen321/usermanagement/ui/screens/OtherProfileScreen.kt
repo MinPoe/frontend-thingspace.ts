@@ -133,7 +133,7 @@ private fun ViewProfileContent(
 
         // --- Profile Info (Read-only) ---
         OutlinedTextField(
-            value = user.name,
+            value = user.profile.name,
             onValueChange = { },
             label = { Text(stringResource(R.string.name)) },
             modifier = Modifier.fillMaxWidth(),

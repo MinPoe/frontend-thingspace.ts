@@ -158,7 +158,7 @@ private fun ViewWsProfileContent(
 
         // --- Profile Info (Read-only) ---
         OutlinedTextField(
-            value = workspace.workspaceName,
+            value = workspace.profile.name,
             onValueChange = { },
             label = { Text(stringResource(R.string.name)) },
             modifier = Modifier.fillMaxWidth(),

@@ -40,7 +40,7 @@ fun WorkspacesScreen(
         else -> {
             val userAndWs = workspacesViewModel.getUserAndWorkspaces()
             val availableWs = userAndWs.second
-            val availableWsNames=availableWs.map { it.workspaceName }
+            val availableWsNames=availableWs.map { it.profile.name }
             val user = userAndWs.first
 
             val onWsMainClick = {index:Int ->
@@ -73,7 +73,7 @@ fun WorkspacesScreen(
             WsContent(onWsMainClick = onWsMainClick,
                 onBackClick = onBackClick,
                 availableWs = availableWsNames,
-                username = user.name,
+                username = user.profile.name,
                 onWsChatClick= onWsChatClick,
                 onWsTemplateClick = onWsTemplateClick,
                 onWsProfileClick = onWsProfileClick,

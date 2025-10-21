@@ -151,11 +151,11 @@ fun ManageProfileScreen(
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
             formState = ProfileFormState(
-                name = user.name,
+                name = user.profile.name,
                 email = user.email,
-                description = user.bio ?: "",
-                originalName = user.name,
-                originalDescription = user.bio ?: ""
+                description = user.profile.description ?: "",
+                originalName = user.profile.name,
+                originalDescription = user.profile.description ?: ""
             )
         }
     }

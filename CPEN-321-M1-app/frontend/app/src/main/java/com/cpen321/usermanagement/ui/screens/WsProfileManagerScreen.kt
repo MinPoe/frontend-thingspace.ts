@@ -142,10 +142,10 @@ fun WsProfileManagerScreen(
     LaunchedEffect(uiState.workspace) {
         uiState.workspace?.let { workspace ->
             formState = WsProfileFormState(
-                name = workspace.workspaceName,
-                description = workspace.workspaceDescription ?: "",
-                originalName = workspace.workspaceName,
-                originalDescription = workspace.workspaceDescription ?: ""
+                name = workspace.profile.name,
+                description = workspace.profile.description ?: "",
+                originalName = workspace.profile.name,
+                originalDescription = workspace.profile.description ?: ""
             )
         }
     }

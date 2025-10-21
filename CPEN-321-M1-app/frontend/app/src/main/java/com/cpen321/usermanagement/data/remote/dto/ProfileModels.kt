@@ -10,14 +10,18 @@ data class ProfileData(
     val user: User
 )
 
+data class Profile(
+    val imagePath: String?,
+    val name: String,
+    val description: String?
+)
+
 data class User(
     val _id: String,
     val email: String,
-    val name: String,
-    val bio: String?,
-    val profilePicture: String,
     val createdAt: String? = null,
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+    val profile: Profile
 )
 
 data class UploadImageData(
