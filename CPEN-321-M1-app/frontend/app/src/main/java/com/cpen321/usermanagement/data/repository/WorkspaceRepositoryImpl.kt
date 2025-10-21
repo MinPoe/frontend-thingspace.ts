@@ -45,9 +45,13 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
             User(
                 _id = "u_${workspaceId}_$it",
                 email = "user$it@${workspaceId}.com",
-                name = "User $it of $workspaceId",
-                bio = "Bio of user $it in workspace $workspaceId",
-                profilePicture = "profile_${workspaceId}_$it.png"
+                createdAt = null,
+                updatedAt = null,
+                profile = Profile(
+                    imagePath = "profile_${workspaceId}_$it.png",
+                    name = "User $it of $workspaceId",
+                    description = "Bio of user $it in workspace $workspaceId"
+                )
             )
         }
         return Result.success(members)

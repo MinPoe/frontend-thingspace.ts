@@ -1,6 +1,7 @@
 package com.cpen321.usermanagement.data.repository
 
 import com.cpen321.usermanagement.data.remote.dto.User
+import com.cpen321.usermanagement.data.remote.dto.Profile
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.data.remote.dto.TextField
@@ -80,9 +81,13 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
             User(
                 _id = "author_$id",
                 email = "author${index + 1}@${id}.com",
-                name = "Author of $id",
-                bio = "Bio for author of note $id",
-                profilePicture = "author_pic_$id.png"
+                createdAt = null,
+                updatedAt = null,
+                profile = Profile(
+                    imagePath = "author_pic_$id.png",
+                    name = "Author of $id",
+                    description = "Bio for author of note $id"
+                )
             )
         }
         return Result.success(authors)

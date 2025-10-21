@@ -3,6 +3,7 @@ package com.cpen321.usermanagement.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.User
+import com.cpen321.usermanagement.data.remote.dto.Profile
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
@@ -40,8 +41,9 @@ open class MembersViewModel@Inject constructor(
                 workspaceId = navigationStateManager.getWorkspaceId())
         }
         //TODO: think abt the default user
-        return Pair(uiState.value.user ?: User("",
-            "", "","", ""), uiState.value.members)
+        return Pair(uiState.value.user ?: User(_id = "",
+            email = "", createdAt = null, updatedAt = null,
+            profile = Profile(imagePath = null, name = "", description = null)), uiState.value.members)
     }
 
     private suspend fun loadUsers() {
