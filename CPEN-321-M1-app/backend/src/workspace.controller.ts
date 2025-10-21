@@ -14,7 +14,7 @@ export class WorkspaceController {
 
             res.status(201).json({
                 message: 'Workspace created successfully',
-                workspace: workspace,
+                workspaceId: workspace._id,
             });
         } catch (error) {
             console.error('Error creating workspace:', error);

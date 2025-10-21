@@ -183,8 +183,19 @@ export class NoteService {
         tags: string[],
         queryString: string
     ): Promise<Note[]> {
+        // First verify user has access to this workspace
+        const workspace = await workspaceModel.findById(workspaceId);
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
+
+        if (!isMember) {
+            throw new Error('Access denied: You are not a member of this workspace');
+        }
+
         const query: any = { 
-            userId,
             workspaceId,
             noteType
         };
