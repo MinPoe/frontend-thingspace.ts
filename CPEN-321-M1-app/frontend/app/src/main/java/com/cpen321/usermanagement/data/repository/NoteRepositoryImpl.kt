@@ -96,8 +96,7 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
                     imagePath = "author_pic_$id.png",
                     name = "Author of $id",
                     description = "Bio for author of note $id"
-                ),
-                hobbies = listOf("writing", "coding")
+                )
             )
         }
         return Result.success(authors)

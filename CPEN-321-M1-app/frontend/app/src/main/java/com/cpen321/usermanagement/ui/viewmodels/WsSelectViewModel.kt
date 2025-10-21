@@ -38,7 +38,7 @@ class WsSelectViewModel@Inject constructor(
         //TODO: think abt the default user
         return Pair(uiState.value.user ?: User(_id = "", googleId = "",
             email = "", createdAt = null, updatedAt = null,
-            profile = Profile(imagePath = null, name = "", description = null), hobbies = emptyList()),
+            profile = Profile(imagePath = null, name = "", description = null)),
             uiState.value.workspaces ?: emptyList())
     }
 
@@ -85,7 +85,7 @@ class WsSelectViewModel@Inject constructor(
             error?.message ?: "Failed to load profile"
             //TODO: for now!!!
             return User(_id = "", googleId = "", email = "", createdAt = null, updatedAt = null,
-                profile = Profile(imagePath = null, name = "nullname", description = null), hobbies = emptyList())
+                profile = Profile(imagePath = null, name = "nullname", description = null))
         }
     }
     private suspend fun getWorkspaces(userId:String):List<Workspace>{

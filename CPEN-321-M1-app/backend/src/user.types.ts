@@ -1,6 +1,5 @@
 import mongoose, { Document } from 'mongoose';
 import z from 'zod';
-import { HOBBIES } from './hobbies';
 
 // User model
 // ------------------------------------------------------------
@@ -13,7 +12,6 @@ export interface IUser extends Document {
     name: string;
     description?: string;
   };
-  hobbies: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,7 +26,6 @@ export const createUserSchema = z.object({
     name: z.string().min(1),
     description: z.string().max(500).optional(),
   }),
-  hobbies: z.array(z.string()).default([]),
 });
 
 export const updateProfileSchema = z.object({
@@ -37,12 +34,6 @@ export const updateProfileSchema = z.object({
     name: z.string().min(1).optional(),
     description: z.string().max(500).optional(),
   }).optional(),
-  hobbies: z
-    .array(z.string())
-    .refine(val => val.length === 0 || val.every(v => HOBBIES.includes(v)), {
-      message: 'Hobby must be in the available hobbies list',
-    })
-    .optional(),
 });
 
 // Request types
