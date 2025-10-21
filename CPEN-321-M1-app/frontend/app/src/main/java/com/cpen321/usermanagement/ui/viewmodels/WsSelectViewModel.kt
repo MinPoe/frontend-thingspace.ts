@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Workspace
+import com.cpen321.usermanagement.data.remote.dto.Profile
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.data.repository.WsMembershipStatus
@@ -36,7 +37,8 @@ class WsSelectViewModel@Inject constructor(
         }
         //TODO: think abt the default user
         return Pair(uiState.value.user ?: User(_id = "",
-            email = "", bio="", name="", profilePicture = ""),
+            email = "", createdAt = null, updatedAt = null,
+            profile = Profile(imagePath = null, name = "", description = null)),
             uiState.value.workspaces ?: emptyList())
     }
 
@@ -82,7 +84,8 @@ class WsSelectViewModel@Inject constructor(
             Log.e(TAG, "Failed to load profile", error)
             error?.message ?: "Failed to load profile"
             //TODO: for now!!!
-            return User(_id = "", email = "", bio="", name="", profilePicture = "")
+            return User(_id = "", email = "", createdAt = null, updatedAt = null,
+                profile = Profile(imagePath = null, name = "", description = null))
         }
     }
     private suspend fun getWorkspaces(userId:String):List<Workspace>{

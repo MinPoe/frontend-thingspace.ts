@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.Workspace
+import com.cpen321.usermanagement.data.remote.dto.Profile
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -98,7 +99,9 @@ class WsProfileManagerViewModel@Inject constructor(
             )
             if (result.isSuccess) {
                 val currentWorkspace = _uiState.value.workspace ?: return@launch
-                val updatedWorkspace = currentWorkspace.copy(workspacePicture = pictureUri.toString())
+                val updatedWorkspace = currentWorkspace.copy(
+                    profile = currentWorkspace.profile.copy(imagePath = pictureUri.toString())
+                )
                 _uiState.value = _uiState.value.copy(isLoadingPhoto = false, workspace= updatedWorkspace, successMessage = "Profile picture updated successfully!")
             }else {
                 val error = result.exceptionOrNull()
@@ -130,10 +133,12 @@ class WsProfileManagerViewModel@Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     isSavingProfile = false,
                     workspace = Workspace(
-                        navigationStateManager.getWorkspaceId(),
-                        name,
-                        _uiState.value.workspace?.workspacePicture,
-                        workspaceDescription = description
+                        _id = navigationStateManager.getWorkspaceId(),
+                        profile = Profile(
+                            imagePath = _uiState.value.workspace?.profile.imagePath,
+                            name = name,
+                            description = description
+                        )
                     ),
                     successMessage = "Profile updated successfully!"
                 )

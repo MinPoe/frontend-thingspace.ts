@@ -62,7 +62,7 @@ class AuthViewModel @Inject constructor(
 
                 val isAuthenticated = authRepository.isUserAuthenticated()
                 val user = if (isAuthenticated) authRepository.getCurrentUser() else null
-                val needsProfileCompletion = user?.bio == null || user.bio.isBlank()
+                val needsProfileCompletion = user?.profile.description == null || user.profile.description.isBlank()
 
                 _uiState.value = _uiState.value.copy(
                     isAuthenticated = isAuthenticated,
@@ -127,7 +127,7 @@ class AuthViewModel @Inject constructor(
             authOperation(credential.idToken)
                 .onSuccess { authData ->
                     val needsProfileCompletion =
-                        authData.user.bio == null || authData.user.bio.isBlank()
+                        authData.user.profile.description == null || authData.user.profile.description.isBlank()
 
                     _uiState.value = _uiState.value.copy(
                         isSigningIn = false,

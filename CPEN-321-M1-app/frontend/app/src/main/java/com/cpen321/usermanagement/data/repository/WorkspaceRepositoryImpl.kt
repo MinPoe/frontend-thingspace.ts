@@ -2,6 +2,7 @@ package com.cpen321.usermanagement.data.repository
 
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.remote.dto.User
+import com.cpen321.usermanagement.data.remote.dto.Profile
 
 /**
  * !!! MOCK IMPL 4 NOW !!!
@@ -16,9 +17,11 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(
             Workspace(
                 _id = workspaceId,
-                workspaceName = "Workspace $workspaceId",
-                workspacePicture = "picture_$workspaceId.png",
-                workspaceDescription = "Description for workspace $workspaceId"
+                profile = Profile(
+                    imagePath = "picture_$workspaceId.png",
+                    name = "Workspace $workspaceId",
+                    description = "Description for workspace $workspaceId"
+                )
             )
         )
     }
@@ -27,9 +30,11 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         val workspaces = (1..3).map {
             Workspace(
                 _id = "ws_${userId}_$it",
-                workspaceName = "Workspace $it for user $userId",
-                workspacePicture = "pic_user_${userId}_$it.png",
-                workspaceDescription = "Mock workspace number $it for user $userId"
+                profile = Profile(
+                    imagePath = "pic_user_${userId}_$it.png",
+                    name = "Workspace $it for user $userId",
+                    description = "Mock workspace number $it for user $userId"
+                )
             )
         }
         return Result.success(workspaces)

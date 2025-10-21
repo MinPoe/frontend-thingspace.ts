@@ -122,7 +122,7 @@ private fun ViewProfileContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AsyncImage(
-                    model = RetrofitClient.getPictureUri(user.profilePicture),
+                    model = RetrofitClient.getPictureUri(user.profile.imagePath ?: ""),
                     contentDescription = stringResource(R.string.profile_picture),
                     modifier = Modifier
                         .size(spacing.extraLarge5)
@@ -149,7 +149,7 @@ private fun ViewProfileContent(
             enabled = false
         )
         OutlinedTextField(
-            value = user.bio ?: "",
+            value = user.profile.description ?: "",
             onValueChange = { },
             label = { Text(stringResource(R.string.bio)) },
             modifier = Modifier.fillMaxWidth(),

@@ -147,7 +147,7 @@ private fun ViewWsProfileContent(
             ) {
                 AsyncImage(
                     model = RetrofitClient.getPictureUri(
-                        workspace.workspacePicture ?: ""), //TODO: 4 now
+                        workspace.profile.imagePath ?: ""), //TODO: 4 now
                     contentDescription = stringResource(R.string.profile_picture),
                     modifier = Modifier
                         .size(spacing.extraLarge5)
@@ -166,7 +166,7 @@ private fun ViewWsProfileContent(
             enabled = false
         )
         OutlinedTextField(
-            value = workspace.workspaceDescription ?: "",
+            value = workspace.profile.description ?: "",
             onValueChange = { },
             label = { Text(stringResource(R.string.bio)) },
             modifier = Modifier.fillMaxWidth(),

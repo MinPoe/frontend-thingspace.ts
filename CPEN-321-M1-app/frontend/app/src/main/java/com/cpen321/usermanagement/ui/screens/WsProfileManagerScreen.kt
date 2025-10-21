@@ -317,7 +317,7 @@ private fun ProfileForm(
         verticalArrangement = Arrangement.spacedBy(spacing.large)
     ) {
         ProfilePictureCard(
-            profilePicture = data.workspace.workspacePicture ?: "",
+            profilePicture = data.workspace.profile.imagePath ?: "",
             isLoadingPhoto = data.isLoadingPhoto,
             onEditClick = data.onEditPictureClick,
             onLoadingChange = data.onLoadingPhotoChange
