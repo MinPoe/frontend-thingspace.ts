@@ -99,7 +99,7 @@ class ProfileViewModel @Inject constructor(
             val result = profileRepository.updatePhoto(profilePicture = pictureUri.toString())
             if (result.isSuccess) {
                 val currentUser = _uiState.value.user ?: return@launch
-                val updatedUser = currentUser.copy(profilePicture = pictureUri.toString())
+                val updatedUser = currentUser.copy(profile = currentUser.profile.copy(imagePath = pictureUri.toString()))
                 _uiState.value = _uiState.value.copy(isLoadingPhoto = false, user= updatedUser, successMessage = "Profile picture updated successfully!")
             }else {
                 val error = result.exceptionOrNull()

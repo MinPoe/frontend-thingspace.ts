@@ -135,7 +135,7 @@ class WsProfileManagerViewModel@Inject constructor(
                     workspace = Workspace(
                         _id = navigationStateManager.getWorkspaceId(),
                         profile = Profile(
-                            imagePath = _uiState.value.workspace?.profile.imagePath,
+                            imagePath = _uiState.value.workspace?.profile?.imagePath,
                             name = name,
                             description = description
                         )

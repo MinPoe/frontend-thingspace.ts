@@ -85,7 +85,7 @@ class WsSelectViewModel@Inject constructor(
             error?.message ?: "Failed to load profile"
             //TODO: for now!!!
             return User(_id = "", email = "", createdAt = null, updatedAt = null,
-                profile = Profile(imagePath = null, name = "", description = null))
+                profile = Profile(imagePath = null, name = "nullname", description = null))
         }
     }
     private suspend fun getWorkspaces(userId:String):List<Workspace>{

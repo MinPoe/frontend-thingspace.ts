@@ -62,7 +62,7 @@ class AuthViewModel @Inject constructor(
 
                 val isAuthenticated = authRepository.isUserAuthenticated()
                 val user = if (isAuthenticated) authRepository.getCurrentUser() else null
-                val needsProfileCompletion = user?.profile.description == null || user.profile.description.isBlank()
+                val needsProfileCompletion = user?.profile?.description == null || user.profile.description.isBlank()
 
                 _uiState.value = _uiState.value.copy(
                     isAuthenticated = isAuthenticated,
