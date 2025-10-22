@@ -57,7 +57,7 @@ export class WorkspaceService {
         // Find workspaces where user is a member (includes owners)
         const workspaces = await workspaceModel.find({
             members: userId
-        }).sort({ createdAt: -1 });
+        }).sort({ updatedAt: -1 });
 
         return workspaces.map(workspace => ({
             _id: workspace._id.toString(),
