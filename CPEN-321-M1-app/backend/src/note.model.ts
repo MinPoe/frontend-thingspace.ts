@@ -8,7 +8,6 @@ export interface INoteDocument extends Document {
   fields: any[];
   noteType: NoteType;
   tags: string[];
-  authors: mongoose.Types.ObjectId[];
   vectorData: number[];
   createdAt: Date;
   updatedAt: Date;
@@ -34,10 +33,6 @@ const noteSchema = new Schema<INoteDocument>(
       default: NoteType.CONTENT
     },
     tags: [{ type: String }],
-    authors: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'User'
-    }],
     vectorData: [{ type: Number }],
   },
   { 

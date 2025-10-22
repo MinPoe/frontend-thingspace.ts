@@ -41,8 +41,8 @@ router.get(
   notesController.findNotes
 );
 
-router.get(
-  '/:id/authors',
+router.post(
+  '/authors',
   authenticateToken,
   notesController.getAuthors
 );

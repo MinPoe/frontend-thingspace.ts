@@ -47,7 +47,6 @@ export class NoteService {
             fields: data.fields,
             noteType: data.noteType || NoteType.CONTENT,
             tags: data.tags || [],
-            authors: [userId],
             vectorData: vectorData,
         });
     
@@ -55,7 +54,6 @@ export class NoteService {
             ...newNote.toObject(),
             _id: newNote._id.toString(),
             userId: newNote.userId.toString(),
-            authors: newNote.authors.map(id => id.toString()),
         } as Note;
     }
 
@@ -78,7 +76,6 @@ export class NoteService {
             ...updatedNote.toObject(),
             _id: updatedNote._id.toString(),
             userId: updatedNote.userId.toString(),
-            authors: updatedNote.authors?.map(id => id.toString()),
         } as Note;
     }
 
@@ -94,7 +91,6 @@ export class NoteService {
             ...deletedNote.toObject(),
             _id: deletedNote._id.toString(),
             userId: deletedNote.userId.toString(),
-            authors: deletedNote.authors?.map(id => id.toString()),
         } as Note;
     }
 
@@ -104,19 +100,30 @@ export class NoteService {
             ...note.toObject(),
             _id: note._id.toString(),
             userId: note.userId.toString(),
-            authors: note.authors?.map(id => id.toString()),
         } as Note : null;
     }
 
 
-    async getAuthors(noteId: string): Promise<any[]> {
-        const note = await noteModel.findById(noteId).populate('authors', 'name email profilePicture');
-        
-        if (!note) {
-            throw new Error('Note not found');
+    async getAuthors(noteIds: string[]): Promise<any[]> {
+        if (!noteIds || noteIds.length === 0) {
+            return [];
         }
 
-        return note.authors as any[];
+        // Convert note IDs to ObjectIds
+        const objectIds = noteIds.map(id => new mongoose.Types.ObjectId(id));
+        
+        // Fetch all notes
+        const notes = await noteModel.find({ _id: { $in: objectIds } });
+        
+        // Extract user IDs from the notes (in order)
+        const userIds = notes.map(note => note.userId);
+        
+        // Fetch all users using mongoose model directly
+        const User = mongoose.model('User');
+        const users = await User.find({ _id: { $in: userIds } });
+
+        // Return users in the same order as the notes
+        return users;
     }
 
     // Share note to a different workspace
@@ -160,7 +167,6 @@ export class NoteService {
             ...updatedNote.toObject(),
             _id: updatedNote._id.toString(),
             userId: updatedNote.userId.toString(),
-            authors: updatedNote.authors?.map(id => id.toString()),
         } as Note;
     }
 
@@ -212,7 +218,6 @@ export class NoteService {
                 ...note.toObject(),
                 _id: note._id.toString(),
                 userId: note.userId.toString(),
-                authors: note.authors?.map(id => id.toString()),
             } as Note));
         }
 
@@ -256,7 +261,6 @@ export class NoteService {
             ...note.toObject(),
             _id: note._id.toString(),
             userId: note.userId.toString(),
-            authors: note.authors?.map(id => id.toString()),
         } as Note));
     }
 

@@ -34,7 +34,6 @@ export interface Note {
   fields: Field[];
   noteType: NoteType;
   tags?: string[];
-  authors?: string[];
   workspaceId?: string;
   vectorData: number[];
   createdAt: Date;

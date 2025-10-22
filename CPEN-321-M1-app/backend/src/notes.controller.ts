@@ -96,8 +96,14 @@ export class NotesController {
 
   async getAuthors(req: Request, res: Response): Promise<void> {
     try {
-      const noteId = req.params.id;
-      const authors = await noteService.getAuthors(noteId);
+      const { noteIds } = req.body;
+      
+      if (!noteIds || !Array.isArray(noteIds)) {
+        res.status(400).json({ error: 'noteIds array is required' });
+        return;
+      }
+
+      const authors = await noteService.getAuthors(noteIds);
 
       res.status(200).json({
         message: 'Authors retrieved successfully',
