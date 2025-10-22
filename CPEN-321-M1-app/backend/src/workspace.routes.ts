@@ -16,7 +16,7 @@ router.get(
 
 // Get all workspaces for a user
 router.get(
-  '/user/:userId',
+  '/user',
   authenticateToken,
   workspaceController.getWorkspacesForUser
 );

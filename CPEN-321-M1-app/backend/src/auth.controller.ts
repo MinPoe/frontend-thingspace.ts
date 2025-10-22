@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import mongoose from 'mongoose';
 
 import { authService } from './auth.service';
 import {
@@ -6,6 +7,7 @@ import {
   AuthenticateUserResponse,
 } from './auth.types';
 import logger from './logger.util';
+import { workspaceService } from './workspace.service';
 
 export class AuthController {
   async signUp(
@@ -17,6 +19,13 @@ export class AuthController {
       const { idToken } = req.body;
 
       const data = await authService.signUpWithGoogle(idToken);
+      const workspace_data = {
+        name: 'Your Personal Workspace', 
+        profilePicture: data.user.profile?.imagePath || '', 
+        description: 'Your personal workspace for all your personal notes'
+      }
+      await workspaceService.createWorkspace(new mongoose.Types.ObjectId(data.user._id), workspace_data);
+
 
       return res.status(201).json({
         message: 'User signed up successfully',
