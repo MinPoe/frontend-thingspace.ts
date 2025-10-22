@@ -9,7 +9,7 @@ const userController = new UserController();
 
 router.get('/profile', userController.getProfile);
 
-router.post(
+router.put(
   '/profile',
   validateBody<UpdateProfileRequest>(updateProfileSchema),
   userController.updateProfile

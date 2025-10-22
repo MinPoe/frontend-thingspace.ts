@@ -6,6 +6,7 @@ import {
   GoogleUserInfo,
   IUser,
   updateProfileSchema,
+  UpdateProfileRequest,
 } from './user.types';
 import logger from './logger.util';
 
@@ -83,14 +84,17 @@ export class UserModel {
 
   async update(
     userId: mongoose.Types.ObjectId,
-    user: Partial<IUser>
+    updateProfileReq: UpdateProfileRequest
   ): Promise<IUser | null> {
     try {
-      const validatedData = updateProfileSchema.parse(user);
+      const validatedData = updateProfileSchema.parse(updateProfileReq);
+
+      // Handle nested profile object for MongoDB update
+      const updateData = validatedData.profile ? { profile: validatedData.profile } : {};
 
       const updatedUser = await this.user.findByIdAndUpdate(
         userId,
-        validatedData,
+        updateData,
         {
           new: true,
         }
