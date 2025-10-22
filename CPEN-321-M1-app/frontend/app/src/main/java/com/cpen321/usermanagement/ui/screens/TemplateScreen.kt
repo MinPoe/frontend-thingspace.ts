@@ -72,7 +72,7 @@ fun TemplateScreen(
             searchQuery = featureActions.getSearchQuery()
         ) },
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
-        onCreateNoteClick = { featureActions.navigateToNote("") },
+        onCreateNoteClick = { featureActions.navigateToNoteCreation() },
         notes = templateViewModel.getNotesTitlesFound(0),
         query = featureActions.getSearchQuery() // TODO: BAD
     )
