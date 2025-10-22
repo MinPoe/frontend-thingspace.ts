@@ -40,7 +40,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace retrieved successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error retrieving workspace:', error);
@@ -66,7 +66,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspaces retrieved successfully',
-                workspaces: workspaces,
+                data: { workspaces },
             });
         } catch (error) {
             console.error('Error retrieving workspaces:', error);
@@ -87,7 +87,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Members retrieved successfully',
-                members: members,
+                data: { members },
             });
         } catch (error) {
             console.error('Error retrieving members:', error);
@@ -114,7 +114,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Tags retrieved successfully',
-                tags: tags,
+                data: { tags },
             });
         } catch (error) {
             console.error('Error retrieving tags:', error);
@@ -137,7 +137,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Membership status retrieved successfully',
-                status: status,
+                data: { status },
             });
         } catch (error) {
             console.error('Error retrieving membership status:', error);
@@ -165,7 +165,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Member added successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error adding member:', error);
@@ -212,7 +212,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Member banned successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error banning member:', error);
@@ -258,7 +258,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace profile updated successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error updating workspace profile:', error);
@@ -296,7 +296,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace picture updated successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error updating workspace picture:', error);
@@ -330,7 +330,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace and all its notes deleted successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error deleting workspace:', error);
