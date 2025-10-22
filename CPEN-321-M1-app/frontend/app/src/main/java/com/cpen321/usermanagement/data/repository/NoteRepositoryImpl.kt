@@ -21,8 +21,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
     override suspend fun getNote(noteId: String): Result<Note> {
         val note = Note(
             _id = noteId,
-            userId = "user_$noteId",
-            workspaceId = "workspace_$noteId",
+            //userId = "user_$noteId",
+            //workspaceId = "workspace_$noteId",
             dateCreation = LocalDateTime.now().minusDays(noteId.length.toLong()),
             dateLastEdit = LocalDateTime.now(),
             tags = arrayListOf("mock", "note_$noteId"),
@@ -32,8 +32,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
                 label = "Title of $noteId",
                 placeholder = "Placeholder for $noteId"
             )),
-            authors = listOf("author_$noteId"),
-            vectorData = listOf(0.1, 0.2, 0.3)
+            //authors = listOf("author_$noteId"),
+            //vectorData = listOf(0.1, 0.2, 0.3)
         )
         return Result.success(note)
     }
@@ -66,8 +66,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
             val id = "note_${workspaceId}_$it"
             Note(
                 _id = id,
-                userId = "user_$id",
-                workspaceId = workspaceId,
+//                userId = "user_$id",
+//                workspaceId = workspaceId,
                 dateCreation = LocalDateTime.now().minusDays(it.toLong()),
                 dateLastEdit = LocalDateTime.now(),
                 tags = arrayListOf("tag_$it", "workspace_$workspaceId"),
@@ -77,8 +77,8 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
                     label = "Field for $id",
                     placeholder = "Generated for query '$searchQuery'"
                 )),
-                authors = listOf("author_$it"),
-                vectorData = listOf(0.1, 0.2, 0.3)
+//                authors = listOf("author_$it"),
+//                vectorData = listOf(0.1, 0.2, 0.3)
             )
         }
         return Result.success(notes)

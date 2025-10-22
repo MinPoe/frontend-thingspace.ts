@@ -17,14 +17,14 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         return Result.success(
             Workspace(
                 _id = workspaceId,
-                name = "Workspace $workspaceId",
+//                name = "Workspace $workspaceId",
                 profile = Profile(
                     imagePath = "picture_$workspaceId.png",
                     name = "Workspace $workspaceId",
                     description = "Description for workspace $workspaceId"
                 ),
-                ownerId = "owner_$workspaceId",
-                members = listOf("owner_$workspaceId", "member1_$workspaceId")
+//                ownerId = "owner_$workspaceId",
+//                members = listOf("owner_$workspaceId", "member1_$workspaceId")
             )
         )
     }
@@ -33,14 +33,14 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         val workspaces = (1..3).map {
             Workspace(
                 _id = "ws_${userId}_$it",
-                name = "Workspace $it for user $userId",
+//                name = "Workspace $it for user $userId",
                 profile = Profile(
                     imagePath = "pic_user_${userId}_$it.png",
                     name = "Workspace $it for user $userId",
                     description = "Mock workspace number $it for user $userId"
                 ),
-                ownerId = userId,
-                members = listOf(userId, "member1_$it")
+//                ownerId = userId,
+//                members = listOf(userId, "member1_$it")
             )
         }
         return Result.success(workspaces)
