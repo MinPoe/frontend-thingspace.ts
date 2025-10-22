@@ -1,8 +1,11 @@
 package com.cpen321.usermanagement.data.repository
 
+import android.util.Log
+import com.cpen321.usermanagement.data.remote.api.WorkspaceInterface
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Profile
+import com.cpen321.usermanagement.data.remote.api.RetrofitClient
 
 /**
  * !!! MOCK IMPL 4 NOW !!!
@@ -11,7 +14,9 @@ import javax.inject.Singleton
 import javax.inject.Inject
 
 @Singleton
-class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
+class WorkspaceRepositoryImpl @Inject constructor(
+    val workspaceInterface: WorkspaceInterface
+) : WorkspaceRepository {
 
     override suspend fun getWorkspace(workspaceId: String): Result<Workspace> {
         return Result.success(
@@ -69,7 +74,16 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         workspaceProfilePicture: String,
         workspaceDescription: String
     ): Result<String> {
-        return Result.success("an id of a new workspace")
+        val profile = Profile(workspaceProfilePicture, workspaceName, workspaceDescription)
+        val response = workspaceInterface.createWorkspace("", profile)
+        if (response.isSuccessful){
+            Log.d("d", response.body().toString())
+            return Result.success(response.body()!!.data!!.workspaceId)
+        }
+        else{
+            return Result.failure(error(response.body()!!.error.toString()))
+        }
+
     }
 
     override suspend fun updateWorkspaceProfile(
