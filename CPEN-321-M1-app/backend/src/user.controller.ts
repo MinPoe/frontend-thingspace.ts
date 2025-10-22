@@ -58,6 +58,7 @@ export class UserController {
 
       res.status(200).json({
         message: 'User deleted successfully',
+        data: {},
       });
     } catch (error) {
       logger.error('Failed to delete user:', error);

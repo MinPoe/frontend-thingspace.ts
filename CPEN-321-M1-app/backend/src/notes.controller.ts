@@ -18,7 +18,7 @@ export class NotesController {
 
       res.status(201).json({
         message: 'Note created successfully',
-        note: newNote,
+        data: { note: newNote },
       });
     } catch (error) {
       console.error('Error creating note:', error);
@@ -41,7 +41,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note successfully updated',
-        note: updatedNote,
+        data: { note: updatedNote },
       });
     } catch (error) {
       console.error('Error updating note:', error);
@@ -61,7 +61,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note successfully deleted',
-        note: deletedNote,
+        data: { note: deletedNote },
       });
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -86,7 +86,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note successfully retrieved',
-        note: note,
+        data: { note },
       });
     } catch (error) {
       console.error('Error retrieving note:', error);
@@ -107,7 +107,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Authors retrieved successfully',
-        authors: authors,
+        data: { authors },
       });
     } catch (error) {
       console.error('Error retrieving authors:', error);
@@ -135,7 +135,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note shared to workspace successfully',
-        note: sharedNote,
+        data: { note: sharedNote },
       });
     } catch (error) {
       console.error('Error sharing note:', error);
@@ -164,7 +164,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Workspace retrieved successfully',
-        workspaceId: workspaceId,
+        data: { workspaceId },
       });
     } catch (error) {
       console.error('Error retrieving workspace:', error);
@@ -199,7 +199,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Notes retrieved successfully',
-        notes: notes,
+        data: { notes },
       });
     } catch (error) {
       console.error('Error retrieving notes:', error);
