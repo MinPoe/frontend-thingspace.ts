@@ -73,7 +73,7 @@ fun WorkspacesScreen(
             WsContent(onWsMainClick = onWsMainClick,
                 onBackClick = onBackClick,
                 availableWs = availableWsNames,
-                username = user.profile.name ?: "",
+                username = user.profile.name,
                 onWsChatClick= onWsChatClick,
                 onWsTemplateClick = onWsTemplateClick,
                 onWsProfileClick = onWsProfileClick,
