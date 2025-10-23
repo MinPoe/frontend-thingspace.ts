@@ -20,7 +20,7 @@ export class AuthController {
 
       const data = await authService.signUpWithGoogle(idToken);
       const workspace_data = {
-        name: 'Your Personal Workspace', 
+        name: `${data.user.profile.name}'s Personal Workspace`, 
         profilePicture: data.user.profile?.imagePath || '', 
         description: 'Your personal workspace for all your personal notes'
       }
