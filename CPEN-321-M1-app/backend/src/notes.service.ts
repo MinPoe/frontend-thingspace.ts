@@ -31,7 +31,7 @@ export class NoteService {
         try {
             if (vectorInput.trim().length > 0) {
                 const vectorResponse = await this.getClient().embeddings.create({
-                    model: "text-embedding-3-small",
+                    model: "text-embedding-3-large",
                     input: vectorInput.trim(),
                 });
                 vectorData = vectorResponse.data[0].embedding;
@@ -225,7 +225,7 @@ export class NoteService {
         let queryEmbedding: number[] = [];
 
         const vectorResponse = await this.getClient().embeddings.create({
-            model: "text-embedding-3-small",
+            model: "text-embedding-3-large",
             input: queryString.trim(),
         });
         queryEmbedding = vectorResponse.data[0].embedding as unknown as number[];
