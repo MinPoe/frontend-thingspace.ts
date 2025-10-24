@@ -149,6 +149,16 @@ export class UserModel {
     }
   }
 
+  async findByEmail(email: string): Promise<IUser | null> {
+    try {
+      const user = await this.user.findOne({ email });
+      return user;
+    } catch (error) {
+      logger.error('Error finding user by email:', error);
+      throw new Error('Failed to find user');
+    }
+  }
+
   async updateFcmToken(
     userId: mongoose.Types.ObjectId,
     fcmToken: string
