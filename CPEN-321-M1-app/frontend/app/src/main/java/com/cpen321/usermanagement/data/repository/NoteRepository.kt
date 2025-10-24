@@ -3,6 +3,7 @@ import com.cpen321.usermanagement.data.remote.dto.Field
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.NoteType
+import com.cpen321.usermanagement.data.remote.dto.Workspace
 
 interface NoteRepository {
     suspend fun getNote(noteId: String): Result<Note>
@@ -17,7 +18,7 @@ interface NoteRepository {
                   tagsToInclude: List<String>,
                   searchQuery: String,
                   notesPerPage: Int): Result<List<Note>>
-    suspend fun getAuthors(noteIds: List<String>): Result<List<User>>
-    suspend fun getWorkspacesForNote(noteId:String): Result<Unit>
+    suspend fun getAuthors(noteIds: List<String>): Result<List<User>> //there should be 1 author for now
+    suspend fun getWorkspacesForNote(noteId:String): Result<Workspace>
     suspend fun shareNoteToWorkspace(noteId:String, workspaceId: String): Result<Unit>
 }

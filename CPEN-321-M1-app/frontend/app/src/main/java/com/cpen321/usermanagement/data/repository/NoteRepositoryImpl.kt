@@ -1,41 +1,41 @@
 package com.cpen321.usermanagement.data.repository
 
-import com.cpen321.usermanagement.data.remote.dto.User
-import com.cpen321.usermanagement.data.remote.dto.Profile
+import com.cpen321.usermanagement.data.remote.api.CreateNoteRequest
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
+import com.cpen321.usermanagement.data.remote.api.UpdateNoteRequest
+import android.util.Log
+import com.cpen321.usermanagement.data.local.preferences.TokenManager
+import com.cpen321.usermanagement.data.remote.api.RetrofitClient
+import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.NoteType
-import com.cpen321.usermanagement.data.remote.dto.TextField
 import com.cpen321.usermanagement.data.remote.dto.Field
-import kotlin.math.max
-
-/**
- * !!! MOCK IMPL 4 NOW !!!
- * **/
-import java.time.LocalDateTime
-import javax.inject.Singleton
+import com.cpen321.usermanagement.data.remote.dto.User
+import com.cpen321.usermanagement.utils.JsonUtils.parseErrorMessage
+import com.cpen321.usermanagement.data.repository.NoteRepository
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
-class NoteRepositoryImpl @Inject constructor() : NoteRepository {
+class NoteRepositoryImpl @Inject constructor(
+    private val noteInterface: NoteInterface,
+) : NoteRepository {
+
+    companion object {
+        private const val TAG = "NoteRepository"
+    }
 
     override suspend fun getNote(noteId: String): Result<Note> {
-        val note = Note(
-            _id = noteId,
-            //userId = "user_$noteId",
-            //workspaceId = "workspace_$noteId",
-            dateCreation = LocalDateTime.now().minusDays(noteId.length.toLong()),
-            dateLastEdit = LocalDateTime.now(),
-            tags = arrayListOf("mock", "note_$noteId"),
-            noteType = NoteType.CONTENT,
-            fields = listOf(TextField(
-                _id = "field_$noteId",
-                label = "Title of $noteId",
-                placeholder = "Placeholder for $noteId"
-            )),
-            //authors = listOf("author_$noteId"),
-            //vectorData = listOf(0.1, 0.2, 0.3)
-        )
-        return Result.success(note)
+        return try {
+            val response = noteInterface.getNote("", noteId)
+            if (response.isSuccessful && response.body()?.data?.note != null) {
+                Result.success(response.body()!!.data!!.note)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to fetch note.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
     }
 
     override suspend fun createNote(
@@ -44,15 +44,53 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         fields: List<Field>,
         noteType: NoteType
     ): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val request = CreateNoteRequest(
+                tags = tags,
+                fields = fields,
+                noteType = noteType,
+                workspaceId = authorId // or adjust if workspaceId ≠ authorId
+            )
+            val response = noteInterface.createNote("", request)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to create note.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
     }
 
-    override suspend fun updateNote(noteId: String, tags: List<String>, fields: List<Field>): Result<Unit> {
-        return Result.success(Unit)
+    override suspend fun updateNote(
+        noteId: String,
+        tags: List<String>,
+        fields: List<Field>
+    ): Result<Unit> {
+        return try {
+            val request = UpdateNoteRequest(tags = tags.joinToString(","), fields = fields, workspaceId = "")
+            val response = noteInterface.updateNote("", noteId, request)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to update note.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
     }
 
     override suspend fun deleteNote(noteId: String): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val response = noteInterface.deleteNote("", noteId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to delete note.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
     }
 
     override suspend fun findNotes(
@@ -62,51 +100,61 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         searchQuery: String,
         notesPerPage: Int
     ): Result<List<Note>> {
-        val notes = (1..max(2, notesPerPage-searchQuery.length)).map {
-            val id = "note_${workspaceId}_$it"
-            Note(
-                _id = id,
-//                userId = "user_$id",
-//                workspaceId = workspaceId,
-                dateCreation = LocalDateTime.now().minusDays(it.toLong()),
-                dateLastEdit = LocalDateTime.now(),
-                tags = arrayListOf("tag_$it", "workspace_$workspaceId"),
-                noteType = noteType,
-                fields = listOf(TextField(
-                    _id = "field_$id",
-                    label = "Field for $id",
-                    placeholder = "Generated for query '$searchQuery'"
-                )),
-//                authors = listOf("author_$it"),
-//                vectorData = listOf(0.1, 0.2, 0.3)
-            )
+        return try {
+            val response = noteInterface.findNotes("", searchQuery)
+            if (response.isSuccessful && response.body()?.data?.notes != null) {
+                Result.success(response.body()!!.data!!.notes)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to fetch notes.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
         }
-        return Result.success(notes)
     }
 
     override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
-        val authors = noteIds.mapIndexed { index, id ->
-            User(
-                _id = "author_$id",
-                googleId = "google_author_$id",
-                email = "author${index + 1}@${id}.com",
-                createdAt = null,
-                updatedAt = null,
-                profile = Profile(
-                    imagePath = "author_pic_$id.png",
-                    name = "Author of $id",
-                    description = "Bio for author of note $id"
-                )
-            )
+        return Result.failure(Exception("Not implemented on backend yet"))
+    }
+
+    override suspend fun getWorkspacesForNote(noteId: String): Result<Workspace> {
+        return try {
+            val response = noteInterface.getWorkspacesForNote("", noteId)
+            if (response.isSuccessful && response.body()?.data?.workspace != null) {
+                Result.success(response.body()!!.data!!.workspace)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to get workspaces for note.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
         }
-        return Result.success(authors)
     }
 
-    override suspend fun getWorkspacesForNote(noteId: String): Result<Unit> {
-        return Result.success(Unit)
+    override suspend fun shareNoteToWorkspace(
+        noteId: String,
+        workspaceId: String
+    ): Result<Unit> {
+        return try {
+            val response = noteInterface.shareNoteToWorkspace("", noteId, workspaceId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to share note to workspace.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
     }
 
-    override suspend fun shareNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+    /** ------------------ Error and Exception Helpers ------------------ **/
+
+    private fun handleError(errorBody: String?, fallbackMessage: String): Result<Nothing> {
+        val errorMessage = parseErrorMessage(errorBody, fallbackMessage)
+        Log.e(TAG, errorMessage)
+        return Result.failure(Exception(errorMessage))
+    }
+
+    private fun handleException(e: Exception): Result<Nothing> {
+        Log.e(TAG, "Network/HTTP error in Notes API", e)
+        return Result.failure(e)
     }
 }
