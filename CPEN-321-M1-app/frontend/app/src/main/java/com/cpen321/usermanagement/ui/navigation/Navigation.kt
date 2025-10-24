@@ -293,6 +293,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToMembers -> {
             navController.navigate(NavRoutes.MEMBERS)
+            membersViewModel.loadUsers()
             navigationStateManager.clearNavigationEvent()
         }
 

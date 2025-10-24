@@ -35,41 +35,43 @@ open class MembersViewModel@Inject constructor(
     val uiState: StateFlow<MembersUiState> = _uiState.asStateFlow()
 
     fun getUsers(): Pair<User, List<User>> {
-        if (uiState.value.workspaceId != navigationStateManager.getWorkspaceId()) {
-            viewModelScope.launch { loadUsers() }
-            _uiState.value = _uiState.value.copy(
-                workspaceId = navigationStateManager.getWorkspaceId())
-        }
+//        if (uiState.value.workspaceId != navigationStateManager.getWorkspaceId()) {
+//            viewModelScope.launch { loadUsers() }
+//            _uiState.value = _uiState.value.copy(
+//                workspaceId = navigationStateManager.getWorkspaceId())
+//        }
         //TODO: think abt the default user
         return Pair(uiState.value.user ?: User(_id = "", googleId = "",
             email = "", createdAt = null, updatedAt = null,
             profile = Profile(imagePath = null, name = "", description = null)), uiState.value.members)
     }
 
-    private suspend fun loadUsers() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
+    fun loadUsers() {
+        _uiState.value = _uiState.value.copy(isLoading = true, workspaceId = navigationStateManager.getWorkspaceId())
 
-        val profileResult = profileRepository.getProfile()
-        if (profileResult.isSuccess){
-            _uiState.value = _uiState.value.copy(user = profileResult.getOrNull()!!)
-        }
-        else{
-            _uiState.value = _uiState.value.copy(user = null)
-        }
-
-        val profilesResult = workspaceRepository.getWorkspaceMembers(
-            navigationStateManager.getWorkspaceId())
-        if (profilesResult.isSuccess) {
-            val members = profilesResult.getOrNull()!!.toMutableList()
-            if (_uiState.value.user != null) {
-                val user = _uiState.value.user!!
-                members.removeIf { it._id == user._id }
+        viewModelScope.launch{
+            val profileResult = profileRepository.getProfile()
+            if (profileResult.isSuccess) {
+                _uiState.value = _uiState.value.copy(user = profileResult.getOrNull()!!)
+            } else {
+                _uiState.value = _uiState.value.copy(user = null)
             }
-            _uiState.value = _uiState.value.copy(members = members, isLoading = false)
-        } else {
-            _uiState.value = _uiState.value.copy(members = emptyList(), isLoading = false)
-            //TODO: for now!!!
 
+            val profilesResult = workspaceRepository.getWorkspaceMembers(
+                navigationStateManager.getWorkspaceId()
+            )
+            if (profilesResult.isSuccess) {
+                val members = profilesResult.getOrNull()!!.toMutableList()
+                if (_uiState.value.user != null) {
+                    val user = _uiState.value.user!!
+                    members.removeIf { it._id == user._id }
+                }
+                _uiState.value = _uiState.value.copy(members = members, isLoading = false)
+            } else {
+                _uiState.value = _uiState.value.copy(members = emptyList(), isLoading = false)
+                //TODO: for now!!!
+
+            }
         }
     }
 }
