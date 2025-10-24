@@ -75,4 +75,12 @@ interface NoteInterface {
         @Path("id") noteId: String,
         @Query("workspaceId") workspaceId: String // or use @Body if backend expects a body
     ): Response<ApiResponse<NoteResult>>
+
+    // POST /notes/{id}/copy
+    @POST("notes/{id}/copy")
+    suspend fun copyNoteToWorkspace(
+        @Header("Authorization") authHeader: String,
+        @Path("id") noteId: String,
+        @Query("workspaceId") workspaceId: String // or use @Body if backend expects a body
+    ): Response<ApiResponse<NoteResult>>
 }

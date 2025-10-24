@@ -145,6 +145,19 @@ class NoteRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun copyNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
+        return try {
+            val response = noteInterface.copyNoteToWorkspace("", noteId, workspaceId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                handleError(response.errorBody()?.string(), "Failed to copy note to workspace.")
+            }
+        } catch (e: Exception) {
+            handleException(e)
+        }
+    }
+
     /** ------------------ Error and Exception Helpers ------------------ **/
 
     private fun handleError(errorBody: String?, fallbackMessage: String): Result<Nothing> {
