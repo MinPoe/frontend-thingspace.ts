@@ -12,6 +12,7 @@ export interface IUser extends Document {
     name: string;
     description?: string;
   };
+  fcmToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,10 @@ export const updateProfileSchema = z.object({
     name: z.string().min(1).optional(),
     description: z.string().max(500).optional(),
   }).optional(),
+});
+
+export const updateFcmTokenSchema = z.object({
+  fcmToken: z.string().min(1),
 });
 
 // Request types

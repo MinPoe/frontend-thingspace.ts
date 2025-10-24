@@ -63,7 +63,7 @@ router.post(
 router.post(
   '/:id/members',
   authenticateToken,
-  workspaceController.addMember
+  workspaceController.inviteMember
 );
 
 // Update workspace profile
@@ -87,6 +87,13 @@ router.delete(
   '/:id/members/:userId',
   authenticateToken,
   workspaceController.banMember
+);
+
+// Leave workspace (user removes themselves)
+router.post(
+  '/:id/leave',
+  authenticateToken,
+  workspaceController.leaveWorkspace.bind(workspaceController)
 );
 
 // Delete workspace
