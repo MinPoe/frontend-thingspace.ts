@@ -1,6 +1,7 @@
 package com.cpen321.usermanagement.data.repository
 
 import android.util.Log
+import androidx.core.os.requestProfiling
 import com.cpen321.usermanagement.data.remote.api.WorkspaceInterface
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.remote.dto.User
@@ -111,7 +112,13 @@ class WorkspaceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteWorkspace(workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+        val request = workspaceInterface.deleteWorkspace("", workspaceId)
+        if (request.isSuccessful){
+            return Result.success(Unit)
+        }
+        else{
+            return Result.failure(error("Failed to Delete Workspace..."))
+        }
     }
 
     override suspend fun addMember(userId: String, workspaceId: String): Result<Unit> {
