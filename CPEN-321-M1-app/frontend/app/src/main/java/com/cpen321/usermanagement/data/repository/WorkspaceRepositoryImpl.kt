@@ -34,21 +34,30 @@ class WorkspaceRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getWorkspacesForUser(userId: String): Result<List<Workspace>> {
-        val workspaces = (1..3).map {
-            Workspace(
-                _id = "ws_${userId}_$it",
-//                name = "Workspace $it for user $userId",
-                profile = Profile(
-                    imagePath = "pic_user_${userId}_$it.png",
-                    name = "Workspace $it for user $userId",
-                    description = "Mock workspace number $it for user $userId"
-                ),
-//                ownerId = userId,
-//                members = listOf(userId, "member1_$it")
-            )
+    override suspend fun getWorkspacesForUser(): Result<List<Workspace>> {
+//        val workspaces = (1..3).map {
+//            Workspace(
+//                _id = "ws_${userId}_$it",
+////                name = "Workspace $it for user $userId",
+//                profile = Profile(
+//                    imagePath = "pic_user_${userId}_$it.png",
+//                    name = "Workspace $it for user $userId",
+//                    description = "Mock workspace number $it for user $userId"
+//                ),
+////                ownerId = userId,
+////                members = listOf(userId, "member1_$it")
+//            )
+
+//        }
+        val workspaceRequest = workspaceInterface.getWorkspacesForUser("")
+        if (workspaceRequest.isSuccessful)
+        {
+            val workspaces = workspaceRequest.body()!!.data!!.workspaces
+            return Result.success(workspaces)
         }
-        return Result.success(workspaces)
+        else{
+            return  Result.failure(error(workspaceRequest.body()!!.error.toString()))
+        }
     }
 
     override suspend fun getWorkspaceMembers(workspaceId: String): Result<List<User>> {

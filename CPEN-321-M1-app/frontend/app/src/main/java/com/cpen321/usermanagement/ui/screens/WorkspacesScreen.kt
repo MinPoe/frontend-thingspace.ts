@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.components.WorkspaceRow
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
+import com.cpen321.usermanagement.ui.viewmodels.WsSelectUIStateE
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.utils.IFeatureActions
 
@@ -31,17 +32,18 @@ fun WorkspacesScreen(
     featureActions: IFeatureActions
 ){
     val uiState by workspacesViewModel.uiState.collectAsState()
-    val isLoading = uiState.isLoading
-    when {
-        isLoading -> {
+    when (uiState.state){
+        WsSelectUIStateE.TO_UPDATE->{
+            workspacesViewModel.loadUserAndWorkspaces()
+        }
+        WsSelectUIStateE.LOADING -> {
             Box(modifier = Modifier, contentAlignment = Alignment.Center){
                 CircularProgressIndicator()}
         }
-        else -> {
-            val userAndWs = workspacesViewModel.getUserAndWorkspaces()
-            val availableWs = userAndWs.second
+        WsSelectUIStateE.DISPLAYING -> {
+            val availableWs = uiState.workspaces
             val availableWsNames=availableWs.map { it.profile.name }
-            val user = userAndWs.first
+            val user = uiState.user!!
 
             val onWsMainClick = {index:Int ->
                 featureActions.navigateToMainTagReset(availableWs[index]._id)}
@@ -51,7 +53,7 @@ fun WorkspacesScreen(
                 featureActions.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
             val onPersonalChatClick={ featureActions.navigateToChatTagReset(
-                user._id) } //TODO: before we get actual profile info
+                user._id) }
             val onPersonalContentClick={ featureActions.navigateToMainTagReset(
                 user._id) }
             val onPersonalTemplateClick={ featureActions.navigateToTemplateTagReset(

@@ -228,6 +228,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
+            wsSelectViewModel.setToUpdate() //TODO: for now here later on make a full updatemethod
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -318,6 +319,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToWsSelect -> {
             navController.navigate(NavRoutes.WS_SELECT)
+            wsSelectViewModel.setToUpdate()
             navigationStateManager.clearNavigationEvent()
         }
 

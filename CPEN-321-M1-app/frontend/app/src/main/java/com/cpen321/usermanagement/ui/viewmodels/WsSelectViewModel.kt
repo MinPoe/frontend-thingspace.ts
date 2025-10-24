@@ -31,26 +31,15 @@ class WsSelectViewModel@Inject constructor(
     private val _uiState = MutableStateFlow<WsSelectUIState>(WsSelectUIState())
     val uiState: StateFlow<WsSelectUIState> = _uiState.asStateFlow()
 
-    fun getUserAndWorkspaces(): Pair<User, List<Workspace>>{
-        if (uiState.value.user==null || uiState.value.workspaces==null){
-            loadUserAndWorkspaces()
-        }
-        //TODO: think abt the default user
-        return Pair(uiState.value.user ?: User(_id = "", googleId = "",
-            email = "", createdAt = null, updatedAt = null,
-            profile = Profile(imagePath = null, name = "", description = null)),
-            uiState.value.workspaces ?: emptyList())
-    }
 
     fun loadUserAndWorkspaces(){
         viewModelScope.launch{
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            val user = getUser()
+            _uiState.value = _uiState.value.copy(state = WsSelectUIStateE.LOADING)
             _uiState.value = _uiState.value.copy(user = getUser())
-            _uiState.value = _uiState.value.copy(workspaces = getWorkspaces(user._id))
+            _uiState.value = _uiState.value.copy(workspaces = getWorkspaces())
             Log.d(TAG, "loading workspaces done ${uiState.value.workspaces}, ${uiState.value.user}")
 
-            if(_uiState.value.workspaces != null && _uiState.value.user != null) { //todo parallelize later or make a grouped backend call
+            if(_uiState.value.user != null) { //todo parallelize later or make a grouped backend call
                 val workspaceManager = mutableListOf<Boolean>()
                 val user = _uiState.value.user!!
                 for (workspace in _uiState.value.workspaces) {
@@ -68,8 +57,9 @@ class WsSelectViewModel@Inject constructor(
                 }
                 _uiState.value = _uiState.value.copy(workspaceManager = workspaceManager)
             }
+            _uiState.value = _uiState.value.copy(state = WsSelectUIStateE.DISPLAYING)
         }
-        _uiState.value = _uiState.value.copy(isLoading = false)
+
     }
 
     private suspend fun getUser():User{
@@ -88,25 +78,32 @@ class WsSelectViewModel@Inject constructor(
                 profile = Profile(imagePath = null, name = "nullname", description = null))
         }
     }
-    private suspend fun getWorkspaces(userId:String):List<Workspace>{
-        val workspacesRequest = workspaceRepository.getWorkspacesForUser(userId)
+    private suspend fun getWorkspaces():List<Workspace>{
+        val workspacesRequest = workspaceRepository.getWorkspacesForUser()
         if (workspacesRequest.isSuccess){
             return workspacesRequest.getOrNull()!!
         }
         else
         {
             val error = workspacesRequest.exceptionOrNull()
-            Log.e(TAG, "Failed to load profile", error)
-            error?.message ?: "Failed to load profile"
+            Log.e(TAG, "Failed to load workspaces", error)
+            error?.message ?: "Failed to load workspaces"
             return emptyList()
         }
     }
 
+    fun setToUpdate(){
+        _uiState.value = _uiState.value.copy(state = WsSelectUIStateE.TO_UPDATE)
+    }
 }
 
 data class WsSelectUIState(
     var user:User? = null,
-    var workspaces:List<Workspace>? = null,
-    var isLoading:Boolean = false,
+    var workspaces:List<Workspace> = emptyList(),
+    var state: WsSelectUIStateE = WsSelectUIStateE.LOADING,
     var workspaceManager:List<Boolean>? = null
 )
+
+enum class WsSelectUIStateE{
+    TO_UPDATE, LOADING, DISPLAYING
+}
