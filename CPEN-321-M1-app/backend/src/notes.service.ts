@@ -150,12 +150,7 @@ export class NoteService {
         }
 
         const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
-        const isBanned = workspace.bannedMembers?.some(id => id.toString() === userId.toString());
-
-        if (isBanned) {
-            throw new Error('Access denied: You are banned from this workspace');
-        }
-
+  
         if (!isMember) {
             throw new Error('Access denied: You are not a member of this workspace');
         }
