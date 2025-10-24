@@ -130,6 +130,15 @@ export class UserModel {
     }
   }
 
+  async findByIds(ids: mongoose.Types.ObjectId[]): Promise<IUser[]> {
+    try {
+      return await this.user.find({ _id: { $in: ids } });
+    } catch (error) {
+      console.error('Error finding users by IDs:', error);
+      throw new Error('Failed to find users');
+    }
+  }   
+
   async findByGoogleId(googleId: string): Promise<IUser | null> {
     try {
       const user = await this.user.findOne({ googleId });

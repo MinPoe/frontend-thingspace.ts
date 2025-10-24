@@ -3,6 +3,7 @@ import { Workspace, WsMembershipStatus, CreateWorkspaceRequest } from './workspa
 import { workspaceModel } from './workspace.model';
 import { noteModel } from './note.model';
 import { userModel } from './user.model';
+import { IUser } from './user.types';
 
 export class WorkspaceService {
     async createWorkspace(userId: mongoose.Types.ObjectId, data: CreateWorkspaceRequest): Promise<Workspace> {
@@ -73,21 +74,20 @@ export class WorkspaceService {
         }));
     }
 
-    async getWorkspaceMembers(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<any[]> {
-        const workspace = await workspaceModel.findById(workspaceId).populate('members ownerId', 'name email profilePicture');
+    async getWorkspaceMembers(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<IUser[]> {
+        // 1. Fetch workspace
+        const workspace = await workspaceModel.findById(workspaceId);
         
         if (!workspace) {
             throw new Error('Workspace not found');
         }
+        // 3. Get list of user IDs from members array
+        const memberIds = workspace.members;
 
-        // Check if user is a member
-        const isMember = workspace.members.some((member: any) => member._id.toString() === userId.toString());
+        // 4. Fetch list of users
+        const users = await userModel.findByIds(memberIds);
 
-        if (!isMember) {
-            throw new Error('Access denied: You are not a member of this workspace');
-        }
-
-        return workspace.members as any[];
+        return users;
     }
 
     async getAllTags(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<string[]> {
