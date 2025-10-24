@@ -16,11 +16,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class WsLeaveState{
+    NOT, DURING, DONE
+}
+
 data class WsProfileUiState(
     // Loading states
     val isLoadingProfile: Boolean = false,
     val isSavingProfile: Boolean = false,
     val isLoadingPhoto: Boolean = false,
+    val leaveState: WsLeaveState = WsLeaveState.NOT,
 
     // Data states
     val workspace: Workspace? = null,
@@ -92,6 +97,7 @@ open class WsProfileViewModel@Inject constructor(
     }
 
     fun leaveWorkspace():Boolean{
+        _uiState.value = _uiState.value.copy(leaveState = WsLeaveState.DURING)
         var leaveSuccessful = false
         viewModelScope.launch {
             val profileRequest = profileRepository.getProfile()
@@ -100,7 +106,12 @@ open class WsProfileViewModel@Inject constructor(
                    navigationStateManager.getWorkspaceId(),).isSuccess
             }
         } //TODO: handle errors and messaging later
+        _uiState.value = _uiState.value.copy(leaveState = WsLeaveState.DONE)
         return leaveSuccessful
+    }
+
+    fun resetLeaveState(){
+        _uiState.value = _uiState.value.copy(leaveState = WsLeaveState.NOT)
     }
 
 }

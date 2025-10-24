@@ -52,8 +52,8 @@ import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileUiState
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.viewmodels.WsLeaveState
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileViewModel
-
 
 @Composable
 fun WsProfileScreen(
@@ -74,26 +74,41 @@ fun WsProfileScreen(
     val onMembersClick = {featureActions.navigateToMembers()}
     val onInviteClick = {featureActions.navigateToInvite()}
     val onLeaveClick = {val result:Boolean = wsProfileViewModel.leaveWorkspace()
-    onBackClick()}
+    }
 
-    Scaffold(
-        topBar = { ViewProfileTopBar(onBackClick = onBackClick) },
-        bottomBar = { WsProfileBar(onMembersClick, onInviteClick, onLeaveClick) }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when {
-                uiState.isLoadingProfile -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                uiState.workspace != null -> {
-                    ViewWsProfileContent(workspace = uiState.workspace!!)
+    LaunchedEffect(uiState.leaveState) {
+        if (uiState.leaveState == WsLeaveState.DONE){
+            wsProfileViewModel.resetLeaveState()
+            onBackClick()
+        }
+    }
+
+
+    if (uiState.leaveState == WsLeaveState.NOT) {
+        Scaffold(
+            topBar = { ViewProfileTopBar(onBackClick = onBackClick) },
+            bottomBar = { WsProfileBar(onMembersClick, onInviteClick, onLeaveClick) }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                when {
+                    uiState.isLoadingProfile -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+
+                    uiState.workspace != null -> {
+                        ViewWsProfileContent(workspace = uiState.workspace!!)
+                    }
                 }
             }
         }
+    }
+    else{
+        Box(modifier = Modifier, contentAlignment = Alignment.Center){
+            CircularProgressIndicator()}
     }
 }
 
