@@ -2,6 +2,7 @@ package com.cpen321.usermanagement.data.remote.api
 
 import com.cpen321.usermanagement.data.remote.dto.ApiResponse
 import com.cpen321.usermanagement.data.remote.dto.ProfileData
+import com.cpen321.usermanagement.data.remote.dto.UpdateFcmTokenRequest
 import com.cpen321.usermanagement.data.remote.dto.UpdateProfileRequest
 import com.cpen321.usermanagement.data.remote.dto.UploadImageData
 import okhttp3.MultipartBody
@@ -28,6 +29,12 @@ interface UserInterface {
     @DELETE("user/profile")
     suspend fun deleteProfile(
         @Header("Authorization") authHeader: String,
+    ): Response<ApiResponse<ProfileData>>
+
+    @POST("user/fcm-token")
+    suspend fun updateFcmToken(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateFcmTokenRequest
     ): Response<ApiResponse<ProfileData>>
 }
 

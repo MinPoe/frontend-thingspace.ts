@@ -7,9 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.AuthData
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.repository.AuthRepository
+import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.ui.navigation.NavRoutes
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.tasks.await
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +41,7 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -137,6 +141,9 @@ class AuthViewModel @Inject constructor(
                         errorMessage = null
                     )
 
+                    // Update FCM token after successful login
+                    updateFcmToken()
+
                     // Trigger navigation through NavigationStateManager
                     navigationStateManager.updateAuthenticationState(
                         isAuthenticated = true,
@@ -201,5 +208,28 @@ class AuthViewModel @Inject constructor(
 
     fun clearSuccessMessage() {
         _uiState.value = _uiState.value.copy(successMessage = null)
+    }
+
+    private fun updateFcmToken() {
+        viewModelScope.launch {
+            try {
+                // Get FCM token from Firebase
+                val token = FirebaseMessaging.getInstance().token.await()
+                Log.d(TAG, "FCM Token retrieved: $token")
+                
+                // Send token to backend
+                profileRepository.updateFcmToken(token)
+                    .onSuccess {
+                        Log.d(TAG, "FCM token successfully sent to backend")
+                    }
+                    .onFailure { error ->
+                        Log.e(TAG, "Failed to send FCM token to backend", error)
+                        // Don't show error to user - this is a background operation
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to retrieve FCM token", e)
+                // Don't show error to user - this is a background operation
+            }
+        }
     }
 }

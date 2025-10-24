@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1019103212459",
+    "project_id": "thingspace-35192",
+    "storage_bucket": "thingspace-35192.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019103212459:android:e416f59c129df9aabd98ee",
+        "android_client_info": {
+          "package_name": "com.cpen321.usermanagement"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsBU70rU6nh8qKw8k9DViV0pev6DBptlQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

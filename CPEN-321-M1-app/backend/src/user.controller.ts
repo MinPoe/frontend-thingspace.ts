@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+import mongoose from 'mongoose';
 
-import { GetProfileResponse, UpdateProfileRequest } from './user.types';
+import { GetProfileResponse, UpdateProfileRequest, updateFcmTokenSchema } from './user.types';
 import logger from './logger.util';
 import { MediaService } from './media.service';
 import { userModel } from './user.model';
@@ -66,6 +67,38 @@ export class UserController {
       if (error instanceof Error) {
         return res.status(500).json({
           message: error.message || 'Failed to delete user',
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  async updateFcmToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.user!;
+      const validatedData = updateFcmTokenSchema.parse(req.body);
+
+      const updatedUser = await userModel.updateFcmToken(
+        user._id,
+        validatedData.fcmToken
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      logger.info(`FCM token updated for user: ${user._id}`);
+      res.status(200).json({ 
+        message: 'FCM token updated successfully',
+        data: { user: updatedUser }
+      });
+    } catch (error) {
+      logger.error('Error updating FCM token:', error);
+
+      if (error instanceof Error) {
+        return res.status(400).json({ 
+          message: error.message || 'Failed to update FCM token' 
         });
       }
 
