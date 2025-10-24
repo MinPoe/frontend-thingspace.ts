@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.data.repository.NoteRepository
+import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,17 +21,51 @@ data class NoteEditState(
     val isSaving: Boolean = false,
     val error: String? = null,
     val loadError: String? = null,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val isSharing: Boolean = false,
+    val isCopying: Boolean = false,
+    val shareSuccess: Boolean = false,
+    val copySuccess: Boolean = false,
+    val workspaces: List<Workspace> = emptyList(),
+    val isLoadingWorkspaces: Boolean = false
 )
 
 @HiltViewModel
 class NoteEditViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
+    private val workspaceRepository: WorkspaceRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
     private val _editState = MutableStateFlow(NoteEditState())
     val editState: StateFlow<NoteEditState> = _editState.asStateFlow()
+
+    init {
+        loadWorkspaces()
+    }
+
+    fun loadWorkspaces() {
+        viewModelScope.launch {
+            _editState.value = _editState.value.copy(isLoadingWorkspaces = true)
+
+            val result = workspaceRepository.getWorkspacesForUser()
+
+            result.fold(
+                onSuccess = { workspaces ->
+                    _editState.value = _editState.value.copy(
+                        workspaces = workspaces,
+                        isLoadingWorkspaces = false
+                    )
+                },
+                onFailure = { exception ->
+                    _editState.value = _editState.value.copy(
+                        isLoadingWorkspaces = false,
+                        error = "Failed to load workspaces: ${exception.message}"
+                    )
+                }
+            )
+        }
+    }
 
     fun loadNote(noteId: String) {
         viewModelScope.launch {
@@ -40,7 +75,6 @@ class NoteEditViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { note ->
-                    // Convert Note fields to FieldCreationData
                     val fieldCreationData = note.fields.map { field ->
                         when (field) {
                             is TextField -> FieldCreationData(
@@ -72,6 +106,7 @@ class NoteEditViewModel @Inject constructor(
                         noteType = note.noteType,
                         tags = note.tags,
                         fields = fieldCreationData,
+                        workspaces = _editState.value.workspaces,
                         isLoading = false,
                         loadError = null
                     )
@@ -86,29 +121,32 @@ class NoteEditViewModel @Inject constructor(
         }
     }
 
-    fun setNoteType(noteType: NoteType) {
+    fun updateNoteType(noteType: NoteType) {
         _editState.value = _editState.value.copy(noteType = noteType)
     }
 
     fun addTag(tag: String) {
-        val currentTags = _editState.value.tags
-        if (tag.isNotBlank() && tag !in currentTags) {
+        if (tag.isNotBlank() && !_editState.value.tags.contains(tag)) {
             _editState.value = _editState.value.copy(
-                tags = currentTags + tag
+                tags = _editState.value.tags + tag
             )
         }
     }
 
     fun removeTag(tag: String) {
         _editState.value = _editState.value.copy(
-            tags = _editState.value.tags - tag
+            tags = _editState.value.tags.filter { it != tag }
         )
     }
 
-    fun addField(fieldType: FieldType) {
+    fun addField(type: FieldType) {
         val newField = FieldCreationData(
-            type = fieldType,
-            label = "New ${fieldType.name.lowercase()} field"
+            type = type,
+            label = when (type) {
+                FieldType.TEXT -> "New Text Field"
+                FieldType.NUMBER -> "New Number Field"
+                FieldType.DATETIME -> "New DateTime Field"
+            }
         )
         _editState.value = _editState.value.copy(
             fields = _editState.value.fields + newField
@@ -133,40 +171,15 @@ class NoteEditViewModel @Inject constructor(
                         is FieldUpdate.Min -> field.copy(min = update.value)
                         is FieldUpdate.Max -> field.copy(max = update.value)
                     }
-                } else {
-                    field
-                }
+                } else field
             }
         )
     }
 
     fun saveNote(noteId: String) {
         viewModelScope.launch {
-            _editState.value = _editState.value.copy(
-                isSaving = true,
-                error = null
-            )
+            _editState.value = _editState.value.copy(isSaving = true, error = null)
 
-            // Validate
-            if (_editState.value.fields.isEmpty()) {
-                _editState.value = _editState.value.copy(
-                    isSaving = false,
-                    error = "Please add at least one field"
-                )
-                return@launch
-            }
-
-            // Check if all fields have labels
-            val hasEmptyLabel = _editState.value.fields.any { it.label.isBlank() }
-            if (hasEmptyLabel) {
-                _editState.value = _editState.value.copy(
-                    isSaving = false,
-                    error = "All fields must have a label"
-                )
-                return@launch
-            }
-
-            // Convert FieldCreationData to Field
             val fields = _editState.value.fields.map { fieldData ->
                 when (fieldData.type) {
                     FieldType.TEXT -> TextField(
@@ -186,14 +199,11 @@ class NoteEditViewModel @Inject constructor(
                     FieldType.DATETIME -> DateTimeField(
                         _id = fieldData.id,
                         label = fieldData.label,
-                        required = fieldData.required,
-                        minDate = null,
-                        maxDate = null
+                        required = fieldData.required
                     )
                 }
             }
 
-            // Update note
             val result = noteRepository.updateNote(
                 noteId = noteId,
                 tags = _editState.value.tags,
@@ -216,6 +226,62 @@ class NoteEditViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    fun shareNote(noteId: String, workspaceId: String) {
+        viewModelScope.launch {
+            _editState.value = _editState.value.copy(isSharing = true, error = null)
+
+            val result = noteRepository.shareNoteToWorkspace(noteId, workspaceId)
+
+            result.fold(
+                onSuccess = {
+                    _editState.value = _editState.value.copy(
+                        isSharing = false,
+                        shareSuccess = true,
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _editState.value = _editState.value.copy(
+                        isSharing = false,
+                        error = exception.message ?: "Failed to share note"
+                    )
+                }
+            )
+        }
+    }
+
+    fun copyNote(noteId: String, workspaceId: String) {
+        viewModelScope.launch {
+            _editState.value = _editState.value.copy(isCopying = true, error = null)
+
+            val result = noteRepository.copyNoteToWorkspace(noteId, workspaceId)
+
+            result.fold(
+                onSuccess = {
+                    _editState.value = _editState.value.copy(
+                        isCopying = false,
+                        copySuccess = true,
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _editState.value = _editState.value.copy(
+                        isCopying = false,
+                        error = exception.message ?: "Failed to copy note"
+                    )
+                }
+            )
+        }
+    }
+
+    fun resetActionStates() {
+        _editState.value = _editState.value.copy(
+            shareSuccess = false,
+            copySuccess = false,
+            error = null
+        )
     }
 
     fun reset() {

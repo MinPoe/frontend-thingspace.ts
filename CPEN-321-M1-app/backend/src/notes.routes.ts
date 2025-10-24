@@ -53,4 +53,10 @@ router.post(
   notesController.shareNoteToWorkspace
 );
 
+router.post(
+  '/:id/copy',
+  authenticateToken,
+  notesController.copyNoteToWorkspace
+);
+
 export default router;

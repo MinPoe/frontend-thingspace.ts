@@ -157,6 +157,48 @@ export class NotesController {
     }
   }
 
+  async copyNoteToWorkspace(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?._id;
+      if (!userId) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+  
+      const noteId = req.params.id;
+      const { workspaceId } = req.body;
+  
+      if (!workspaceId) {
+        res.status(400).json({ error: 'workspaceId is required' });
+        return;
+      }
+  
+      const copiedNote = await noteService.copyNoteToWorkspace(noteId, userId, workspaceId);
+  
+      res.status(201).json({
+        message: 'Note copied to workspace successfully',
+        data: { note: copiedNote },
+      });
+    } catch (error) {
+      console.error('Error copying note:', error);
+      if (error instanceof Error) {
+        if (error.message === 'Workspace not found') {
+          res.status(404).json({ error: 'Workspace not found' });
+          return;
+        }
+        if (error.message === 'Note not found') {
+          res.status(404).json({ error: 'Note not found' });
+          return;
+        }
+        if (error.message.includes('Access denied')) {
+          res.status(403).json({ error: error.message });
+          return;
+        }
+      }
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to copy note' });
+    }
+  }
+
   async getWorkspacesForNote(req: Request, res: Response): Promise<void> {
     try {
       const noteId = req.params.id;

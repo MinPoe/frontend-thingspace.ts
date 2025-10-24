@@ -21,4 +21,6 @@ interface NoteRepository {
     suspend fun getAuthors(noteIds: List<String>): Result<List<User>> //there should be 1 author for now
     suspend fun getWorkspacesForNote(noteId:String): Result<Workspace>
     suspend fun shareNoteToWorkspace(noteId:String, workspaceId: String): Result<Unit>
+    suspend fun copyNoteToWorkspace(noteId:String, workspaceId: String): Result<Unit>
+
 }
