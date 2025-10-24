@@ -22,7 +22,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error creating note:', error);
-      res.status(500).json({ error: 'Failed to create note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create note' });
     }
   }
 
@@ -45,7 +45,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error updating note:', error);
-      res.status(500).json({ error: 'Failed to update note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to update note' });
     }
   }
 
@@ -65,7 +65,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error deleting note:', error);
-      res.status(500).json({ error: 'Failed to delete note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to delete note' });
     }
   }
 
@@ -90,7 +90,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error retrieving note:', error);
-      res.status(500).json({ error: 'Failed to retrieve note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve note' });
     }
   }
 
@@ -111,7 +111,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error retrieving authors:', error);
-      res.status(500).json({ error: 'Failed to retrieve authors' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve authors' });
     }
   }
 
@@ -153,7 +153,7 @@ export class NotesController {
           return;
         }
       }
-      res.status(500).json({ error: 'Failed to share note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to share note' });
     }
   }
 
@@ -168,7 +168,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error retrieving workspace:', error);
-      res.status(500).json({ error: 'Failed to retrieve workspace' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspace' });
     }
   }
 
@@ -203,7 +203,7 @@ export class NotesController {
       });
     } catch (error) {
       console.error('Error retrieving notes:', error);
-      res.status(500).json({ error: 'Failed to retrieve notes' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve notes' });
     }
   }
 

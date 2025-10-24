@@ -49,7 +49,7 @@ export class AuthController {
 
         if (error.message === 'Failed to process user') {
           return res.status(500).json({
-            message: 'Failed to process user information',
+            message: error.message,
           });
         }
       }
@@ -90,7 +90,7 @@ export class AuthController {
 
         if (error.message === 'Failed to process user') {
           return res.status(500).json({
-            message: 'Failed to process user information',
+            message: error.message,
           });
         }
       }
@@ -113,7 +113,7 @@ export class AuthController {
     } catch (error) {
       logger.error('Dev login error:', error);
       return res.status(500).json({
-        message: 'Dev login failed',
+        message: error instanceof Error ? error.message : 'Dev login failed',
       });
     }
   }

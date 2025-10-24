@@ -215,11 +215,8 @@ export class WorkspaceService {
         workspace.members = workspace.members.filter(id => id.toString() !== userIdToBan);
 
         // Add to banned list if not already banned
-        const alreadyBanned = workspace.bannedMembers?.some(id => id.toString() === userIdToBan);
+        const alreadyBanned = workspace.bannedMembers.some(id => id.toString() === userIdToBan);
         if (!alreadyBanned) {
-            if (!workspace.bannedMembers) {
-                workspace.bannedMembers = [];
-            }
             workspace.bannedMembers.push(new mongoose.Types.ObjectId(userIdToBan));
         }
 

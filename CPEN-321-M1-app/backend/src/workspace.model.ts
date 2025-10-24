@@ -48,7 +48,8 @@ const workspaceSchema = new Schema<IWorkspaceDocument>(
     }],
     bannedMembers: [{ 
       type: Schema.Types.ObjectId, 
-      ref: 'User'
+      ref: 'User',
+      default: []
     }],
     latestChatMessageTimestamp: { 
       type: Date, 
