@@ -3,6 +3,7 @@ import { Note, CreateNoteRequest, NoteType, UpdateNoteRequest } from './notes.ty
 import { noteModel } from './note.model';
 import OpenAI from 'openai';
 import { workspaceModel } from './workspace.model';
+import { workspaceService } from './workspace.service';
 
 
 export class NoteService {
@@ -31,7 +32,7 @@ export class NoteService {
         try {
             if (vectorInput.trim().length > 0) {
                 const vectorResponse = await this.getClient().embeddings.create({
-                    model: "text-embedding-3-small",
+                    model: "text-embedding-3-large",
                     input: vectorInput.trim(),
                 });
                 vectorData = vectorResponse.data[0].embedding;
@@ -47,15 +48,18 @@ export class NoteService {
             fields: data.fields,
             noteType: data.noteType || NoteType.CONTENT,
             tags: data.tags || [],
-            authors: [userId],
             vectorData: vectorData,
         });
+
+        // Update workspace timestamp if this is a chat message
+        if (data.noteType === NoteType.CHAT) {
+            await workspaceService.updateLatestChatMessageTimestamp(data.workspaceId);
+        }
     
         return {
             ...newNote.toObject(),
             _id: newNote._id.toString(),
             userId: newNote.userId.toString(),
-            authors: newNote.authors.map(id => id.toString()),
         } as Note;
     }
 
@@ -78,7 +82,6 @@ export class NoteService {
             ...updatedNote.toObject(),
             _id: updatedNote._id.toString(),
             userId: updatedNote.userId.toString(),
-            authors: updatedNote.authors?.map(id => id.toString()),
         } as Note;
     }
 
@@ -94,7 +97,6 @@ export class NoteService {
             ...deletedNote.toObject(),
             _id: deletedNote._id.toString(),
             userId: deletedNote.userId.toString(),
-            authors: deletedNote.authors?.map(id => id.toString()),
         } as Note;
     }
 
@@ -104,19 +106,30 @@ export class NoteService {
             ...note.toObject(),
             _id: note._id.toString(),
             userId: note.userId.toString(),
-            authors: note.authors?.map(id => id.toString()),
         } as Note : null;
     }
 
 
-    async getAuthors(noteId: string): Promise<any[]> {
-        const note = await noteModel.findById(noteId).populate('authors', 'name email profilePicture');
-        
-        if (!note) {
-            throw new Error('Note not found');
+    async getAuthors(noteIds: string[]): Promise<any[]> {
+        if (!noteIds || noteIds.length === 0) {
+            return [];
         }
 
-        return note.authors as any[];
+        // Convert note IDs to ObjectIds
+        const objectIds = noteIds.map(id => new mongoose.Types.ObjectId(id));
+        
+        // Fetch all notes
+        const notes = await noteModel.find({ _id: { $in: objectIds } });
+        
+        // Extract user IDs from the notes (in order)
+        const userIds = notes.map(note => note.userId);
+        
+        // Fetch all users using mongoose model directly
+        const User = mongoose.model('User');
+        const users = await User.find({ _id: { $in: userIds } });
+
+        // Return users in the same order as the notes
+        return users;
     }
 
     // Share note to a different workspace
@@ -137,12 +150,7 @@ export class NoteService {
         }
 
         const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
-        const isBanned = workspace.bannedMembers?.some(id => id.toString() === userId.toString());
-
-        if (isBanned) {
-            throw new Error('Access denied: You are banned from this workspace');
-        }
-
+  
         if (!isMember) {
             throw new Error('Access denied: You are not a member of this workspace');
         }
@@ -160,7 +168,6 @@ export class NoteService {
             ...updatedNote.toObject(),
             _id: updatedNote._id.toString(),
             userId: updatedNote.userId.toString(),
-            authors: updatedNote.authors?.map(id => id.toString()),
         } as Note;
     }
 
@@ -212,7 +219,6 @@ export class NoteService {
                 ...note.toObject(),
                 _id: note._id.toString(),
                 userId: note.userId.toString(),
-                authors: note.authors?.map(id => id.toString()),
             } as Note));
         }
 
@@ -220,7 +226,7 @@ export class NoteService {
         let queryEmbedding: number[] = [];
 
         const vectorResponse = await this.getClient().embeddings.create({
-            model: "text-embedding-3-small",
+            model: "text-embedding-3-large",
             input: queryString.trim(),
         });
         queryEmbedding = vectorResponse.data[0].embedding as unknown as number[];
@@ -256,7 +262,6 @@ export class NoteService {
             ...note.toObject(),
             _id: note._id.toString(),
             userId: note.userId.toString(),
-            authors: note.authors?.map(id => id.toString()),
         } as Note));
     }
 

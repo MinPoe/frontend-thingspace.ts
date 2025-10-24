@@ -1,66 +1,82 @@
 package com.cpen321.usermanagement.data.repository
 
-import com.cpen321.usermanagement.data.remote.dto.Workspace
-import com.cpen321.usermanagement.data.remote.dto.User
-import com.cpen321.usermanagement.data.remote.dto.Profile
+import android.util.Log
+import com.cpen321.usermanagement.data.local.preferences.TokenManager
+import com.cpen321.usermanagement.data.remote.api.AddMemberRequest
+import com.cpen321.usermanagement.data.remote.api.GetWorkspaceData
+import com.cpen321.usermanagement.data.remote.api.WorkspaceInterface
+import com.cpen321.usermanagement.data.remote.dto.*
+import com.cpen321.usermanagement.data.remote.api.UpdateWorkspacePictureRequest
+import com.cpen321.usermanagement.data.remote.api.UpdateWorkspaceProfileRequest
+import com.cpen321.usermanagement.utils.JsonUtils.parseErrorMessage
+import jakarta.inject.Inject
+import retrofit2.HttpException
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
-/**
- * !!! MOCK IMPL 4 NOW !!!
- * **/
-import javax.inject.Singleton
-import javax.inject.Inject
+class WorkspaceRepositoryImpl @Inject constructor(
+    private val workspaceApi: WorkspaceInterface,
+    private val tokenManager: TokenManager
+) : WorkspaceRepository {
 
-@Singleton
-class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
-
-    override suspend fun getWorkspace(workspaceId: String): Result<Workspace> {
-        return Result.success(
-            Workspace(
-                _id = workspaceId,
-//                name = "Workspace $workspaceId",
-                profile = Profile(
-                    imagePath = "picture_$workspaceId.png",
-                    name = "Workspace $workspaceId",
-                    description = "Description for workspace $workspaceId"
-                ),
-//                ownerId = "owner_$workspaceId",
-//                members = listOf("owner_$workspaceId", "member1_$workspaceId")
-            )
-        )
+    companion object {
+        private const val TAG = "WorkspaceRepository"
+        private const val AUTH_HEADER_PLACEHOLDER = "" // Handled by Interceptor
     }
 
-    override suspend fun getWorkspacesForUser(userId: String): Result<List<Workspace>> {
-        val workspaces = (1..3).map {
-            Workspace(
-                _id = "ws_${userId}_$it",
-//                name = "Workspace $it for user $userId",
-                profile = Profile(
-                    imagePath = "pic_user_${userId}_$it.png",
-                    name = "Workspace $it for user $userId",
-                    description = "Mock workspace number $it for user $userId"
-                ),
-//                ownerId = userId,
-//                members = listOf(userId, "member1_$it")
-            )
+    override suspend fun getWorkspace(workspaceId: String): Result<Workspace> {
+        return try {
+            val response = workspaceApi.getWorkspace(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.workspace)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to fetch workspace."
+                )
+                Log.e(TAG, "getWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("getWorkspace", e)
         }
-        return Result.success(workspaces)
+    }
+
+    override suspend fun getWorkspacesForUser(): Result<List<Workspace>> {
+        return try {
+            val response = workspaceApi.getWorkspacesForUser(AUTH_HEADER_PLACEHOLDER)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.workspaces)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to load workspaces."
+                )
+                Log.e(TAG, "getWorkspacesForUser error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("getWorkspacesForUser", e)
+        }
     }
 
     override suspend fun getWorkspaceMembers(workspaceId: String): Result<List<User>> {
-        val members = (1..4).map {
-            User(
-                _id = "u_${workspaceId}_$it",
-                email = "user$it@${workspaceId}.com",
-                createdAt = null,
-                updatedAt = null,
-                profile = Profile(
-                    imagePath = "profile_${workspaceId}_$it.png",
-                    name = "User $it of $workspaceId",
-                    description = "Bio of user $it in workspace $workspaceId"
+        return try {
+            val response = workspaceApi.getWorkspaceMembers(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.members)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to load workspace members."
                 )
-            )
+                Log.e(TAG, "getWorkspaceMembers error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("getWorkspaceMembers", e)
         }
-        return Result.success(members)
     }
 
     override suspend fun createWorkspace(
@@ -69,7 +85,26 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         workspaceProfilePicture: String,
         workspaceDescription: String
     ): Result<String> {
-        return Result.success("an id of a new workspace")
+        return try {
+            val body = Profile(
+                name = workspaceName,
+                description = workspaceDescription,
+                imagePath = workspaceProfilePicture,
+            )
+            val response = workspaceApi.createWorkspace(AUTH_HEADER_PLACEHOLDER, body)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.workspaceId)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to create workspace."
+                )
+                Log.e(TAG, "createWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("createWorkspace", e)
+        }
     }
 
     override suspend fun updateWorkspaceProfile(
@@ -77,44 +112,129 @@ class WorkspaceRepositoryImpl @Inject constructor() : WorkspaceRepository {
         workspaceName: String,
         workspaceDescription: String
     ): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val body = UpdateWorkspaceProfileRequest(workspaceName, workspaceDescription)
+            val response = workspaceApi.updateWorkspaceProfile(AUTH_HEADER_PLACEHOLDER, workspaceId, body)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to update workspace profile."
+                )
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("updateWorkspaceProfile", e)
+        }
     }
 
-    override suspend fun updateWorkspacePicture(
-        workspaceId: String,
-        workspaceProfilePicture: String
-    ): Result<Unit> {
-        return Result.success(Unit)
+    override suspend fun updateWorkspacePicture(workspaceId: String, workspaceProfilePicture: String): Result<Unit> {
+        return try {
+            val response = workspaceApi.updateWorkspacePicture(
+                AUTH_HEADER_PLACEHOLDER,
+                workspaceId,
+                UpdateWorkspacePictureRequest(workspaceProfilePicture)
+            )
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val err = parseErrorMessage(response.errorBody()?.string(), "Failed to update picture.")
+                Result.failure(Exception(err))
+            }
+        } catch (e: Exception) {
+            handleException("updateWorkspacePicture", e)
+        }
     }
 
     override suspend fun deleteWorkspace(workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val response = workspaceApi.deleteWorkspace(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to delete workspace.")))
+        } catch (e: Exception) {
+            handleException("deleteWorkspace", e)
+        }
     }
 
     override suspend fun addMember(userId: String, workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val response = workspaceApi.addMemberToWorkspace(
+                AUTH_HEADER_PLACEHOLDER, workspaceId, AddMemberRequest(userId)
+            )
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to add member.")))
+        } catch (e: Exception) {
+            handleException("addMember", e)
+        }
     }
 
+    override suspend fun leave(userId: String, workspaceId: String): Result<Unit> =
+        banMember(userId, workspaceId) // same path
+
     override suspend fun banMember(userId: String, workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val response = workspaceApi.banWorkspaceMember(AUTH_HEADER_PLACEHOLDER, workspaceId, userId)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to remove user.")))
+        } catch (e: Exception) {
+            handleException("banMember", e)
+        }
     }
 
     override suspend fun getMembershipStatus(userId: String, workspaceId: String): Result<WsMembershipStatus> {
-        val status = when (userId.length % 4) {
-            0 -> WsMembershipStatus.MEMBER
-            1 -> WsMembershipStatus.MANAGER
-            2 -> WsMembershipStatus.NONMEMBER
-            else -> WsMembershipStatus.BANNED
+        return try {
+            val response = workspaceApi.getMembershipStatus(AUTH_HEADER_PLACEHOLDER, workspaceId, userId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                val status = when (response.body()!!.data!!.status.lowercase()) {
+                    "member" -> WsMembershipStatus.MEMBER
+                    "admin" -> WsMembershipStatus.MANAGER
+                    "banned" -> WsMembershipStatus.BANNED
+                    else -> WsMembershipStatus.NONMEMBER
+                }
+                Result.success(status)
+            } else {
+                Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to fetch membership status.")))
+            }
+        } catch (e: Exception) {
+            handleException("getMembershipStatus", e)
         }
-        return Result.success(WsMembershipStatus.MANAGER)//4 testing
     }
 
     override suspend fun getAllTags(workspaceId: String): Result<List<String>> {
-        val tags = listOf("tag1_$workspaceId", "tag2_$workspaceId", "tag3_$workspaceId")
-        return Result.success(tags)
+        return try {
+            val response = workspaceApi.getWorkspaceTags(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.tags)
+            } else {
+                Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to fetch tags.")))
+            }
+        } catch (e: Exception) {
+            handleException("getAllTags", e)
+        }
     }
 
-    override suspend fun leave(userId: String, workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+    override suspend fun chatPoll(workspaceId: String): Result<Boolean>{
+        return try {
+            val response = workspaceApi.pollChat(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.changed)
+            } else {
+                Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to check for chat updates.")))
+            }
+        } catch (e: Exception) {
+            handleException("chatPoll", e)
+        }
+    }
+
+    private fun <T> handleException(method: String, e: Exception): Result<T> {
+        when (e) {
+            is SocketTimeoutException -> Log.e(TAG, "Timeout in $method", e)
+            is UnknownHostException -> Log.e(TAG, "No internet in $method", e)
+            is IOException -> Log.e(TAG, "IO exception in $method", e)
+            is HttpException -> Log.e(TAG, "HTTP error ${e.code()} in $method", e)
+            else -> Log.e(TAG, "Unexpected error in $method", e)
+        }
+        return Result.failure(e)
     }
 }

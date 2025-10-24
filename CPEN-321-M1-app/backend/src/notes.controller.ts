@@ -18,11 +18,11 @@ export class NotesController {
 
       res.status(201).json({
         message: 'Note created successfully',
-        note: newNote,
+        data: { note: newNote },
       });
     } catch (error) {
       console.error('Error creating note:', error);
-      res.status(500).json({ error: 'Failed to create note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create note' });
     }
   }
 
@@ -41,11 +41,11 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note successfully updated',
-        note: updatedNote,
+        data: { note: updatedNote },
       });
     } catch (error) {
       console.error('Error updating note:', error);
-      res.status(500).json({ error: 'Failed to update note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to update note' });
     }
   }
 
@@ -61,11 +61,11 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note successfully deleted',
-        note: deletedNote,
+        data: { note: deletedNote },
       });
     } catch (error) {
       console.error('Error deleting note:', error);
-      res.status(500).json({ error: 'Failed to delete note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to delete note' });
     }
   }
 
@@ -86,26 +86,32 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note successfully retrieved',
-        note: note,
+        data: { note },
       });
     } catch (error) {
       console.error('Error retrieving note:', error);
-      res.status(500).json({ error: 'Failed to retrieve note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve note' });
     }
   }
 
   async getAuthors(req: Request, res: Response): Promise<void> {
     try {
-      const noteId = req.params.id;
-      const authors = await noteService.getAuthors(noteId);
+      const { noteIds } = req.body;
+      
+      if (!noteIds || !Array.isArray(noteIds)) {
+        res.status(400).json({ error: 'noteIds array is required' });
+        return;
+      }
+
+      const authors = await noteService.getAuthors(noteIds);
 
       res.status(200).json({
         message: 'Authors retrieved successfully',
-        authors: authors,
+        data: { authors },
       });
     } catch (error) {
       console.error('Error retrieving authors:', error);
-      res.status(500).json({ error: 'Failed to retrieve authors' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve authors' });
     }
   }
 
@@ -129,7 +135,7 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Note shared to workspace successfully',
-        note: sharedNote,
+        data: { note: sharedNote },
       });
     } catch (error) {
       console.error('Error sharing note:', error);
@@ -147,7 +153,7 @@ export class NotesController {
           return;
         }
       }
-      res.status(500).json({ error: 'Failed to share note' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to share note' });
     }
   }
 
@@ -158,11 +164,11 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Workspace retrieved successfully',
-        workspaceId: workspaceId,
+        data: { workspaceId },
       });
     } catch (error) {
       console.error('Error retrieving workspace:', error);
-      res.status(500).json({ error: 'Failed to retrieve workspace' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspace' });
     }
   }
 
@@ -193,11 +199,11 @@ export class NotesController {
 
       res.status(200).json({
         message: 'Notes retrieved successfully',
-        notes: notes,
+        data: { notes },
       });
     } catch (error) {
       console.error('Error retrieving notes:', error);
-      res.status(500).json({ error: 'Failed to retrieve notes' });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve notes' });
     }
   }
 

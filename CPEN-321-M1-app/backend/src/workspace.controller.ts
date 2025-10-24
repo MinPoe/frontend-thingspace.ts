@@ -14,11 +14,11 @@ export class WorkspaceController {
 
             res.status(201).json({
                 message: 'Workspace created successfully',
-                workspaceId: workspace._id,
+                data: {workspaceId: workspace._id}
             });
         } catch (error) {
             console.error('Error creating workspace:', error);
-            res.status(500).json({ error: 'Failed to create workspace' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create workspace' });
         }
     }
 
@@ -40,7 +40,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace retrieved successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error retrieving workspace:', error);
@@ -50,7 +50,7 @@ export class WorkspaceController {
                 return;
             }
             
-            res.status(500).json({ error: 'Failed to retrieve workspace' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspace' });
         }
     }
 
@@ -66,11 +66,11 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspaces retrieved successfully',
-                workspaces: workspaces,
+                data: { workspaces },
             });
         } catch (error) {
             console.error('Error retrieving workspaces:', error);
-            res.status(500).json({ error: 'Failed to retrieve workspaces' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspaces' });
         }
     }
 
@@ -87,7 +87,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Members retrieved successfully',
-                members: members,
+                data: { members },
             });
         } catch (error) {
             console.error('Error retrieving members:', error);
@@ -97,7 +97,7 @@ export class WorkspaceController {
                 return;
             }
             
-            res.status(500).json({ error: 'Failed to retrieve members' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve members' });
         }
     }
 
@@ -114,7 +114,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Tags retrieved successfully',
-                tags: tags,
+                data: { tags },
             });
         } catch (error) {
             console.error('Error retrieving tags:', error);
@@ -124,7 +124,7 @@ export class WorkspaceController {
                 return;
             }
             
-            res.status(500).json({ error: 'Failed to retrieve tags' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve tags' });
         }
     }
 
@@ -137,11 +137,11 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Membership status retrieved successfully',
-                status: status,
+                data: { status },
             });
         } catch (error) {
             console.error('Error retrieving membership status:', error);
-            res.status(500).json({ error: 'Failed to retrieve membership status' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve membership status' });
         }
     }
 
@@ -165,7 +165,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Member added successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error adding member:', error);
@@ -193,7 +193,7 @@ export class WorkspaceController {
                 }
             }
             
-            res.status(500).json({ error: 'Failed to add member' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to add member' });
         }
     }
 
@@ -212,7 +212,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Member banned successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error banning member:', error);
@@ -236,7 +236,7 @@ export class WorkspaceController {
                 }
             }
             
-            res.status(500).json({ error: 'Failed to ban member' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to ban member' });
         }
     }
 
@@ -258,7 +258,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace profile updated successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error updating workspace profile:', error);
@@ -274,7 +274,7 @@ export class WorkspaceController {
                 }
             }
             
-            res.status(500).json({ error: 'Failed to update workspace profile' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to update workspace profile' });
         }
     }
 
@@ -296,7 +296,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace picture updated successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error updating workspace picture:', error);
@@ -312,7 +312,7 @@ export class WorkspaceController {
                 }
             }
             
-            res.status(500).json({ error: 'Failed to update workspace picture' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to update workspace picture' });
         }
     }
 
@@ -330,7 +330,7 @@ export class WorkspaceController {
 
             res.status(200).json({
                 message: 'Workspace and all its notes deleted successfully',
-                workspace: workspace,
+                data: { workspace },
             });
         } catch (error) {
             console.error('Error deleting workspace:', error);
@@ -346,7 +346,36 @@ export class WorkspaceController {
                 }
             }
             
-            res.status(500).json({ error: 'Failed to delete workspace' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to delete workspace' });
+        }
+    }
+
+    async pollForNewMessages(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+            const hasNewMessages = await workspaceService.checkForNewChatMessages(workspaceId);
+
+            res.status(200).json({
+                message: 'Polling check completed',
+                data: { hasNewMessages },
+            });
+        } catch (error) {
+            console.error('Error polling for new messages:', error);
+            
+            if (error instanceof Error) {
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to poll for new messages' });
         }
     }
 }

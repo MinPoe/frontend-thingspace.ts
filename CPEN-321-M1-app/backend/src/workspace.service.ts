@@ -23,6 +23,7 @@ export class WorkspaceService {
             profile: newWorkspace.profile,
             ownerId: newWorkspace.ownerId.toString(),
             members: newWorkspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: newWorkspace.latestChatMessageTimestamp,
             createdAt: newWorkspace.createdAt,
             updatedAt: newWorkspace.updatedAt,
         };
@@ -48,6 +49,7 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
@@ -57,7 +59,7 @@ export class WorkspaceService {
         // Find workspaces where user is a member (includes owners)
         const workspaces = await workspaceModel.find({
             members: userId
-        }).sort({ createdAt: -1 });
+        }).sort({ updatedAt: -1 });
 
         return workspaces.map(workspace => ({
             _id: workspace._id.toString(),
@@ -65,6 +67,7 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         }));
@@ -179,6 +182,7 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
@@ -211,11 +215,8 @@ export class WorkspaceService {
         workspace.members = workspace.members.filter(id => id.toString() !== userIdToBan);
 
         // Add to banned list if not already banned
-        const alreadyBanned = workspace.bannedMembers?.some(id => id.toString() === userIdToBan);
+        const alreadyBanned = workspace.bannedMembers.some(id => id.toString() === userIdToBan);
         if (!alreadyBanned) {
-            if (!workspace.bannedMembers) {
-                workspace.bannedMembers = [];
-            }
             workspace.bannedMembers.push(new mongoose.Types.ObjectId(userIdToBan));
         }
 
@@ -227,6 +228,7 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
@@ -261,6 +263,7 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
@@ -288,6 +291,7 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
@@ -317,9 +321,32 @@ export class WorkspaceService {
             profile: workspace.profile,
             ownerId: workspace.ownerId.toString(),
             members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
+    }
+
+    async checkForNewChatMessages(workspaceId: string): Promise<boolean> {
+        const workspace = await workspaceModel.findById(workspaceId);
+        
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+        
+        // Check if there are new messages within the polling interval (0.8 seconds for latency)
+        const currentTime = new Date();
+        const pollingInterval = 5000; // 1.3 seconds in milliseconds
+        const timeThreshold = new Date(workspace.latestChatMessageTimestamp.getTime() + pollingInterval);
+        
+        return currentTime <= timeThreshold;
+    }
+
+    async updateLatestChatMessageTimestamp(workspaceId: string): Promise<void> {
+        await workspaceModel.findByIdAndUpdate(
+            workspaceId,
+            { latestChatMessageTimestamp: new Date() }
+        );
     }
 }
 

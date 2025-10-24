@@ -7,6 +7,13 @@ import { CreateWorkspaceRequest, UpdateWorkspaceProfileRequest, UpdateWorkspaceP
 const router = Router();
 const workspaceController = new WorkspaceController();
 
+// Get all workspaces for a user
+router.get(
+  '/user',
+  authenticateToken,
+  workspaceController.getWorkspacesForUser
+);
+
 // Get a single workspace
 router.get(
   '/:id',
@@ -14,12 +21,7 @@ router.get(
   workspaceController.getWorkspace
 );
 
-// Get all workspaces for a user
-router.get(
-  '/user/:userId',
-  authenticateToken,
-  workspaceController.getWorkspacesForUser
-);
+
 
 // Get members of a workspace
 router.get(
@@ -40,6 +42,13 @@ router.get(
   '/:id/membership/:userId',
   authenticateToken,
   workspaceController.getMembershipStatus
+);
+
+// Poll for new chat messages
+router.get(
+  '/:id/poll',
+  authenticateToken,
+  workspaceController.pollForNewMessages
 );
 
 // Create a new workspace

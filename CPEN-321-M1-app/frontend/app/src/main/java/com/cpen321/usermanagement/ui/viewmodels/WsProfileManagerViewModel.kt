@@ -15,11 +15,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class DeletingTracer{
+    NOT, DURING, DONE
+}
+
 data class WsProfileManagerUiState(
     // Loading states
     val isLoadingProfile: Boolean = false,
     val isSavingProfile: Boolean = false,
     val isLoadingPhoto: Boolean = false,
+    val deleting: DeletingTracer = DeletingTracer.NOT,
 
     // Data states
     val workspace: Workspace? = null,
@@ -122,7 +127,7 @@ class WsProfileManagerViewModel@Inject constructor(
                 _uiState.value.copy(
                     isSavingProfile = true,
                     errorMessage = null,
-                    successMessage = null
+                    successMessage = null,
                 )
 
             val result = workspaceRepository.updateWorkspaceProfile(
@@ -156,6 +161,7 @@ class WsProfileManagerViewModel@Inject constructor(
     }
 
     fun deleteWorkspace():Boolean{
+        _uiState.value = _uiState.value.copy(deleting = DeletingTracer.DURING)
         var deleteSuccessful = false
         viewModelScope.launch {
             val delRequest = workspaceRepository.deleteWorkspace(
@@ -164,6 +170,11 @@ class WsProfileManagerViewModel@Inject constructor(
                 deleteSuccessful = true
             }
         } //TODO: handle errors and messaging later
+        _uiState.value = _uiState.value.copy(deleting = DeletingTracer.DONE)
         return deleteSuccessful
+    }
+
+    fun setDelTracer(deleting: DeletingTracer){
+        _uiState.value = _uiState.value.copy(deleting = deleting)
     }
 }

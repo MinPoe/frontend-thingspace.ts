@@ -22,9 +22,6 @@ fun FilterScreen(
     onBackClick: () -> Unit,
     featureActions: IFeatureActions
 ){
-    //event assignment logic
-    filterViewModel.onLoad()
-
     FilterContent(
         onBackClick,
         availableTags = filterViewModel.getAvailTags(),

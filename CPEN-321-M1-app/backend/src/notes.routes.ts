@@ -42,12 +42,6 @@ router.get(
 );
 
 router.get(
-  '/:id/authors',
-  authenticateToken,
-  notesController.getAuthors
-);
-
-router.get(
   '/:id/workspaces',
   authenticateToken,
   notesController.getWorkspacesForNote
