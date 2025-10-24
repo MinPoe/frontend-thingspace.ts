@@ -29,7 +29,7 @@ data class UpdateWorkspaceProfileRequest(
 )
 
 data class UpdateWorkspacePictureRequest(
-    val pictureUrl: String
+    val profilePicture: String
 )
 
 data class AddMemberRequest(
