@@ -63,12 +63,12 @@ fun WsProfileScreen(
 ) {
     val uiState by wsProfileViewModel.uiState.collectAsState()
 
-    // Load the profile only once
-    LaunchedEffect(Unit) {
-        if (uiState.workspace == null) {
-            wsProfileViewModel.loadProfile() // Or loadOtherUserProfile(id) if needed
-        }
-    }
+//    // Load the profile only once
+//    LaunchedEffect(Unit) {
+//        if (uiState.workspace == null) {
+//            wsProfileViewModel.loadProfile() // Or loadOtherUserProfile(id) if needed
+//        }
+//    }
 
     //events - 4 now leave empty
     val onMembersClick = {featureActions.navigateToMembers()}

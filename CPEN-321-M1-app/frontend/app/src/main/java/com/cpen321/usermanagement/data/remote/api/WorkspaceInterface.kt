@@ -44,6 +44,14 @@ data class GetWorkspaceMembersData(
     val members: List<User>
 )
 
+data class GetTagsData(
+    val tags:List<String>
+)
+
+data class GetPollData(
+    val changed:Boolean
+)
+
 // -------------------- RETROFIT INTERFACE --------------------
 
 interface WorkspaceInterface {
@@ -73,7 +81,7 @@ interface WorkspaceInterface {
     suspend fun getWorkspaceTags(
         @Header("Authorization") authHeader: String,
         @Path("id") workspaceId: String
-    ): Response<ApiResponse<List<String>>>
+    ): Response<ApiResponse<GetTagsData>>
 
     // Get membership status for a user
     @GET("workspace/{id}/membership/{userId}")
@@ -133,7 +141,7 @@ interface WorkspaceInterface {
     @GET("workspace/{id}/poll")
     suspend fun pollChat(
     @Header("Authorization") authHeader: String,
-    @Path("id") workspaceId: String): Response<ApiResponse<Boolean>>
+    @Path("id") workspaceId: String): Response<ApiResponse<GetPollData>>
 }
 
 

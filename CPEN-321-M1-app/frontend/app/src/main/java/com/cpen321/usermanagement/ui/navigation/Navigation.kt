@@ -229,6 +229,7 @@ private fun handleNavigationEvent(
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
             wsSelectViewModel.setToUpdate() //TODO: for now here later on make a full updatemethod
+            wsProfileViewModel.loadProfile()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -315,6 +316,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToWsProfile -> {
             navController.navigate(NavRoutes.WS_PROFILE)
+            wsProfileViewModel.loadProfile()
             navigationStateManager.clearNavigationEvent()
         }
 

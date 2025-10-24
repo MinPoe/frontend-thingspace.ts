@@ -205,12 +205,25 @@ class WorkspaceRepositoryImpl @Inject constructor(
         return try {
             val response = workspaceApi.getWorkspaceTags(AUTH_HEADER_PLACEHOLDER, workspaceId)
             if (response.isSuccessful && response.body()?.data != null) {
-                Result.success(response.body()!!.data!!)
+                Result.success(response.body()!!.data!!.tags)
             } else {
                 Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to fetch tags.")))
             }
         } catch (e: Exception) {
             handleException("getAllTags", e)
+        }
+    }
+
+    override suspend fun chatPoll(workspaceId: String): Result<Boolean>{
+        return try {
+            val response = workspaceApi.pollChat(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.changed)
+            } else {
+                Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to check for chat updates.")))
+            }
+        } catch (e: Exception) {
+            handleException("chatPoll", e)
         }
     }
 

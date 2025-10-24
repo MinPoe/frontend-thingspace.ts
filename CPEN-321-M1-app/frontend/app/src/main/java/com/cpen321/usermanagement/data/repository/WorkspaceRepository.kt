@@ -23,6 +23,7 @@ interface WorkspaceRepository {
     suspend fun banMember(userId:String, workspaceId: String): Result<Unit>
     suspend fun getMembershipStatus(userId:String, workspaceId: String): Result<WsMembershipStatus>
     suspend fun getAllTags(workspaceId: String): Result<List<String>>
+    suspend fun chatPoll(workspaceId: String): Result<Boolean>
 }
 
 enum class WsMembershipStatus{

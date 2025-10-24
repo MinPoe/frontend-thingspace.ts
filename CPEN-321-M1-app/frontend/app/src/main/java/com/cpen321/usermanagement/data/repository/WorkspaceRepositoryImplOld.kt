@@ -147,4 +147,8 @@ class WorkspaceRepositoryImplOld @Inject constructor(
     override suspend fun leave(userId: String, workspaceId: String): Result<Unit> {
         return Result.success(Unit)
     }
+
+    override suspend fun chatPoll(workspaceId: String): Result<Boolean> {
+        return Result.success(true)
+    }
 }
