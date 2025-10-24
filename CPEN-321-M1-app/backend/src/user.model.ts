@@ -43,6 +43,10 @@ const userSchema = new Schema<IUser>(
         maxlength: 500,
       },
     },
+    fcmToken: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -151,6 +155,33 @@ export class UserModel {
     } catch (error) {
       console.error('Error finding user by Google ID:', error);
       throw new Error('Failed to find user');
+    }
+  }
+
+  async findByEmail(email: string): Promise<IUser | null> {
+    try {
+      const user = await this.user.findOne({ email });
+      return user;
+    } catch (error) {
+      logger.error('Error finding user by email:', error);
+      throw new Error('Failed to find user');
+    }
+  }
+
+  async updateFcmToken(
+    userId: mongoose.Types.ObjectId,
+    fcmToken: string
+  ): Promise<IUser | null> {
+    try {
+      const updatedUser = await this.user.findByIdAndUpdate(
+        userId,
+        { fcmToken },
+        { new: true }
+      );
+      return updatedUser;
+    } catch (error) {
+      logger.error('Error updating FCM token:', error);
+      throw new Error('Failed to update FCM token');
     }
   }
 }

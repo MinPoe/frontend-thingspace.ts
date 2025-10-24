@@ -3,6 +3,8 @@ import { Workspace, WsMembershipStatus, CreateWorkspaceRequest } from './workspa
 import { workspaceModel } from './workspace.model';
 import { noteModel } from './note.model';
 import { userModel } from './user.model';
+import { notificationService } from './notification.service';
+import logger from './logger.util';
 import { IUser } from './user.types';
 
 export class WorkspaceService {
@@ -141,7 +143,7 @@ export class WorkspaceService {
         return WsMembershipStatus.NOT_MEMBER;
     }
 
-    async addMember(workspaceId: string, requestingUserId: mongoose.Types.ObjectId, userIdToAdd: string): Promise<Workspace> {
+    async inviteMember(workspaceId: string, requestingUserId: mongoose.Types.ObjectId, userIdToAdd: string): Promise<Workspace> {
         const workspace = await workspaceModel.findById(workspaceId);
         
         if (!workspace) {
@@ -174,6 +176,65 @@ export class WorkspaceService {
 
         // Add member
         workspace.members.push(new mongoose.Types.ObjectId(userIdToAdd));
+        await workspace.save();
+
+        // Send notification to the invited user
+        try {
+            const invitingUser = await userModel.findById(requestingUserId);
+            
+            if (userToAdd.fcmToken && invitingUser) {
+                await notificationService.sendNotification(
+                    userToAdd.fcmToken,
+                    'Workspace Invitation',
+                    `${invitingUser.profile.name} added you to "${workspace.name}"`,
+                    {
+                        type: 'workspace_invite',
+                        workspaceId: workspaceId,
+                        workspaceName: workspace.name,
+                        inviterId: requestingUserId.toString()
+                    }
+                );
+                logger.info(`Notification sent to user ${userIdToAdd} for workspace ${workspaceId}`);
+            } else {
+                logger.info(`No FCM token available for user ${userIdToAdd}, skipping notification`);
+            }
+        } catch (notificationError) {
+            // Log but don't fail the whole operation if notification fails
+            logger.error('Failed to send notification:', notificationError);
+        }
+
+        return {
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        };
+    }
+
+    async leaveWorkspace(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<Workspace> {
+        const workspace = await workspaceModel.findById(workspaceId);
+        
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        // Check if user is the owner
+        if (workspace.ownerId.toString() === userId.toString()) {
+            throw new Error('Owner cannot leave the workspace. Transfer ownership or delete the workspace instead.');
+        }
+
+        // Check if user is a member
+        const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
+        if (!isMember) {
+            throw new Error('You are not a member of this workspace');
+        }
+
+        // Remove user from members
+        workspace.members = workspace.members.filter(id => id.toString() !== userId.toString());
         await workspace.save();
 
         return {

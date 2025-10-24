@@ -145,7 +145,7 @@ export class WorkspaceController {
         }
     }
 
-    async addMember(req: Request, res: Response): Promise<void> {
+    async inviteMember(req: Request, res: Response): Promise<void> {
         try {
             const requestingUserId = req.user?._id;
             if (!requestingUserId) {
@@ -161,7 +161,7 @@ export class WorkspaceController {
                 return;
             }
 
-            const workspace = await workspaceService.addMember(workspaceId, requestingUserId, userId);
+            const workspace = await workspaceService.inviteMember(workspaceId, requestingUserId, userId);
 
             res.status(200).json({
                 message: 'Member added successfully',
@@ -194,6 +194,44 @@ export class WorkspaceController {
             }
             
             res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to add member' });
+        }
+    }
+
+    async leaveWorkspace(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+
+            const workspace = await workspaceService.leaveWorkspace(workspaceId, userId);
+
+            res.status(200).json({
+                message: 'Successfully left the workspace',
+                data: { workspace },
+            });
+        } catch (error) {
+            console.error('Error leaving workspace:', error);
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Owner cannot leave')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'You are not a member of this workspace') {
+                    res.status(400).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: 'Failed to leave workspace' });
         }
     }
 

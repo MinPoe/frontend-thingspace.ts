@@ -32,3 +32,7 @@ data class User(
 data class UploadImageData(
     val image: String
 )
+
+data class UpdateFcmTokenRequest(
+    val fcmToken: String
+)
