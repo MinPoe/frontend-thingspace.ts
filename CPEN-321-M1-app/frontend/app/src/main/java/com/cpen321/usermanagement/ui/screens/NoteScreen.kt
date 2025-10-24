@@ -220,9 +220,13 @@ fun NoteBody(
         // Creation Date
         InfoCard(
             title = "Created",
-            content = note.dateCreation.format(
-                DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a")
-            )
+            content = try {
+                java.time.Instant.parse(note.createdAt)
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
+            } catch (e: Exception) {
+                note.createdAt
+            }
         )
 
         Spacer(modifier = Modifier.height(spacing.small))
@@ -230,9 +234,13 @@ fun NoteBody(
         // Last Edit Date
         InfoCard(
             title = "Last Edited",
-            content = note.dateLastEdit.format(
-                DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a")
-            )
+            content = try {
+                java.time.Instant.parse(note.updatedAt)
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
+            } catch (e: Exception) {
+                note.updatedAt
+            }
         )
 
         Spacer(modifier = Modifier.height(spacing.small))

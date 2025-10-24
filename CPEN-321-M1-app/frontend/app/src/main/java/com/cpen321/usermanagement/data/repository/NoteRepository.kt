@@ -7,8 +7,13 @@ import com.cpen321.usermanagement.data.remote.dto.Workspace
 
 interface NoteRepository {
     suspend fun getNote(noteId: String): Result<Note>
-    suspend fun createNote(authorId: String, tags: List<String>, fields: List<Field>, noteType: NoteType):
-            Result<Unit>
+    suspend fun createNote(
+        workspaceId: String,
+        authorId: String,
+        tags: List<String>,
+        fields: List<Field>,
+        noteType: NoteType
+    ): Result<Unit>
     suspend fun updateNote(noteId: String, tags: List<String>, fields: List<Field>): Result<Unit>
     suspend fun deleteNote(noteId: String): Result<Unit>
 

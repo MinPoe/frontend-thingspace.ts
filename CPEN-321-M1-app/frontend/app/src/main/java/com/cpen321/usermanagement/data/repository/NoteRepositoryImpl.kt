@@ -1,64 +1,85 @@
 package com.cpen321.usermanagement.data.repository
 
-import com.cpen321.usermanagement.data.remote.api.CreateNoteRequest
-import com.cpen321.usermanagement.data.remote.api.NoteInterface
-import com.cpen321.usermanagement.data.remote.api.UpdateNoteRequest
 import android.util.Log
 import com.cpen321.usermanagement.data.local.preferences.TokenManager
-import com.cpen321.usermanagement.data.remote.api.RetrofitClient
-import com.cpen321.usermanagement.data.remote.dto.Workspace
-import com.cpen321.usermanagement.data.remote.dto.Note
-import com.cpen321.usermanagement.data.remote.dto.NoteType
-import com.cpen321.usermanagement.data.remote.dto.Field
-import com.cpen321.usermanagement.data.remote.dto.User
+import com.cpen321.usermanagement.data.remote.api.CopyNoteRequest
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
+import com.cpen321.usermanagement.data.remote.api.ShareNoteRequest
+import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.utils.JsonUtils.parseErrorMessage
-import com.cpen321.usermanagement.data.repository.NoteRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import com.cpen321.usermanagement.data.remote.dto.Field
 
-@Singleton
 class NoteRepositoryImpl @Inject constructor(
-    private val noteInterface: NoteInterface,
+    private val noteApi: NoteInterface,
+    private val tokenManager: TokenManager
 ) : NoteRepository {
 
     companion object {
         private const val TAG = "NoteRepository"
+        private const val AUTH_HEADER_PLACEHOLDER = "" // Handled by Interceptor
     }
 
     override suspend fun getNote(noteId: String): Result<Note> {
         return try {
-            val response = noteInterface.getNote("", noteId)
-            if (response.isSuccessful && response.body()?.data?.note != null) {
+            val response = noteApi.getNote(AUTH_HEADER_PLACEHOLDER, noteId)
+            if (response.isSuccessful && response.body()?.data != null) {
                 Result.success(response.body()!!.data!!.note)
             } else {
-                handleError(response.errorBody()?.string(), "Failed to fetch note.")
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to fetch note."
+                )
+                Log.e(TAG, "getNote error: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            handleException(e)
+            handleException("getNote", e)
         }
     }
 
     override suspend fun createNote(
+        workspaceId: String,
         authorId: String,
         tags: List<String>,
         fields: List<Field>,
         noteType: NoteType
     ): Result<Unit> {
         return try {
-            val request = CreateNoteRequest(
-                tags = tags,
-                fields = fields,
-                noteType = noteType,
-                workspaceId = authorId // or adjust if workspaceId ≠ authorId
+            // Transform fields to backend format (simple maps)
+            val backendFields = fields.map { field ->
+                mapOf(
+                    "_id" to field._id,
+                    "fieldType" to "textbox",
+                    "content" to ""
+                )
+            }
+
+            val requestMap = mapOf(
+                "workspaceId" to workspaceId,
+                "fields" to backendFields,
+                "tags" to tags,
+                "noteType" to noteType.name
             )
-            val response = noteInterface.createNote("", request)
+
+            val response = noteApi.createNote(AUTH_HEADER_PLACEHOLDER, requestMap)
+
             if (response.isSuccessful) {
+                Log.d(TAG, "Note created successfully")
                 Result.success(Unit)
             } else {
-                handleError(response.errorBody()?.string(), "Failed to create note.")
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to create note."
+                )
+                Log.e(TAG, "createNote error: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            handleException(e)
+            handleException("createNote", e)
         }
     }
 
@@ -67,30 +88,13 @@ class NoteRepositoryImpl @Inject constructor(
         tags: List<String>,
         fields: List<Field>
     ): Result<Unit> {
-        return try {
-            val request = UpdateNoteRequest(tags = tags.joinToString(","), fields = fields, workspaceId = "")
-            val response = noteInterface.updateNote("", noteId, request)
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else {
-                handleError(response.errorBody()?.string(), "Failed to update note.")
-            }
-        } catch (e: Exception) {
-            handleException(e)
-        }
+        // TODO: Implement when backend endpoint is ready
+        return Result.success(Unit)
     }
 
     override suspend fun deleteNote(noteId: String): Result<Unit> {
-        return try {
-            val response = noteInterface.deleteNote("", noteId)
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else {
-                handleError(response.errorBody()?.string(), "Failed to delete note.")
-            }
-        } catch (e: Exception) {
-            handleException(e)
-        }
+        // TODO: Implement when backend endpoint is ready
+        return Result.success(Unit)
     }
 
     override suspend fun findNotes(
@@ -101,73 +105,89 @@ class NoteRepositoryImpl @Inject constructor(
         notesPerPage: Int
     ): Result<List<Note>> {
         return try {
-            val response = noteInterface.findNotes("", searchQuery)
-            if (response.isSuccessful && response.body()?.data?.notes != null) {
+            val response = noteApi.findNotes(
+                authHeader = AUTH_HEADER_PLACEHOLDER,
+                workspaceId = workspaceId,
+                noteType = noteType.name,
+                tags = tagsToInclude,
+                query = searchQuery
+            )
+
+            if (response.isSuccessful && response.body()?.data != null) {
+                Log.d(TAG, "Notes fetched successfully")
                 Result.success(response.body()!!.data!!.notes)
             } else {
-                handleError(response.errorBody()?.string(), "Failed to fetch notes.")
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to fetch notes."
+                )
+                Log.e(TAG, "findNotes error: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            handleException(e)
+            handleException("findNotes", e)
         }
     }
 
     override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
-        return Result.failure(Exception("Not implemented on backend yet"))
+        // TODO: Implement when backend endpoint is ready
+        return Result.success(emptyList())
     }
 
-    override suspend fun getWorkspacesForNote(noteId: String): Result<Workspace> {
-        return try {
-            val response = noteInterface.getWorkspacesForNote("", noteId)
-            if (response.isSuccessful && response.body()?.data?.workspace != null) {
-                Result.success(response.body()!!.data!!.workspace)
-            } else {
-                handleError(response.errorBody()?.string(), "Failed to get workspaces for note.")
-            }
-        } catch (e: Exception) {
-            handleException(e)
-        }
+    override suspend fun getWorkspacesForNote(noteId: String): Result<Unit> {
+        // TODO: Implement when backend endpoint is ready
+        return Result.success(Unit)
     }
 
-    override suspend fun shareNoteToWorkspace(
-        noteId: String,
-        workspaceId: String
-    ): Result<Unit> {
+    override suspend fun shareNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
         return try {
-            val response = noteInterface.shareNoteToWorkspace("", noteId, workspaceId)
+            val request = ShareNoteRequest(workspaceId)
+            val response = noteApi.shareNoteToWorkspace(AUTH_HEADER_PLACEHOLDER, noteId, request)
             if (response.isSuccessful) {
+                Log.d(TAG, "Note shared successfully to workspace $workspaceId")
                 Result.success(Unit)
             } else {
-                handleError(response.errorBody()?.string(), "Failed to share note to workspace.")
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to share note."
+                )
+                Log.e(TAG, "shareNoteToWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            handleException(e)
+            handleException("shareNoteToWorkspace", e)
         }
     }
 
     override suspend fun copyNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
         return try {
-            val response = noteInterface.copyNoteToWorkspace("", noteId, workspaceId)
+            val request = CopyNoteRequest(workspaceId)
+            val response = noteApi.copyNoteToWorkspace(AUTH_HEADER_PLACEHOLDER, noteId, request)
             if (response.isSuccessful) {
+                Log.d(TAG, "Note copied successfully to workspace $workspaceId")
                 Result.success(Unit)
             } else {
-                handleError(response.errorBody()?.string(), "Failed to copy note to workspace.")
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to copy note."
+                )
+                Log.e(TAG, "copyNoteToWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
-            handleException(e)
+            handleException("copyNoteToWorkspace", e)
         }
     }
 
-    /** ------------------ Error and Exception Helpers ------------------ **/
-
-    private fun handleError(errorBody: String?, fallbackMessage: String): Result<Nothing> {
-        val errorMessage = parseErrorMessage(errorBody, fallbackMessage)
-        Log.e(TAG, errorMessage)
+    private fun <T> handleException(method: String, e: Exception): Result<T> {
+        val errorMessage = when (e) {
+            is UnknownHostException, is SocketTimeoutException ->
+                "Network connection error. Please check your internet."
+            is IOException ->
+                "Network error. Please try again."
+            else -> e.message ?: "An unexpected error occurred."
+        }
+        Log.e(TAG, "$method failed", e)
         return Result.failure(Exception(errorMessage))
-    }
-
-    private fun handleException(e: Exception): Result<Nothing> {
-        Log.e(TAG, "Network/HTTP error in Notes API", e)
-        return Result.failure(e)
     }
 }

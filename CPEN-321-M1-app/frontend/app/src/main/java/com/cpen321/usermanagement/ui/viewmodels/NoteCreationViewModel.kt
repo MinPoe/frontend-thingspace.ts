@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
-
+import android.util.Log
 enum class FieldType {
     TEXT,
     NUMBER,
@@ -115,6 +115,8 @@ class NoteCreationViewModel @Inject constructor(
 
     fun createNote(workspaceId: String) {
         viewModelScope.launch {
+            Log.d("NoteCreation", "Creating note with workspaceId: '$workspaceId'")
+
             _creationState.value = _creationState.value.copy(
                 isCreating = true,
                 error = null
@@ -178,6 +180,7 @@ class NoteCreationViewModel @Inject constructor(
 
             // Create note
             val result = noteRepository.createNote(
+                workspaceId = workspaceId,
                 authorId = userId,
                 tags = _creationState.value.tags,
                 fields = fields,

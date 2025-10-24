@@ -223,7 +223,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToMain() {
         _navigationEvent.value = NavigationEvent.NavigateToMain
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_SELECT)
     }
 
     /**
@@ -337,7 +337,10 @@ class NavigationStateManager @Inject constructor() {
      */
     fun navigateToNoteCreation() {
         _navigationEvent.value = NavigationEvent.NavigateToNoteCreation
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.NOTE_CREATION)
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.NOTE_CREATION
+            // workspaceId is preserved from current state
+        )
     }
 
     /**
