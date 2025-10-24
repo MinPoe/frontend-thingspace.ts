@@ -10,6 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -37,6 +38,12 @@ object NetworkModule {
     @Singleton
     fun provideWorkspaceService(): WorkspaceInterface {
         return RetrofitClient.workspaceInterface
+    }
+
+    @Provides
+    @Singleton
+    fun provideNoteInterface(): NoteInterface {
+        return RetrofitClient.noteInterface
     }
 
 }

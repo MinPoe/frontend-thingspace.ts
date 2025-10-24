@@ -19,6 +19,8 @@ import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
 import com.cpen321.usermanagement.ui.viewmodels.NoteEditViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NoteEditState
 import com.cpen321.usermanagement.utils.IFeatureActions
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun NoteEditScreen(
@@ -27,6 +29,8 @@ fun NoteEditScreen(
     featureActions: IFeatureActions
 ) {
     val editState by noteEditViewModel.editState.collectAsState()
+    var showShareDialog by remember { mutableStateOf(false) }
+    var showCopyDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         noteEditViewModel.loadNote(featureActions.getNoteId())
@@ -38,23 +42,75 @@ fun NoteEditScreen(
         }
     }
 
+    LaunchedEffect(editState.shareSuccess) {
+        if (editState.shareSuccess) {
+            showShareDialog = false
+            noteEditViewModel.resetActionStates()
+            onBackClick()
+        }
+    }
+
+    LaunchedEffect(editState.copySuccess) {
+        if (editState.copySuccess) {
+            showCopyDialog = false
+            noteEditViewModel.resetActionStates()
+            onBackClick()
+        }
+    }
+
     when {
         editState.isLoading -> LoadingEditContent()
         editState.loadError != null -> ErrorEditContent(
             error = editState.loadError!!,
             onBackClick = onBackClick
         )
-        else -> NoteEditContent(
-            editState = editState,
-            onBackClick = onBackClick,
-            onTagAdded = noteEditViewModel::addTag,
-            onTagRemoved = noteEditViewModel::removeTag,
-            onFieldAdded = noteEditViewModel::addField,
-            onFieldRemoved = noteEditViewModel::removeField,
-            onFieldUpdated = noteEditViewModel::updateField,
-            onNoteTypeChanged = noteEditViewModel::setNoteType,
-            onSaveNote = { noteEditViewModel.saveNote(featureActions.getNoteId()) }
-        )
+        else -> {
+            val onSaveClick = { noteEditViewModel.saveNote(featureActions.getNoteId()) }
+            val onShareClick = { showShareDialog = true }
+            val onCopyClick = { showCopyDialog = true }
+
+            NoteEditContent(
+                editState = editState,
+                onBackClick = onBackClick,
+                onSaveClick = onSaveClick,
+                onShareClick = onShareClick,
+                onCopyClick = onCopyClick,
+                onTagAdded = noteEditViewModel::addTag,
+                onTagRemoved = noteEditViewModel::removeTag,
+                onFieldAdded = noteEditViewModel::addField,
+                onFieldRemoved = noteEditViewModel::removeField,
+                onFieldUpdated = noteEditViewModel::updateField,
+                onNoteTypeChanged = noteEditViewModel::updateNoteType
+            )
+
+            if (showShareDialog) {
+                WorkspaceSelectionDialog(
+                    title = "Share Note",
+                    confirmText = "Share",
+                    isProcessing = editState.isSharing,
+                    workspaces = editState.workspaces,
+                    isLoadingWorkspaces = editState.isLoadingWorkspaces,
+                    onDismiss = { showShareDialog = false },
+                    onConfirm = { workspaceId ->
+                        noteEditViewModel.shareNote(featureActions.getNoteId(), workspaceId)
+                    }
+                )
+            }
+
+            if (showCopyDialog) {
+                WorkspaceSelectionDialog(
+                    title = "Copy Note",
+                    confirmText = "Copy",
+                    isProcessing = editState.isCopying,
+                    workspaces = editState.workspaces,
+                    isLoadingWorkspaces = editState.isLoadingWorkspaces,
+                    onDismiss = { showCopyDialog = false },
+                    onConfirm = { workspaceId ->
+                        noteEditViewModel.copyNote(featureActions.getNoteId(), workspaceId)
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -106,13 +162,15 @@ private fun ErrorEditContent(
 fun NoteEditContent(
     editState: NoteEditState,
     onBackClick: () -> Unit,
+    onSaveClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onCopyClick: () -> Unit,
     onTagAdded: (String) -> Unit,
     onTagRemoved: (String) -> Unit,
     onFieldAdded: (FieldType) -> Unit,
     onFieldRemoved: (String) -> Unit,
     onFieldUpdated: (String, FieldUpdate) -> Unit,
     onNoteTypeChanged: (NoteType) -> Unit,
-    onSaveNote: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -131,6 +189,16 @@ fun NoteEditContent(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(name = R.drawable.ic_arrow_back)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onShareClick) {
+                        // TODO: REPLACE ICON
+                        Icon(name = R.drawable.ic_edit)
+                    }
+                    IconButton(onClick = onCopyClick) {
+                        // TODO: REPLACE ICON
+                        Icon(name = R.drawable.ic_google)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -159,7 +227,7 @@ fun NoteEditContent(
                     }
                     Spacer(modifier = Modifier.width(spacing.medium))
                     Button(
-                        onClick = onSaveNote,
+                        onClick = onSaveClick,
                         modifier = Modifier.weight(1f),
                         enabled = !editState.isSaving
                     ) {
@@ -591,5 +659,77 @@ private fun FieldTypeDialog(
             }
         },
         modifier = modifier
+    )
+}
+
+@Composable
+fun WorkspaceSelectionDialog(
+    title: String,
+    confirmText: String,
+    isProcessing: Boolean,
+    workspaces: List<Workspace>,
+    isLoadingWorkspaces: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var selectedWorkspaceId by remember { mutableStateOf("") }
+    // TODO: Load actual workspaces from WorkspaceRepository
+    val workspaces = remember { listOf(
+        Pair("workspace1", "Personal Workspace"),
+        Pair("workspace2", "Team Project"),
+        Pair("workspace3", "Study Notes")
+    ) }
+
+    AlertDialog(
+        onDismissRequest = { if (!isProcessing) onDismiss() },
+        title = { Text(title) },
+        text = {
+            Column {
+                Text("Select a workspace:")
+                Spacer(modifier = Modifier.height(8.dp))
+                workspaces.forEach { (id, name) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = !isProcessing) {
+                                selectedWorkspaceId = id
+                            }
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedWorkspaceId == id,
+                            onClick = { selectedWorkspaceId = id },
+                            enabled = !isProcessing
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(name)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(selectedWorkspaceId) },
+                enabled = selectedWorkspaceId.isNotEmpty() && !isProcessing
+            ) {
+                if (isProcessing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(confirmText)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isProcessing
+            ) {
+                Text("Cancel")
+            }
+        }
     )
 }

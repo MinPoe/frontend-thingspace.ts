@@ -1,41 +1,43 @@
 package com.cpen321.usermanagement.data.repository
 
-import com.cpen321.usermanagement.data.remote.dto.User
-import com.cpen321.usermanagement.data.remote.dto.Profile
-import com.cpen321.usermanagement.data.remote.dto.Note
-import com.cpen321.usermanagement.data.remote.dto.NoteType
-import com.cpen321.usermanagement.data.remote.dto.TextField
-import com.cpen321.usermanagement.data.remote.dto.Field
-import kotlin.math.max
+import android.util.Log
+import com.cpen321.usermanagement.data.local.preferences.TokenManager
+import com.cpen321.usermanagement.data.remote.api.CopyNoteRequest
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
+import com.cpen321.usermanagement.data.remote.api.ShareNoteRequest
+import com.cpen321.usermanagement.data.remote.dto.*
+import com.cpen321.usermanagement.utils.JsonUtils.parseErrorMessage
+import jakarta.inject.Inject
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
-/**
- * !!! MOCK IMPL 4 NOW !!!
- * **/
-import java.time.LocalDateTime
-import javax.inject.Singleton
-import javax.inject.Inject
+class NoteRepositoryImpl @Inject constructor(
+    private val noteApi: NoteInterface,
+    private val tokenManager: TokenManager
+) : NoteRepository {
 
-@Singleton
-class NoteRepositoryImpl @Inject constructor() : NoteRepository {
+    companion object {
+        private const val TAG = "NoteRepository"
+        private const val AUTH_HEADER_PLACEHOLDER = "" // Handled by Interceptor
+    }
 
     override suspend fun getNote(noteId: String): Result<Note> {
-        val note = Note(
-            _id = noteId,
-            //userId = "user_$noteId",
-            //workspaceId = "workspace_$noteId",
-            dateCreation = LocalDateTime.now().minusDays(noteId.length.toLong()),
-            dateLastEdit = LocalDateTime.now(),
-            tags = arrayListOf("mock", "note_$noteId"),
-            noteType = NoteType.CONTENT,
-            fields = listOf(TextField(
-                _id = "field_$noteId",
-                label = "Title of $noteId",
-                placeholder = "Placeholder for $noteId"
-            )),
-            //authors = listOf("author_$noteId"),
-            //vectorData = listOf(0.1, 0.2, 0.3)
-        )
-        return Result.success(note)
+        return try {
+            val response = noteApi.getNote(AUTH_HEADER_PLACEHOLDER, noteId)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.note)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to fetch note."
+                )
+                Log.e(TAG, "getNote error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("getNote", e)
+        }
     }
 
     override suspend fun createNote(
@@ -44,14 +46,21 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         fields: List<Field>,
         noteType: NoteType
     ): Result<Unit> {
+        // TODO: Implement when backend endpoint is ready
         return Result.success(Unit)
     }
 
-    override suspend fun updateNote(noteId: String, tags: List<String>, fields: List<Field>): Result<Unit> {
+    override suspend fun updateNote(
+        noteId: String,
+        tags: List<String>,
+        fields: List<Field>
+    ): Result<Unit> {
+        // TODO: Implement when backend endpoint is ready
         return Result.success(Unit)
     }
 
     override suspend fun deleteNote(noteId: String): Result<Unit> {
+        // TODO: Implement when backend endpoint is ready
         return Result.success(Unit)
     }
 
@@ -62,51 +71,84 @@ class NoteRepositoryImpl @Inject constructor() : NoteRepository {
         searchQuery: String,
         notesPerPage: Int
     ): Result<List<Note>> {
-        val notes = (1..max(2, notesPerPage-searchQuery.length)).map {
-            val id = "note_${workspaceId}_$it"
+        val mockNotes = (1..5).map {
             Note(
-                _id = id,
-//                userId = "user_$id",
-//                workspaceId = workspaceId,
-                dateCreation = LocalDateTime.now().minusDays(it.toLong()),
-                dateLastEdit = LocalDateTime.now(),
-                tags = arrayListOf("tag_$it", "workspace_$workspaceId"),
+                _id = "note_${workspaceId}_$it",
+                dateCreation = java.time.LocalDateTime.now().minusDays(it.toLong()),
+                dateLastEdit = java.time.LocalDateTime.now(),
+                tags = arrayListOf("tag_$it"),
                 noteType = noteType,
-                fields = listOf(TextField(
-                    _id = "field_$id",
-                    label = "Field for $id",
-                    placeholder = "Generated for query '$searchQuery'"
-                )),
-//                authors = listOf("author_$it"),
-//                vectorData = listOf(0.1, 0.2, 0.3)
-            )
-        }
-        return Result.success(notes)
-    }
-
-    override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
-        val authors = noteIds.mapIndexed { index, id ->
-            User(
-                _id = "author_$id",
-                googleId = "google_author_$id",
-                email = "author${index + 1}@${id}.com",
-                createdAt = null,
-                updatedAt = null,
-                profile = Profile(
-                    imagePath = "author_pic_$id.png",
-                    name = "Author of $id",
-                    description = "Bio for author of note $id"
+                fields = listOf(
+                    TextField(
+                        _id = "field_$it",
+                        label = "Mock Note $it",
+                        placeholder = "Content for note $it"
+                    )
                 )
             )
         }
-        return Result.success(authors)
+        return Result.success(mockNotes)
+    }
+
+    override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
+        // TODO: Implement when backend endpoint is ready
+        return Result.success(emptyList())
     }
 
     override suspend fun getWorkspacesForNote(noteId: String): Result<Unit> {
+        // TODO: Implement when backend endpoint is ready
         return Result.success(Unit)
     }
 
     override suspend fun shareNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
-        return Result.success(Unit)
+        return try {
+            val request = ShareNoteRequest(workspaceId)
+            val response = noteApi.shareNoteToWorkspace(AUTH_HEADER_PLACEHOLDER, noteId, request)
+            if (response.isSuccessful) {
+                Log.d(TAG, "Note shared successfully to workspace $workspaceId")
+                Result.success(Unit)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to share note."
+                )
+                Log.e(TAG, "shareNoteToWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("shareNoteToWorkspace", e)
+        }
+    }
+
+    override suspend fun copyNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
+        return try {
+            val request = CopyNoteRequest(workspaceId)
+            val response = noteApi.copyNoteToWorkspace(AUTH_HEADER_PLACEHOLDER, noteId, request)
+            if (response.isSuccessful) {
+                Log.d(TAG, "Note copied successfully to workspace $workspaceId")
+                Result.success(Unit)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to copy note."
+                )
+                Log.e(TAG, "copyNoteToWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("copyNoteToWorkspace", e)
+        }
+    }
+
+    private fun <T> handleException(method: String, e: Exception): Result<T> {
+        val errorMessage = when (e) {
+            is UnknownHostException, is SocketTimeoutException ->
+                "Network connection error. Please check your internet."
+            is IOException ->
+                "Network error. Please try again."
+            else -> e.message ?: "An unexpected error occurred."
+        }
+        Log.e(TAG, "$method failed", e)
+        return Result.failure(Exception(errorMessage))
     }
 }
