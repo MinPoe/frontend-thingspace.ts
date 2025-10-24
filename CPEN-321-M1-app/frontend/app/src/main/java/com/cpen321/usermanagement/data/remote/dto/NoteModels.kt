@@ -1,4 +1,5 @@
 package com.cpen321.usermanagement.data.remote.dto
+import com.google.gson.annotations.SerializedName
 import java.time.LocalDateTime
 
 /*
@@ -6,12 +7,15 @@ import java.time.LocalDateTime
  */
 
 data class Note(
+    @SerializedName("_id")
     val _id: String,
-    val dateCreation: LocalDateTime,
-    val dateLastEdit: LocalDateTime,
-    val tags: ArrayList<String>,
+    @SerializedName("createdAt")
+    val createdAt: String,
+    @SerializedName("updatedAt")
+    val updatedAt: String,
+    val tags: List<String> = emptyList(),
     val noteType: NoteType,
-    val fields: List<Field>,
+    val fields: List<Field> = emptyList(),
 )
 
 // Field Types implemented here:

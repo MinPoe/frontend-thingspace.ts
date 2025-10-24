@@ -25,6 +25,14 @@ data class CopyNoteData(
     val note: Note
 )
 
+data class FindNotesData(
+    val notes: List<Note>
+)
+
+data class CreateNoteData(
+    val note: Note
+)
+
 interface NoteInterface {
     @GET("notes/{id}")
     suspend fun getNote(
@@ -45,4 +53,19 @@ interface NoteInterface {
         @Path("id") noteId: String,
         @Body request: CopyNoteRequest
     ): Response<ApiResponse<CopyNoteData>>
+
+    @POST("notes")
+    suspend fun createNote(
+        @Header("Authorization") authHeader: String,
+        @Body request: Map<String, @JvmSuppressWildcards Any>
+    ): Response<Unit>
+
+    @GET("notes")
+    suspend fun findNotes(
+        @Header("Authorization") authHeader: String,
+        @Query("workspaceId") workspaceId: String,
+        @Query("noteType") noteType: String,
+        @Query("tags") tags: List<String>,
+        @Query("query") query: String
+    ): Response<ApiResponse<FindNotesData>>
 }

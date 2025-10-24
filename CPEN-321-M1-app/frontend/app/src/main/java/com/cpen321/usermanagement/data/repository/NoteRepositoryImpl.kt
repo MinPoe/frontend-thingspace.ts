@@ -11,6 +11,7 @@ import jakarta.inject.Inject
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import com.cpen321.usermanagement.data.remote.dto.Field
 
 class NoteRepositoryImpl @Inject constructor(
     private val noteApi: NoteInterface,
@@ -41,13 +42,45 @@ class NoteRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createNote(
+        workspaceId: String,
         authorId: String,
         tags: List<String>,
         fields: List<Field>,
         noteType: NoteType
     ): Result<Unit> {
-        // TODO: Implement when backend endpoint is ready
-        return Result.success(Unit)
+        return try {
+            // Transform fields to backend format (simple maps)
+            val backendFields = fields.map { field ->
+                mapOf(
+                    "_id" to field._id,
+                    "fieldType" to "textbox",
+                    "content" to ""
+                )
+            }
+
+            val requestMap = mapOf(
+                "workspaceId" to workspaceId,
+                "fields" to backendFields,
+                "tags" to tags,
+                "noteType" to noteType.name
+            )
+
+            val response = noteApi.createNote(AUTH_HEADER_PLACEHOLDER, requestMap)
+
+            if (response.isSuccessful) {
+                Log.d(TAG, "Note created successfully")
+                Result.success(Unit)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to create note."
+                )
+                Log.e(TAG, "createNote error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("createNote", e)
+        }
     }
 
     override suspend fun updateNote(
@@ -71,23 +104,29 @@ class NoteRepositoryImpl @Inject constructor(
         searchQuery: String,
         notesPerPage: Int
     ): Result<List<Note>> {
-        val mockNotes = (1..5).map {
-            Note(
-                _id = "note_${workspaceId}_$it",
-                dateCreation = java.time.LocalDateTime.now().minusDays(it.toLong()),
-                dateLastEdit = java.time.LocalDateTime.now(),
-                tags = arrayListOf("tag_$it"),
-                noteType = noteType,
-                fields = listOf(
-                    TextField(
-                        _id = "field_$it",
-                        label = "Mock Note $it",
-                        placeholder = "Content for note $it"
-                    )
-                )
+        return try {
+            val response = noteApi.findNotes(
+                authHeader = AUTH_HEADER_PLACEHOLDER,
+                workspaceId = workspaceId,
+                noteType = noteType.name,
+                tags = tagsToInclude,
+                query = searchQuery
             )
+
+            if (response.isSuccessful && response.body()?.data != null) {
+                Log.d(TAG, "Notes fetched successfully")
+                Result.success(response.body()!!.data!!.notes)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to fetch notes."
+                )
+                Log.e(TAG, "findNotes error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("findNotes", e)
         }
-        return Result.success(mockNotes)
     }
 
     override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
