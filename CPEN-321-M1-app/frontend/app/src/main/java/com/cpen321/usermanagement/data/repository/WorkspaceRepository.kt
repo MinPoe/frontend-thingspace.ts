@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement.data.repository
 
+import com.cpen321.usermanagement.data.remote.api.GetWorkspaceData
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 

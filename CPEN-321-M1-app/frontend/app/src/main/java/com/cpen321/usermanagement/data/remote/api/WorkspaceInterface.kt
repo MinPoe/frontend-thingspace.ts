@@ -19,6 +19,10 @@ data class GetWorkspacesForUserData(
     val workspaces: List<Workspace>
 )
 
+data class GetWorkspaceData(
+    val workspace: Workspace
+)
+
 data class UpdateWorkspaceProfileRequest(
     val name: String,
     val description: String?
@@ -55,7 +59,7 @@ interface WorkspaceInterface {
     suspend fun getWorkspace(
         @Header("Authorization") authHeader: String,
         @Path("id") workspaceId: String
-    ): Response<ApiResponse<Workspace>>
+    ): Response<ApiResponse<GetWorkspaceData>>
 
     // Get members (users) of a workspace
     @GET("workspace/{id}/members")
@@ -124,6 +128,12 @@ interface WorkspaceInterface {
         @Header("Authorization") authHeader: String,
         @Path("id") workspaceId: String
     ): Response<ApiResponse<Unit>>
+
+    //chat polling
+    @GET("workspace/{id}/poll")
+    suspend fun pollChat(
+    @Header("Authorization") authHeader: String,
+    @Path("id") workspaceId: String): Response<ApiResponse<Boolean>>
 }
 
 

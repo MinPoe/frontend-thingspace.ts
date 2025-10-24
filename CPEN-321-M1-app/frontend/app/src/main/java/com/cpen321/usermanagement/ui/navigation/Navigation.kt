@@ -262,6 +262,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToFilter -> {
             navController.navigate(NavRoutes.FILTER)
+            filterViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
