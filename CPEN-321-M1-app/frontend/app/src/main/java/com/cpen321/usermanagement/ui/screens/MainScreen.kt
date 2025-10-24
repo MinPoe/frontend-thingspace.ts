@@ -1,11 +1,13 @@
 package com.cpen321.usermanagement.ui.screens
 
 import Icon
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,6 +37,7 @@ import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.utils.IFeatureActions
+import kotlinx.coroutines.flow.compose
 
 @Composable
 fun MainScreen(
@@ -42,10 +46,9 @@ fun MainScreen(
     featureActions: IFeatureActions
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
+    val fetching by mainViewModel.fetching.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val wsname =  mainViewModel.getWorkspaceName()
-
-    mainViewModel.onLoad()
 
     MainContent(
         uiState = uiState,
@@ -73,6 +76,7 @@ fun MainScreen(
         onSuccessMessageShown = mainViewModel::clearSuccessMessage,
         onCreateNoteClick = { featureActions.navigateToNoteCreation() },
         onNoteClick = {noteId:String -> featureActions.navigateToNote(noteId)},
+        fetching = fetching,
         notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )
 }
@@ -94,6 +98,7 @@ private fun MainContent(
     onCreateNoteClick: ()-> Unit,
     onNoteClick: (String)->Unit,
     notes:List<Note>,
+    fetching: Boolean,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -118,16 +123,25 @@ private fun MainContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        MainBody(
-            paddingValues = paddingValues,
-            workspaceName = workspaceName,
-            onFilterClick = onFilterClick,
-            onSearchClick = onSearchClick,
-            onQueryChange = onQueryChange,
-            onNoteClick = onNoteClick,
-            notes = notes,
-            query = query
-        )
+        if(!fetching) {
+            MainBody(
+                paddingValues = paddingValues,
+                workspaceName = workspaceName,
+                onFilterClick = onFilterClick,
+                onSearchClick = onSearchClick,
+                onQueryChange = onQueryChange,
+                onNoteClick = onNoteClick,
+                notes = notes,
+                query = query
+            )
+        }
+        else{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
+        }
     }
 }
 

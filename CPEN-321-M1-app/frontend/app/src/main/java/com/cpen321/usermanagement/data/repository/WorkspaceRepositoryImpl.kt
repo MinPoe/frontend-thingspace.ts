@@ -186,10 +186,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
         return try {
             val response = workspaceApi.getMembershipStatus(AUTH_HEADER_PLACEHOLDER, workspaceId, userId)
             if (response.isSuccessful && response.body()?.data != null) {
-                val status = when (response.body()!!.data!!.status.lowercase()) {
-                    "member" -> WsMembershipStatus.MEMBER
-                    "admin" -> WsMembershipStatus.MANAGER
-                    "banned" -> WsMembershipStatus.BANNED
+                val status = when (response.body()!!.data!!.status) {
+                    "MEMBER" -> WsMembershipStatus.MEMBER
+                    "OWNER" -> WsMembershipStatus.MANAGER
+                    "BANNED" -> WsMembershipStatus.BANNED
                     else -> WsMembershipStatus.NONMEMBER
                 }
                 Result.success(status)

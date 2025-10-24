@@ -135,7 +135,7 @@ fun WsProfileManagerScreen(
     LaunchedEffect(Unit) {
         wsProfileManagerViewModel.clearSuccessMessage()
         wsProfileManagerViewModel.clearError()
-        if (uiState.workspace == null) {
+        if (uiState.workspace?._id != featureActions.getWorkspaceId()) {
             wsProfileManagerViewModel.loadProfile()
         }
     }

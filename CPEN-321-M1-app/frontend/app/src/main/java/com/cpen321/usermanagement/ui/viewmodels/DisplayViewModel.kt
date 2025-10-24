@@ -12,6 +12,9 @@ import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.data.repository.NoteRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.chunked
 
@@ -29,6 +32,9 @@ open class DisplayViewModel @Inject constructor(
 
     private var _notesPerPage = 10
 
+    protected val _fetching = MutableStateFlow<Boolean>(false)
+    val fetching: StateFlow<Boolean> =_fetching.asStateFlow()
+
     protected var _notesFound: List<List<Note>> = emptyList()
 
     companion object {
@@ -36,13 +42,15 @@ open class DisplayViewModel @Inject constructor(
     }
 
     fun getNotesTitlesFound(page: Int):List<Note>{
-        return  _notesFound[page] //TODO: for now
+        return  if (_notesFound.isEmpty()) emptyList() else _notesFound[page] //TODO: for now
     }
 
     fun onLoad(){
+        _fetching.value = true
         viewModelScope.launch{
             cacheUpdateWorkspaceOrUser(navigationStateManager.getWorkspaceId())
             searchResults()
+            _fetching.value=false
         }
     }
 
@@ -52,10 +60,10 @@ open class DisplayViewModel @Inject constructor(
         return _wsname //TODO: if "" should move to userId
     }
 
-    fun searchedNotesUpdate(){
-        //TODO: Add pagination later
-        viewModelScope.launch { searchResults() }
-    }
+//    fun searchedNotesUpdate(){
+//        //TODO: Add pagination later
+//        viewModelScope.launch { searchResults() }
+//    }
 
     private suspend fun cacheUpdateWorkspaceOrUser(workspaceId:String){
         if (_wsid != workspaceId) {
@@ -89,7 +97,7 @@ open class DisplayViewModel @Inject constructor(
     }
 
     protected open suspend fun searchResults(){
-        val tags = navigationStateManager.getSelectedTags() //TODO: Add TAG logic
+        val tags = navigationStateManager.getSelectedTags()
 
         val noteSearchResult = noteRepository.findNotes( //TODO: Pagination later
             workspaceId = navigationStateManager.getWorkspaceId(),

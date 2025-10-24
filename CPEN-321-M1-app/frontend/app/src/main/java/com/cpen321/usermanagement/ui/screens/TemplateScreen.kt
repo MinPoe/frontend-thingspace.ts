@@ -18,7 +18,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -46,8 +48,7 @@ fun TemplateScreen(
     onProfileClick: () -> Unit,
     featureActions: IFeatureActions
 ) {
-
-    templateViewModel.onLoad()
+    val fetching by templateViewModel.fetching.collectAsState()
 
     TemplateContent(
         onProfileClick = onProfileClick,
@@ -74,6 +75,7 @@ fun TemplateScreen(
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         onCreateNoteClick = { featureActions.navigateToNoteCreation() },
         notes = templateViewModel.getNotesTitlesFound(0),
+        fetching = fetching,
         query = featureActions.getSearchQuery() // TODO: BAD
     )
 }
@@ -89,6 +91,7 @@ private fun TemplateContent(
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
     query:String,
+    fetching: Boolean,
     onSearchClick: ()->Unit,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -108,7 +111,15 @@ private fun TemplateContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        MainBody(
+        if(fetching){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
+        }
+        else{
+            MainBody(
             paddingValues = paddingValues,
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
@@ -116,6 +127,7 @@ private fun TemplateContent(
             onNoteClick = onNoteClick,
             notes = notes,
             query = query)
+        }
     }
 }
 

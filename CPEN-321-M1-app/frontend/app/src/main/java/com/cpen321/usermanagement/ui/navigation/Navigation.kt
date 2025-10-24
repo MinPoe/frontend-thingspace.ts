@@ -209,6 +209,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
+            mainViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
             runBlocking { mainViewModel.loadAllUserTags() }
         }
@@ -218,6 +219,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
+            mainViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
             runBlocking { mainViewModel.loadAllUserTags() }
         }
@@ -262,6 +264,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.CHAT) {
                 popUpTo(0) { inclusive = true }
             }
+            chatViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -326,6 +329,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.TEMPLATE) {
                 popUpTo(0) { inclusive = true }
             }
+            templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -355,6 +359,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
+            mainViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -362,6 +367,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN){
                 popUpTo(0) { inclusive = true }
             }
+            mainViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
             runBlocking { mainViewModel.loadAllUserTags() }
         }
@@ -371,6 +377,7 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
+            chatViewModel.onLoad()
             runBlocking { chatViewModel.loadAllUserTags() }
         }
 
@@ -378,6 +385,7 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.TEMPLATE){
                 popUpTo(0) { inclusive = true }
             }
+            templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
             runBlocking { chatViewModel.loadAllUserTags() }
         }

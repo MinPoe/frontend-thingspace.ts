@@ -18,7 +18,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -48,8 +50,7 @@ fun ChatScreen(
     featureActions: IFeatureActions
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
-
-    chatViewModel.onLoad()
+    val fetching by chatViewModel.fetching.collectAsState()
 
     ChatContent(
         onProfileClick = onProfileClick,
@@ -72,6 +73,7 @@ fun ChatScreen(
         onCreateNoteClick = { featureActions.navigateToNote("") },
         query = featureActions.getSearchQuery(),
         authors = chatViewModel.getNoteAuthors(),
+        fetching = fetching,
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         onTemplateClick={ featureActions.navigateToTemplateTagReset(
             featureActions.getWorkspaceId()) }
@@ -91,6 +93,7 @@ private fun ChatContent(
     query: String,
     notes: List<Note>,
     authors: List<User>?,
+    fetching: Boolean,
     onCreateNoteClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
@@ -109,15 +112,25 @@ private fun ChatContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        ChatBody(
-            paddingValues = paddingValues,
-            onFilterClick = onFilterClick,
-            onSearchClick = onSearchClick,
-            onQueryChange = onQueryChange,
-            onOtherProfileClick = onOtherProfileClick,
-            notes = notes,
-            authors = authors,
-            query = query)
+        if (fetching){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
+        }
+        else {
+            ChatBody(
+                paddingValues = paddingValues,
+                onFilterClick = onFilterClick,
+                onSearchClick = onSearchClick,
+                onQueryChange = onQueryChange,
+                onOtherProfileClick = onOtherProfileClick,
+                notes = notes,
+                authors = authors,
+                query = query
+            )
+        }
     }
 }
 
