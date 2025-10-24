@@ -7,6 +7,7 @@ import com.cpen321.usermanagement.data.local.preferences.TokenManager
 import com.cpen321.usermanagement.data.remote.api.ImageInterface
 import com.cpen321.usermanagement.data.remote.api.RetrofitClient
 import com.cpen321.usermanagement.data.remote.api.UserInterface
+import com.cpen321.usermanagement.data.remote.dto.UpdateFcmTokenRequest
 import com.cpen321.usermanagement.data.remote.dto.UpdateProfileRequest
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.utils.JsonUtils.parseErrorMessage
@@ -128,5 +129,33 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun getProfileByEmail(email: String): Result<User> {
         //TODO("Not yet implemented")
         return  getProfile()
+    }
+
+    override suspend fun updateFcmToken(fcmToken: String): Result<User> {
+        return try {
+            val updateRequest = UpdateFcmTokenRequest(fcmToken = fcmToken)
+            val response = userInterface.updateFcmToken("", updateRequest) // Auth header is handled by interceptor
+            if (response.isSuccessful && response.body()?.data != null) {
+                Log.d(TAG, "FCM token updated successfully")
+                Result.success(response.body()!!.data!!.user)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBodyString, "Failed to update FCM token.")
+                Log.e(TAG, "Failed to update FCM token: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while updating FCM token", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while updating FCM token", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while updating FCM token", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while updating FCM token: ${e.code()}", e)
+            Result.failure(e)
+        }
     }
 }

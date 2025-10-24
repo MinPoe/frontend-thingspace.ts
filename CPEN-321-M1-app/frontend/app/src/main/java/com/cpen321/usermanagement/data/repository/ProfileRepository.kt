@@ -9,4 +9,5 @@ interface ProfileRepository {
     suspend fun updatePhoto(profilePicture: String): Result<User>
     suspend fun getOtherProfile(userId: String): Result<User>
     suspend fun getProfileByEmail(email: String): Result<User>
+    suspend fun updateFcmToken(fcmToken: String): Result<User>
 }
