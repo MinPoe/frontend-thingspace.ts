@@ -349,4 +349,33 @@ export class WorkspaceController {
             res.status(500).json({ error: 'Failed to delete workspace' });
         }
     }
+
+    async pollForNewMessages(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+            const hasNewMessages = await workspaceService.checkForNewChatMessages(workspaceId);
+
+            res.status(200).json({
+                message: 'Polling check completed',
+                data: { hasNewMessages },
+            });
+        } catch (error) {
+            console.error('Error polling for new messages:', error);
+            
+            if (error instanceof Error) {
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: 'Failed to poll for new messages' });
+        }
+    }
 }

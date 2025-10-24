@@ -44,6 +44,13 @@ router.get(
   workspaceController.getMembershipStatus
 );
 
+// Poll for new chat messages
+router.get(
+  '/:id/poll',
+  authenticateToken,
+  workspaceController.pollForNewMessages
+);
+
 // Create a new workspace
 router.post(
   '/',

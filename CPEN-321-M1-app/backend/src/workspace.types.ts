@@ -15,6 +15,7 @@ export interface Workspace {
   profile: Profile;
   ownerId: string;
   members: string[];
+  latestChatMessageTimestamp: Date;
   createdAt: Date;
   updatedAt: Date;
 }

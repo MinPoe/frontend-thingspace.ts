@@ -12,6 +12,7 @@ export interface IWorkspaceDocument extends Document {
   ownerId: mongoose.Types.ObjectId;
   members: mongoose.Types.ObjectId[];
   bannedMembers: mongoose.Types.ObjectId[];
+  latestChatMessageTimestamp: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +50,11 @@ const workspaceSchema = new Schema<IWorkspaceDocument>(
       type: Schema.Types.ObjectId, 
       ref: 'User'
     }],
+    latestChatMessageTimestamp: { 
+      type: Date, 
+      default: Date.now 
+    },
+    
   },
   { 
     timestamps: true
