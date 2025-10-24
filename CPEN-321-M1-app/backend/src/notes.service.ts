@@ -3,6 +3,7 @@ import { Note, CreateNoteRequest, NoteType, UpdateNoteRequest } from './notes.ty
 import { noteModel } from './note.model';
 import OpenAI from 'openai';
 import { workspaceModel } from './workspace.model';
+import { workspaceService } from './workspace.service';
 
 
 export class NoteService {
@@ -49,6 +50,11 @@ export class NoteService {
             tags: data.tags || [],
             vectorData: vectorData,
         });
+
+        // Update workspace timestamp if this is a chat message
+        if (data.noteType === NoteType.CHAT) {
+            await workspaceService.updateLatestChatMessageTimestamp(data.workspaceId);
+        }
     
         return {
             ...newNote.toObject(),
