@@ -134,9 +134,9 @@ class NoteRepositoryImpl @Inject constructor(
         return Result.success(emptyList())
     }
 
-    override suspend fun getWorkspacesForNote(noteId: String): Result<Unit> {
+    override suspend fun getWorkspacesForNote(noteId: String): Result<Workspace> {
         // TODO: Implement when backend endpoint is ready
-        return Result.success(Unit)
+        return Result.success(Workspace("", Profile("", "", "")))
     }
 
     override suspend fun shareNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
