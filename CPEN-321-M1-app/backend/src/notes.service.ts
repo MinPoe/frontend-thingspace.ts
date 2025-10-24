@@ -171,6 +171,49 @@ export class NoteService {
         } as Note;
     }
 
+    // Copy note to a different workspace
+    async copyNoteToWorkspace(noteId: string, userId: mongoose.Types.ObjectId, workspaceId: string): Promise<Note> {
+        // Verify note exists and the requester is the owner of the note
+        const note = await noteModel.findById(noteId);
+        if (!note) {
+            throw new Error('Note not found');
+        }
+        if (note.userId.toString() !== userId.toString()) {
+            throw new Error('Access denied: Only the note owner can copy');
+        }
+
+        // Verify target workspace exists and the user is allowed (owner or member and not banned)
+        const workspace = await workspaceModel.findById(workspaceId);
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+        const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
+        const isOwner = workspace.ownerId.toString() === userId.toString();
+        if (!isMember && !isOwner) {
+            throw new Error('Access denied: User must be a member or owner of the workspace');
+        }
+
+        // Create a copy of the note
+        const noteCopy = new noteModel({
+            userId: note.userId,
+            workspaceId: new mongoose.Types.ObjectId(workspaceId),
+            dateCreation: new Date(),
+            dateLastEdit: new Date(),
+            tags: note.tags,
+            noteType: note.noteType,
+            fields: note.fields,
+            vectorData: note.vectorData
+        });
+
+        await noteCopy.save();
+
+        return {
+            ...noteCopy.toObject(),
+            _id: noteCopy._id.toString(),
+            userId: noteCopy.userId.toString(),
+        } as Note;
+    }
+
     // Get workspace for a note
     async getWorkspacesForNote(noteId: string): Promise<string | null> {
         const note = await noteModel.findById(noteId);
