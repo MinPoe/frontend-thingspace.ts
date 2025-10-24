@@ -41,12 +41,6 @@ router.get(
   notesController.findNotes
 );
 
-router.post(
-  '/authors',
-  authenticateToken,
-  notesController.getAuthors
-);
-
 router.get(
   '/:id/workspaces',
   authenticateToken,
