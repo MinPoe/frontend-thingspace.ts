@@ -258,7 +258,7 @@ private fun WorkspaceName(
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = workspaceName,
+        text = workspaceName+stringResource(R.string.plusContent),
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

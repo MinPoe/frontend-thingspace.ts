@@ -83,7 +83,7 @@ open class DisplayViewModel @Inject constructor(
                     _wspic = ws.profile.imagePath ?: ""
                     _wsdescr = ws.profile.description ?: ""
                     _wsname = ws.profile.name
-
+                    navigationStateManager.setWorkspaceId(ws._id)
                 }
                 else {
                     val error = personalResult.exceptionOrNull()
