@@ -14,14 +14,12 @@ router.get(
   workspaceController.getWorkspacesForUser
 );
 
-// Get a single workspace
+// Get a user's personal workspace
 router.get(
-  '/:id',
+  '/personal',
   authenticateToken,
-  workspaceController.getWorkspace
+  workspaceController.getPersonalWorkspace
 );
-
-
 
 // Get members of a workspace
 router.get(

@@ -47,6 +47,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: false,
     },
+    personalWorkspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Workspace',
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -182,6 +187,23 @@ export class UserModel {
     } catch (error) {
       logger.error('Error updating FCM token:', error);
       throw new Error('Failed to update FCM token');
+    }
+  }
+
+  async updatePersonalWorkspace(
+    userId: mongoose.Types.ObjectId,
+    workspaceId: mongoose.Types.ObjectId
+  ): Promise<IUser | null> {
+    try {
+      const updatedUser = await this.user.findByIdAndUpdate(
+        userId,
+        { personalWorkspaceId: workspaceId },
+        { new: true }
+      );
+      return updatedUser;
+    } catch (error) {
+      logger.error('Error updating personal workspace:', error);
+      throw new Error('Failed to update personal workspace');
     }
   }
 }
