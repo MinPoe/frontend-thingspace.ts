@@ -32,18 +32,23 @@ export class WorkspaceService {
         };
     }
 
-    async getWorkspace(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<Workspace | null> {
-        const workspace = await workspaceModel.findById(workspaceId);
+    async getPersonalWorkspaceForUser(userId: mongoose.Types.ObjectId): Promise<Workspace | null> {
+        // Fetch user to get their personal workspace ID
+        const user = await userModel.findById(userId);
         
-        if (!workspace) {
-            return null;
+        if (!user) {
+            throw new Error('User not found');
         }
 
-        // Check if user is a member
-        const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
+        if (!user.personalWorkspaceId) {
+            throw new Error('User does not have a personal workspace');
+        }
 
-        if (!isMember) {
-            throw new Error('Access denied: You are not a member of this workspace');
+        // Get the workspace
+        const workspace = await workspaceModel.findById(user.personalWorkspaceId);
+        
+        if (!workspace) {
+            throw new Error('Personal workspace not found');
         }
 
         return {

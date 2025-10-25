@@ -13,6 +13,7 @@ export interface IUser extends Document {
     description?: string;
   };
   fcmToken?: string;
+  personalWorkspaceId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
