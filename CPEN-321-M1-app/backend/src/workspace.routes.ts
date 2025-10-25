@@ -35,6 +35,13 @@ router.get(
   workspaceController.getAllTags
 );
 
+// Get a specific workspace by ID
+router.get(
+  '/:id',
+  authenticateToken,
+  workspaceController.getWorkspace
+);
+
 // Get membership status for a user
 router.get(
   '/:id/membership/:userId',

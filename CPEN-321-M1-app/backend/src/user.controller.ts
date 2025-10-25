@@ -5,6 +5,8 @@ import { GetProfileResponse, UpdateProfileRequest, updateFcmTokenSchema } from '
 import logger from './logger.util';
 import { MediaService } from './media.service';
 import { userModel } from './user.model';
+import { workspaceModel } from './workspace.model';
+import { noteModel } from './note.model';
 
 export class UserController {
   getProfile(req: Request, res: Response<GetProfileResponse>) {
@@ -52,6 +54,20 @@ export class UserController {
   async deleteProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.user!;
+
+      const ownedWorkspaces = await workspaceModel.find({ ownerId: user._id });
+
+      for (const workspace of ownedWorkspaces) {
+        await noteModel.deleteMany({ workspaceId: workspace._id.toString() });
+        await workspaceModel.findByIdAndDelete(workspace._id);
+        logger.info(`Deleted workspace ${workspace._id} for user: ${user._id}`);
+      }
+
+      await workspaceModel.updateMany(
+        { members: user._id },
+        { $pull: { members: user._id } }
+      );
+      logger.info(`Removed user ${user._id} from all member workspaces`);
 
       await MediaService.deleteAllUserImages(user._id.toString());
 
