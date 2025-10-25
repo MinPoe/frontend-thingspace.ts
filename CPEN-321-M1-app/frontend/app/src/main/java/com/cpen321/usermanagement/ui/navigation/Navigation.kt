@@ -655,7 +655,7 @@ private fun AppNavHost(
             ChatScreen(
                 chatViewModel = chatViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
-                onBackClick = { navigationStateManager.navigateBack() }, // Add this
+                onBackClick = { navigationStateManager.navigateBack() },
                 featureActions = featureActions
             )
         }

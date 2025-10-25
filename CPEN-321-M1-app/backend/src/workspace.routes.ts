@@ -14,15 +14,6 @@ router.get(
   workspaceController.getWorkspacesForUser
 );
 
-// Get a single workspace
-router.get(
-  '/:id',
-  authenticateToken,
-  workspaceController.getWorkspace
-);
-
-
-
 // Get members of a workspace
 router.get(
   '/:id/members',
@@ -49,6 +40,13 @@ router.get(
   '/:id/poll',
   authenticateToken,
   workspaceController.pollForNewMessages
+);
+
+// Get a single workspace
+router.get(
+  '/:id',
+  authenticateToken,
+  workspaceController.getWorkspace
 );
 
 // Create a new workspace
