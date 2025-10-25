@@ -74,6 +74,7 @@ fun ChatScreen(
         query = featureActions.getSearchQuery(),
         authors = chatViewModel.getNoteAuthors(),
         fetching = fetching,
+        wsname = chatViewModel.getWorkspaceName(),
         onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
         onTemplateClick={ featureActions.navigateToTemplateTagReset(
             featureActions.getWorkspaceId()) }
@@ -91,6 +92,7 @@ private fun ChatContent(
     onSearchClick: ()->Unit,
     onQueryChange: (String)->Unit,
     query: String,
+    wsname: String,
     notes: List<Note>,
     authors: List<User>?,
     fetching: Boolean,
@@ -128,6 +130,7 @@ private fun ChatContent(
                 onOtherProfileClick = onOtherProfileClick,
                 notes = notes,
                 authors = authors,
+                wsname= wsname,
                 query = query
             )
         }
@@ -197,6 +200,7 @@ private fun ChatBody(
     onQueryChange: (String) -> Unit,
     onOtherProfileClick: (String) -> Unit,
     notes: List<Note>,
+    wsname: String,
     authors: List<User>?,
     query: String,
     modifier: Modifier = Modifier
@@ -207,7 +211,7 @@ private fun ChatBody(
             .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage()
+        WelcomeMessage(wsname)
         SearchBar(
             onSearchClick = onSearchClick,//TODO: for now
             onFilterClick = onFilterClick,
@@ -223,12 +227,13 @@ private fun ChatBody(
 }
 @Composable
 private fun WelcomeMessage(
+    wsname: String,
     modifier: Modifier = Modifier
 ) {
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.welcome),
+        text = wsname + stringResource(R.string.plusChat),
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

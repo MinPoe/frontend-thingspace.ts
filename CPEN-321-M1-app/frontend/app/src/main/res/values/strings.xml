@@ -35,7 +35,7 @@
     <string name="chat">chat</string>
     <string name="main_workspace_content">main workspace content</string>
     <string name="view_profile">Profile View</string>
-    <string name="plusContent"> - Notes</string>
-    <string name="plusTemplates"> - Templates</string>
-    <string name="plusChat"> - Chat</string>
+    <string name="plusContent">&#160;- Notes</string>
+    <string name="plusTemplates">&#160;- Templates</string>
+    <string name="plusChat">&#160;- Chat</string>
 </resources>
