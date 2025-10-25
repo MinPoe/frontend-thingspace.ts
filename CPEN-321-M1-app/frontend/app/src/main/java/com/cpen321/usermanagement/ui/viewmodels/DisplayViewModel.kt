@@ -66,7 +66,6 @@ open class DisplayViewModel @Inject constructor(
 //    }
 
     private suspend fun cacheUpdateWorkspaceOrUser(workspaceId:String){
-        if (_wsid != workspaceId) {
             val wsRequest = workspaceRepository.getWorkspace(workspaceId)
             if (wsRequest.isSuccess) {
                 val ws: Workspace = wsRequest.getOrNull()!!
@@ -92,7 +91,6 @@ open class DisplayViewModel @Inject constructor(
                     error?.message ?: "Failed to load workspace/profile"
                 }
             }
-        }
     }
 
     protected open suspend fun searchResults(){
