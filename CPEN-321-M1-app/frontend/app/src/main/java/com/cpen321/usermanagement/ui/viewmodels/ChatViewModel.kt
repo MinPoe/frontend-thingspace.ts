@@ -66,7 +66,7 @@ class ChatViewModel @Inject constructor(
                 val result = workspaceRepository.pollForNewMessages(workspaceId)
                 if (result.isSuccess && result.getOrNull() == true) {
                     withContext(Dispatchers.Main) {
-                        loadMessages()
+                        loadMessages(showLoading = false)
                     }
                 }
             }
@@ -80,7 +80,7 @@ class ChatViewModel @Inject constructor(
         super.onCleared()
     }
 
-    fun loadMessages() {
+    fun loadMessages(showLoading: Boolean = true) {
         val workspaceId = navigationStateManager.getWorkspaceId()
         if (workspaceId.isEmpty()) {
             Log.e(TAG, "No workspace ID available")
@@ -88,7 +88,9 @@ class ChatViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            if (showLoading) {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            }
 
             val result = messageRepository.getMessages(workspaceId)
 
@@ -145,7 +147,9 @@ class ChatViewModel @Inject constructor(
 
             if (result.isSuccess) {
                 // Reload messages to get the new one
-                loadMessages()
+                loadMessages(showLoading = false)
+                // Reset isSending after loadMessages completes
+                _uiState.value = _uiState.value.copy(isSending = false)
             } else {
                 val error = result.exceptionOrNull()
                 Log.e(TAG, "Failed to send message", error)
