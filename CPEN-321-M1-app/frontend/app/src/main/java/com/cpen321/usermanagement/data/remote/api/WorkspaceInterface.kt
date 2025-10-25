@@ -52,6 +52,8 @@ data class GetPollData(
     val changed:Boolean
 )
 
+data class PollResponse(val hasNewMessages: Boolean)
+
 // -------------------- RETROFIT INTERFACE --------------------
 
 interface WorkspaceInterface {
@@ -155,6 +157,14 @@ interface WorkspaceInterface {
     suspend fun pollChat(
     @Header("Authorization") authHeader: String,
     @Path("id") workspaceId: String): Response<ApiResponse<GetPollData>>
+
+    @GET("workspace/{id}/poll")
+    suspend fun pollForNewMessages(
+        @Header("Authorization") authHeader: String,
+        @Path("id") workspaceId: String
+    ): Response<ApiResponse<PollResponse>>
 }
+
+
 
 

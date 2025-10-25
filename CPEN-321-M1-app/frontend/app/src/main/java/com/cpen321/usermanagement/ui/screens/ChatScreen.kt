@@ -1,243 +1,345 @@
 package com.cpen321.usermanagement.ui.screens
 
-import Button
-import Icon
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
-import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.Message
 import com.cpen321.usermanagement.data.remote.dto.User
-import com.cpen321.usermanagement.ui.components.MessageSnackbar
-import com.cpen321.usermanagement.ui.components.MessageSnackbarState
-import com.cpen321.usermanagement.ui.viewmodels.MainUiState
+import Icon
+import androidx.compose.ui.res.painterResource
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
-import com.cpen321.usermanagement.ui.theme.LocalFontSizes
-import com.cpen321.usermanagement.ui.theme.LocalSpacing
-import com.cpen321.usermanagement.ui.components.MainBottomBar
-import com.cpen321.usermanagement.ui.components.ChatDisplayList
-import com.cpen321.usermanagement.ui.components.SearchBar
-import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.utils.IFeatureActions
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun ChatScreen(
     chatViewModel: ChatViewModel,
     onProfileClick: () -> Unit,
+    onBackClick: () -> Unit,
     featureActions: IFeatureActions
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-    val fetching by chatViewModel.fetching.collectAsState()
+    val uiState by chatViewModel.uiState.collectAsState()
 
-    ChatContent(
+    LaunchedEffect(Unit) {
+        chatViewModel.loadMessages()
+        chatViewModel.startPolling()
+    }
+
+    ChatScreenContent(
+        uiState = uiState,
+        onBackClick = onBackClick, // Use the passed parameter
+        onSendMessage = { chatViewModel.sendMessage(it) },
+        onDeleteMessage = { chatViewModel.deleteMessage(it) },
         onProfileClick = onProfileClick,
-        onOtherProfileClick = {profileId: String -> featureActions.navigateToOtherProfile(
-            profileId)},
-        onContentClick = {  featureActions.navigateToMainTagReset(
-            featureActions.getWorkspaceId()) },
-        onWorkspaceClick = { featureActions.navigateToWsSelect() },
-        onFilterClick = { featureActions.navigateToFilter(
-            workspaceId = featureActions.getWorkspaceId(),
-            selectedTags = featureActions.getSelectedTags(),
-            allTagsSelected = featureActions.getAllTagsSelected()
-        ) },
-        onSearchClick = {featureActions.navigateToChat(
-            workspaceId = featureActions.getWorkspaceId(),
-            selectedTags = featureActions.getSelectedTags(),
-            allTagsSelected = featureActions.getAllTagsSelected(),
-            searchQuery = featureActions.getSearchQuery()) },
-        notes = chatViewModel.getNotesTitlesFound(0),
-        onCreateNoteClick = { featureActions.navigateToNote("") },
-        query = featureActions.getSearchQuery(),
-        authors = chatViewModel.getNoteAuthors(),
-        fetching = fetching,
-        wsname = chatViewModel.getWorkspaceName(),
-        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
-        onTemplateClick={ featureActions.navigateToTemplateTagReset(
-            featureActions.getWorkspaceId()) }
+        onOtherProfileClick = { userId -> featureActions.navigateToOtherProfile(userId) }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChatContent(
+private fun ChatScreenContent(
+    uiState: com.cpen321.usermanagement.ui.viewmodels.ChatUiState,
+    onBackClick: () -> Unit,
+    onSendMessage: (String) -> Unit,
+    onDeleteMessage: (String) -> Unit,
     onProfileClick: () -> Unit,
-    onOtherProfileClick: (String)-> Unit,
-    onContentClick: ()->Unit,
-    onTemplateClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit,
-    onFilterClick: () -> Unit,
-    onSearchClick: ()->Unit,
-    onQueryChange: (String)->Unit,
-    query: String,
-    wsname: String,
-    notes: List<Note>,
-    authors: List<User>?,
-    fetching: Boolean,
-    onCreateNoteClick: ()->Unit,
-    modifier: Modifier = Modifier
+    onOtherProfileClick: (String) -> Unit
 ) {
+    var messageText by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
+
+    // Auto-scroll to bottom when new messages arrive
+    LaunchedEffect(uiState.messages.size) {
+        if (uiState.messages.isNotEmpty()) {
+            listState.animateScrollToItem(uiState.messages.size - 1)
+        }
+    }
+
     Scaffold(
-        modifier = modifier,
         topBar = {
-            MainTopBar(onProfileClick = onProfileClick)
+            ChatTopBar(
+                onBackClick = onBackClick,
+                onProfileClick = onProfileClick
+            )
         },
         bottomBar = {
-            MainBottomBar(
-                onCreateNoteClick = onCreateNoteClick,
-                onWorkspacesClick = onWorkspaceClick,
-                onChatClick = {  },
-                onContentClick = onContentClick,
-                onTemplatesClick = onTemplateClick,
-                modifier = modifier)
+            MessageInputBar(
+                messageText = messageText,
+                onMessageTextChange = { messageText = it },
+                onSendClick = {
+                    if (messageText.isNotBlank()) {
+                        onSendMessage(messageText)
+                        messageText = ""
+                    }
+                },
+                isSending = uiState.isSending
+            )
         }
     ) { paddingValues ->
-        if (fetching){
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
-        }
-        else {
-            ChatBody(
-                paddingValues = paddingValues,
-                onFilterClick = onFilterClick,
-                onSearchClick = onSearchClick,
-                onQueryChange = onQueryChange,
-                onOtherProfileClick = onOtherProfileClick,
-                notes = notes,
-                authors = authors,
-                wsname= wsname,
-                query = query
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else if (uiState.messages.isEmpty()) {
+                EmptyMessagesPlaceholder(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(uiState.messages) { message ->
+                        val author = uiState.authors[message.authorId]
+                        val isCurrentUser = message.authorId == uiState.currentUserId
+
+                        MessageItem(
+                            message = message,
+                            author = author,
+                            isCurrentUser = isCurrentUser,
+                            onProfileClick = {
+                                if (!isCurrentUser) onOtherProfileClick(message.authorId)
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Error snackbar
+            uiState.error?.let { error ->
+                Snackbar(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                ) {
+                    Text(error)
+                }
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainTopBar(
-    onProfileClick: () -> Unit,
-    modifier: Modifier = Modifier
+private fun ChatTopBar(
+    onBackClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
     TopAppBar(
-        modifier = modifier,
-        title = {
-            AppTitle()
+        title = { Text("Chat") },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(name = R.drawable.ic_arrow_back)
+            }
         },
         actions = {
-            ProfileActionButton(onClick = onProfileClick)
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            IconButton(onClick = onProfileClick) {
+                Icon(name = R.drawable.ic_account_circle)
+            }
+        }
     )
 }
 
 @Composable
-private fun AppTitle(
-    modifier: Modifier = Modifier
+private fun MessageInputBar(
+    messageText: String,
+    onMessageTextChange: (String) -> Unit,
+    onSendClick: () -> Unit,
+    isSending: Boolean
 ) {
-    Text(
-        text = stringResource(R.string.app_name),
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Medium,
-        modifier = modifier
-    )
+    Surface(
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = messageText,
+                onValueChange = onMessageTextChange,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Type a message...") },
+                maxLines = 4,
+                enabled = !isSending
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(
+                onClick = onSendClick,
+                enabled = messageText.isNotBlank() && !isSending
+            ) {
+                if (isSending) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(name = R.drawable.ic_google)
+                }
+            }
+        }
+    }
 }
 
 @Composable
-private fun ProfileActionButton(
+private fun MessageItem(
+    message: Message,
+    author: User?,
+    isCurrentUser: Boolean,
+    onProfileClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start
+    ) {
+        if (!isCurrentUser) {
+            UserAvatar(
+                user = author,
+                onClick = onProfileClick,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+        }
+
+        Column(
+            modifier = Modifier.widthIn(max = 280.dp),
+            horizontalAlignment = if (isCurrentUser) Alignment.End else Alignment.Start
+        ) {
+            if (!isCurrentUser && author != null) {
+                Text(
+                    text = author.profile.name,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = if (isCurrentUser) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                },
+                tonalElevation = 1.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp)
+                ) {
+                    Text(
+                        text = message.content,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = formatMessageTime(message.createdAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        if (isCurrentUser) {
+            UserAvatar(
+                user = author,
+                onClick = {},
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun UserAvatar(
+    user: User?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
+    Surface(
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape),
+        color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        ProfileIcon()
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = user?.profile?.name?.firstOrNull()?.toString()?.uppercase() ?: "?",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
     }
 }
 
 @Composable
-private fun ProfileIcon() {
-    Icon(
-        name = R.drawable.ic_account_circle,
-    )
-}
-
-@Composable
-private fun ChatBody(
-    paddingValues: PaddingValues,
-    onFilterClick: () -> Unit,
-    onSearchClick: () -> Unit,
-    onQueryChange: (String) -> Unit,
-    onOtherProfileClick: (String) -> Unit,
-    notes: List<Note>,
-    wsname: String,
-    authors: List<User>?,
-    query: String,
+private fun EmptyMessagesPlaceholder(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+        modifier = modifier.padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage(wsname)
-        SearchBar(
-            onSearchClick = onSearchClick,//TODO: for now
-            onFilterClick = onFilterClick,
-            onQueryChange = onQueryChange,
-            query =  query
+        Icon(
+            painter = painterResource(id = R.drawable.ic_google),
+            contentDescription = "Chat",
+            modifier = Modifier.size(64.dp)
         )
-        ChatDisplayList(
-            onProfileClick = onOtherProfileClick,
-            notes = notes,
-            profiles = authors
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "No messages yet",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Start the conversation!",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
-@Composable
-private fun WelcomeMessage(
-    wsname: String,
-    modifier: Modifier = Modifier
-) {
-    val fontSizes = LocalFontSizes.current
 
-    Text(
-        text = wsname + stringResource(R.string.plusChat),
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = fontSizes.extraLarge3,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
-    )
+private fun formatMessageTime(date: Date): String {
+    val now = Calendar.getInstance()
+    val messageTime = Calendar.getInstance().apply { time = date }
+
+    return when {
+        now.get(Calendar.DAY_OF_YEAR) == messageTime.get(Calendar.DAY_OF_YEAR) &&
+                now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
+            SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
+        }
+        now.get(Calendar.YEAR) == messageTime.get(Calendar.YEAR) -> {
+            SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(date)
+        }
+        else -> {
+            SimpleDateFormat("MMM dd yyyy", Locale.getDefault()).format(date)
+        }
+    }
 }
-

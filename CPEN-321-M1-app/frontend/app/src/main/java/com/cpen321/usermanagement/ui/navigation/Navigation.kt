@@ -267,7 +267,6 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.CHAT) {
                 popUpTo(0) { inclusive = true }
             }
-            chatViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -383,8 +382,6 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
-            chatViewModel.onLoad()
-            runBlocking { chatViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToTemplateTagReset -> {
@@ -393,7 +390,7 @@ private fun handleNavigationEvent(
             }
             templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
-            runBlocking { chatViewModel.loadAllUserTags() }
+            runBlocking { templateViewModel.loadAllUserTags() }
         }
     }
 }
@@ -683,7 +680,7 @@ private fun AppNavHost(
             ChatScreen(
                 chatViewModel = chatViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
-                //TODO: change 'personal' to user id once we have access to
+                onBackClick = { navigationStateManager.navigateBack() },
                 featureActions = featureActions
             )
         }
