@@ -13,16 +13,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
+import kotlinx.coroutines.withContext
+
 
 data class ChatUiState(
     val messages: List<Message> = emptyList(),
     val authors: Map<String, User> = emptyMap(),
+    val currentUserId: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
     val isSending: Boolean = false
 )
 
-class ChatViewModel(
+@HiltViewModel
+class ChatViewModel @Inject constructor(
     private val messageRepository: MessageRepository,
     private val profileRepository: ProfileRepository,
     private val workspaceRepository: WorkspaceRepository,
@@ -35,6 +45,40 @@ class ChatViewModel(
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+    private var pollingJob: Job? = null
+
+    fun startPolling() {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                delay(5000)
+                checkForNewMessages()
+            }
+        }
+    }
+
+    private suspend fun checkForNewMessages() {
+        try {
+            val workspaceId = navigationStateManager.getWorkspaceId()
+            if (workspaceId.isEmpty()) return
+
+            withContext(Dispatchers.IO) {
+                val result = workspaceRepository.pollForNewMessages(workspaceId)
+                if (result.isSuccess && result.getOrNull() == true) {
+                    withContext(Dispatchers.Main) {
+                        loadMessages()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Polling error", e)
+        }
+    }
+
+    override fun onCleared() {
+        pollingJob?.cancel()
+        super.onCleared()
+    }
 
     fun loadMessages() {
         val workspaceId = navigationStateManager.getWorkspaceId()
@@ -52,6 +96,7 @@ class ChatViewModel(
                 val messages = result.getOrNull() ?: emptyList()
                 _uiState.value = _uiState.value.copy(
                     messages = messages.reversed(), // Show oldest first
+                    currentUserId = profileRepository.getCurrentUserId(),
                     isLoading = false
                 )
 

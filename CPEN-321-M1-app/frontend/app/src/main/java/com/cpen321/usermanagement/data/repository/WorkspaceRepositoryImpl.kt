@@ -14,6 +14,8 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class WorkspaceRepositoryImpl @Inject constructor(
     private val workspaceApi: WorkspaceInterface,
@@ -224,6 +226,23 @@ class WorkspaceRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             handleException("chatPoll", e)
+        }
+    }
+
+    override suspend fun pollForNewMessages(workspaceId: String): Result<Boolean> {
+        return try {
+            val response = workspaceApi.pollForNewMessages(
+                authHeader = AUTH_HEADER_PLACEHOLDER,
+                workspaceId = workspaceId
+            )
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.hasNewMessages)
+            } else {
+                Result.success(false)  // Don't fail on error, just return false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Poll error (ignoring)", e)
+            Result.success(false)  // Don't fail, just return false
         }
     }
 

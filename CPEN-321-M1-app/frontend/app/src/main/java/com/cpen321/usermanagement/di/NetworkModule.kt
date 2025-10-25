@@ -2,6 +2,7 @@ package com.cpen321.usermanagement.di
 
 import com.cpen321.usermanagement.data.remote.api.AuthInterface
 import com.cpen321.usermanagement.data.remote.api.ImageInterface
+import com.cpen321.usermanagement.data.remote.api.MessageInterface
 import com.cpen321.usermanagement.data.remote.api.RetrofitClient
 import com.cpen321.usermanagement.data.remote.api.UserInterface
 import com.cpen321.usermanagement.data.remote.api.WorkspaceInterface
@@ -44,6 +45,12 @@ object NetworkModule {
     @Singleton
     fun provideNoteInterface(): NoteInterface {
         return RetrofitClient.noteInterface
+    }
+
+    @Provides
+    @Singleton
+    fun provideMessageInterface(): MessageInterface {
+        return RetrofitClient.messageInterface
     }
 
 }

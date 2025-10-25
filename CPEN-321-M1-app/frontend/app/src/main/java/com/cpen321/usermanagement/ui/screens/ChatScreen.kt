@@ -18,6 +18,7 @@ import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Message
 import com.cpen321.usermanagement.data.remote.dto.User
 import Icon
+import androidx.compose.ui.res.painterResource
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.utils.IFeatureActions
 import java.text.SimpleDateFormat
@@ -27,19 +28,19 @@ import java.util.*
 fun ChatScreen(
     chatViewModel: ChatViewModel,
     onProfileClick: () -> Unit,
-    onBackClick: () -> Unit, // Add this
+    onBackClick: () -> Unit,
     featureActions: IFeatureActions
 ) {
     val uiState by chatViewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         chatViewModel.loadMessages()
+        chatViewModel.startPolling()
     }
 
     ChatScreenContent(
         uiState = uiState,
         onBackClick = onBackClick, // Use the passed parameter
-        currentUserId = uiState.currentUserId,
         onSendMessage = { chatViewModel.sendMessage(it) },
         onDeleteMessage = { chatViewModel.deleteMessage(it) },
         onProfileClick = onProfileClick,
@@ -197,7 +198,7 @@ private fun MessageInputBar(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(name = R.drawable.ic_send)
+                    Icon(name = R.drawable.ic_google)
                 }
             }
         }
@@ -306,7 +307,8 @@ private fun EmptyMessagesPlaceholder(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            name = R.drawable.ic_chat,
+            painter = painterResource(id = R.drawable.ic_google),
+            contentDescription = "Chat",
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))

@@ -24,6 +24,7 @@ interface WorkspaceRepository {
     suspend fun getMembershipStatus(userId:String, workspaceId: String): Result<WsMembershipStatus>
     suspend fun getAllTags(workspaceId: String): Result<List<String>>
     suspend fun chatPoll(workspaceId: String): Result<Boolean>
+    suspend fun pollForNewMessages(workspaceId: String): Result<Boolean>
 }
 
 enum class WsMembershipStatus{

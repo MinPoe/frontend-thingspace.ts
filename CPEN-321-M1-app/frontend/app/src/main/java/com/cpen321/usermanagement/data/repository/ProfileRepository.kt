@@ -10,4 +10,5 @@ interface ProfileRepository {
     suspend fun getOtherProfile(userId: String): Result<User>
     suspend fun getProfileByEmail(email: String): Result<User>
     suspend fun updateFcmToken(fcmToken: String): Result<User>
+    suspend fun getCurrentUserId(): String
 }
