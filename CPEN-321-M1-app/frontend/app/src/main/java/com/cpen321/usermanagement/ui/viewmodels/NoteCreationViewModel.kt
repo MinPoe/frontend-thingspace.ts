@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.data.repository.AuthRepository
 import com.cpen321.usermanagement.data.repository.NoteRepository
+import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -127,6 +128,19 @@ class NoteCreationViewModel @Inject constructor(
                 error = null
             )
 
+            var actualWorkspaceId = workspaceId
+            if (workspaceId.isBlank()) {
+                val personalWorkspace = workspaceRepository.getPersonalWorkspace()
+                if (personalWorkspace.isSuccess) {
+                    actualWorkspaceId = personalWorkspace.getOrNull()!!._id
+                } else {
+                    _creationState.value = _creationState.value.copy(
+                        isCreating = false,
+                        error = "Failed to get personal workspace"
+                    )
+                    return@launch
+                }
+            }
 
             // Validate
             if (_creationState.value.fields.isEmpty()) {
@@ -186,6 +200,7 @@ class NoteCreationViewModel @Inject constructor(
                         }
                     )
                 }
+                
             }
 
             // Get current user ID
@@ -200,7 +215,7 @@ class NoteCreationViewModel @Inject constructor(
 
             // Create note
             val result = noteRepository.createNote(
-                workspaceId = workspaceId,
+                workspaceId = actualWorkspaceId,
                 authorId = userId,
                 tags = _creationState.value.tags,
                 fields = fields,

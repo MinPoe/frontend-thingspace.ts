@@ -33,7 +33,7 @@ open class DisplayViewModel @Inject constructor(
     private var _notesPerPage = 10
 
     protected val _fetching = MutableStateFlow<Boolean>(false)
-    val fetching: StateFlow<Boolean> =_fetching.asStateFlow()
+    val fetching: StateFlow<Boolean> = _fetching.asStateFlow()
 
     protected var _notesFound: List<List<Note>> = emptyList()
 
@@ -41,22 +41,22 @@ open class DisplayViewModel @Inject constructor(
         private const val TAG = "DisplayViewModel"
     }
 
-    fun getNotesTitlesFound(page: Int):List<Note>{
+    fun getNotesTitlesFound(page: Int): List<Note> {
         return  if (_notesFound.isEmpty()) emptyList() else _notesFound[page] //TODO: for now
     }
 
-    fun onLoad(){
+    fun onLoad() {
         _fetching.value = true
-        viewModelScope.launch{
+        viewModelScope.launch {
             cacheUpdateWorkspaceOrUser(navigationStateManager.getWorkspaceId())
             searchResults()
             _fetching.value=false
         }
     }
 
-    fun getWorkspaceName():String{
+    fun getWorkspaceName(): String {
         val workspaceId = navigationStateManager.getWorkspaceId()
-        viewModelScope.launch{cacheUpdateWorkspaceOrUser(workspaceId)}
+        viewModelScope.launch { cacheUpdateWorkspaceOrUser(workspaceId) }
         return _wsname //TODO: if "" should move to userId
     }
 
@@ -65,7 +65,7 @@ open class DisplayViewModel @Inject constructor(
 //        viewModelScope.launch { searchResults() }
 //    }
 
-    private suspend fun cacheUpdateWorkspaceOrUser(workspaceId:String){
+    private suspend fun cacheUpdateWorkspaceOrUser(workspaceId: String) {
         if (_wsid != workspaceId) {
             val wsRequest = workspaceRepository.getWorkspace(workspaceId)
             if (wsRequest.isSuccess) {
@@ -75,9 +75,9 @@ open class DisplayViewModel @Inject constructor(
                 _wspic = ws.profile.imagePath ?: ""
                 _wsdescr = ws.profile.description ?: ""
             }
-            else{
+            else {
                 val personalResult = workspaceRepository.getPersonalWorkspace()
-                if (personalResult.isSuccess){
+                if (personalResult.isSuccess) {
                     val ws = personalResult.getOrNull()!!
                     _wsid = ws._id
                     _wspic = ws.profile.imagePath ?: ""
@@ -85,8 +85,7 @@ open class DisplayViewModel @Inject constructor(
                     _wsname = ws.profile.name
 
                 }
-                else
-                {
+                else {
                     val error = personalResult.exceptionOrNull()
                     Log.e(TAG, "Failed to load workspace/profile", error)
                     error?.message ?: "Failed to load workspace/profile"
@@ -95,7 +94,7 @@ open class DisplayViewModel @Inject constructor(
         }
     }
 
-    protected open suspend fun searchResults(){
+    protected open suspend fun searchResults() {
         val tags = navigationStateManager.getSelectedTags()
 
         val noteSearchResult = noteRepository.findNotes( //TODO: Pagination later
@@ -105,23 +104,23 @@ open class DisplayViewModel @Inject constructor(
             tagsToInclude = tags,
             notesPerPage = _notesPerPage
             )
-        if (noteSearchResult.isSuccess){
+        if (noteSearchResult.isSuccess) {
             val rawNotesFound = noteSearchResult.getOrNull()!!
             _notesFound = rawNotesFound.chunked(_notesPerPage)
         }
-        else{
+        else {
             _notesFound = emptyList()
         }
     }
 
-    suspend fun loadAllUserTags(){
+    suspend fun loadAllUserTags() {
         val tagsRequest = workspaceRepository.getAllTags(
             navigationStateManager.getWorkspaceId())
-        if (tagsRequest.isSuccess){
+        if (tagsRequest.isSuccess) {
             val allTags = tagsRequest.getOrNull()!!
             navigationStateManager.updateTagSelection(allTags, true)
         }
-        else{
+        else {
             navigationStateManager.updateTagSelection(emptyList(),
                 false)
         }

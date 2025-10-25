@@ -10,17 +10,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class ChatViewModel@Inject constructor(
+class ChatViewModel @Inject constructor(
     private val navigationStateManager: NavigationStateManager,
     private val workspaceRepository: WorkspaceRepository,
     private val profileRepository: ProfileRepository,
     private val noteRepository: NoteRepository) : DisplayViewModel(
     navigationStateManager, workspaceRepository, profileRepository, noteRepository) {
-        private var authors: List<User>? = emptyList()
+    private var authors: List<User>? = emptyList()
 
-        companion object{
-            val TAG = "ChatViewModel"
-        }
+    companion object {
+        val TAG = "ChatViewModel"
+    }
 
         override suspend fun searchResults(){
             super.searchResults()
