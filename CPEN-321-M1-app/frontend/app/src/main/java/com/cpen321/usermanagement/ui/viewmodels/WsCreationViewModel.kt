@@ -18,7 +18,8 @@ enum class CreateWsUiStateE{
 
 data class CreateWsUiState(
     val stateEnum: CreateWsUiStateE = CreateWsUiStateE.BEFORE,
-    val newWsId: String = "" //Do not access without checking the enum
+    val newWsId: String = "", //Do not access without checking the enum
+    val errorMessage: String? = null
 )
 
 @HiltViewModel
@@ -32,7 +33,7 @@ class WsCreationViewModel@Inject constructor(
     val uiState: StateFlow<CreateWsUiState> = _uiState.asStateFlow()
 
     fun createWorkspace(wsName: String){
-        _uiState.value = _uiState.value.copy(stateEnum = CreateWsUiStateE.DURING)
+        _uiState.value = _uiState.value.copy(stateEnum = CreateWsUiStateE.DURING, errorMessage = null)
         viewModelScope.launch {
             val profileRequest = profileRepository.getProfile()
             if (profileRequest.isSuccess)
@@ -41,21 +42,35 @@ class WsCreationViewModel@Inject constructor(
                     profileRequest.getOrNull()!!._id, wsName,
                     "", "") //TODO: Later add options to edit other things on creation
                 if (createRequest.isSuccess){
-                    _uiState.value = _uiState.value.copy(CreateWsUiStateE.AFTER,
-                        createRequest.getOrNull()!!)
+                    _uiState.value = _uiState.value.copy(
+                        stateEnum = CreateWsUiStateE.AFTER,
+                        newWsId = createRequest.getOrNull()!!,
+                        errorMessage = null
+                    )
                 }
                 else{
-                    _uiState.value = _uiState.value.copy(stateEnum = CreateWsUiStateE.BEFORE) //TODO: messaging later
+                    val errorMessage = createRequest.exceptionOrNull()?.message ?: "Failed to create workspace"
+                    _uiState.value = _uiState.value.copy(
+                        stateEnum = CreateWsUiStateE.BEFORE,
+                        errorMessage = errorMessage
+                    )
                 }
             }
             else{
-                _uiState.value = _uiState.value.copy(stateEnum = CreateWsUiStateE.BEFORE)
+                _uiState.value = _uiState.value.copy(
+                    stateEnum = CreateWsUiStateE.BEFORE,
+                    errorMessage = "Failed to load profile"
+                )
             }
         }
     }
 
     fun resetUIStateEnum(){
         _uiState.value = _uiState.value.copy(stateEnum = CreateWsUiStateE.BEFORE)
+    }
+
+    fun clearError(){
+        _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 
 }

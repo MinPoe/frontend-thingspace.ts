@@ -198,7 +198,7 @@ private fun MessageInputBar(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(name = R.drawable.ic_google)
+                    Icon(name = R.drawable.chat)
                 }
             }
         }
@@ -307,7 +307,7 @@ private fun EmptyMessagesPlaceholder(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_google),
+            painter = painterResource(id = R.drawable.chat),
             contentDescription = "Chat",
             modifier = Modifier.size(64.dp)
         )

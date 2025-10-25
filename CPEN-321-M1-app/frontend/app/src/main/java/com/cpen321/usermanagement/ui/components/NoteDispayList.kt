@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.TextField
+import com.cpen321.usermanagement.data.remote.dto.NumberField
+import com.cpen321.usermanagement.data.remote.dto.DateTimeField
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
@@ -30,11 +32,29 @@ fun NoteDisplayList(
     val spacing = LocalSpacing.current
     
     for(note in notes){
-        // Get the first text field's content or use a default
         val notePreview = note.fields.firstOrNull()?.let { field ->
             when (field) {
-                is TextField -> field.content ?: "Empty note"
-                else -> "Note content"
+                is TextField -> {
+                    if (!field.content.isNullOrEmpty()) {
+                        field.content
+                    } else {
+                        field.label.ifEmpty { "Empty note" }
+                    }
+                }
+                is NumberField -> {
+                    if (field.content != null) {
+                        field.content.toString()
+                    } else {
+                        field.label.ifEmpty { "Empty note" }
+                    }
+                }
+                is DateTimeField -> {
+                    if (field.content != null) {
+                        field.content.toString()
+                    } else {
+                        field.label.ifEmpty { "Empty note" }
+                    }
+                }
             }
         } ?: "Empty note"
         

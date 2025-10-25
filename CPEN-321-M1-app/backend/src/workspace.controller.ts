@@ -18,6 +18,14 @@ export class WorkspaceController {
             });
         } catch (error) {
             console.error('Error creating workspace:', error);
+            
+            if (error instanceof Error) {
+                if (error.message === 'Workspace name already in use') {
+                    res.status(409).json({ error: 'Workspace name already in use' });
+                    return;
+                }
+            }
+            
             res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create workspace' });
         }
     }

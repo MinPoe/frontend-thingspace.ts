@@ -197,6 +197,7 @@ fun NoteCreationBody(
         // Fields Section
         FieldsSection(
             fields = creationState.fields,
+            noteType = creationState.noteType,
             onFieldAdded = onFieldAdded,
             onFieldRemoved = onFieldRemoved,
             onFieldUpdated = onFieldUpdated
@@ -328,6 +329,7 @@ private fun TagsInputSection(
 @Composable
 private fun FieldsSection(
     fields: List<FieldCreationData>,
+    noteType: NoteType,
     onFieldAdded: (FieldType) -> Unit,
     onFieldRemoved: (String) -> Unit,
     onFieldUpdated: (String, FieldUpdate) -> Unit,
@@ -379,6 +381,7 @@ private fun FieldsSection(
                 fields.forEach { field ->
                     FieldEditCard(
                         field = field,
+                        noteType = noteType,
                         onFieldRemoved = { onFieldRemoved(field.id) },
                         onFieldUpdated = { update -> onFieldUpdated(field.id, update) }
                     )
@@ -402,6 +405,7 @@ private fun FieldsSection(
 @Composable
 private fun FieldEditCard(
     field: FieldCreationData,
+    noteType: NoteType,
     onFieldRemoved: () -> Unit,
     onFieldUpdated: (FieldUpdate) -> Unit,
     modifier: Modifier = Modifier
@@ -453,79 +457,81 @@ private fun FieldEditCard(
                 Text("Required")
             }
 
-            // Content input section
-            Spacer(modifier = Modifier.height(spacing.medium))
-            Text(
-                text = "Field Content",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(spacing.small))
-            
-            when (field.type) {
-                FieldType.TEXT -> {
-                    OutlinedTextField(
-                        value = (field.content as? String) ?: "",
-                        onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
-                        label = { Text("Text Content") },
-                        placeholder = { Text("Enter text content...") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 2,
-                        maxLines = 4
-                    )
-                }
-                FieldType.NUMBER -> {
-                    OutlinedTextField(
-                        value = (field.content as? Int)?.toString() ?: "",
-                        onValueChange = { 
-                            val value = it.toIntOrNull()
-                            onFieldUpdated(FieldUpdate.Content(value))
-                        },
-                        label = { Text("Number Content") },
-                        placeholder = { Text("Enter number...") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                FieldType.DATETIME -> {
-                    var showDatePicker by remember { mutableStateOf(false) }
-                    var showTimePicker by remember { mutableStateOf(false) }
-                    val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
-                    
-                    Column {
+            // Content input section - only show for CONTENT and CHAT note types
+            if (noteType != NoteType.TEMPLATE) {
+                Spacer(modifier = Modifier.height(spacing.medium))
+                Text(
+                    text = "Field Content",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(spacing.small))
+                
+                when (field.type) {
+                    FieldType.TEXT -> {
                         OutlinedTextField(
-                            value = currentDateTime.toString(),
-                            onValueChange = { 
-                                try {
-                                    val dateTime = java.time.LocalDateTime.parse(it)
-                                    onFieldUpdated(FieldUpdate.Content(dateTime))
-                                } catch (e: Exception) {
-                                    // Invalid format, don't update
-                                }
-                            },
-                            label = { Text("Date/Time Content") },
-                            placeholder = { Text("YYYY-MM-DDTHH:mm:ss") },
+                            value = (field.content as? String) ?: "",
+                            onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
+                            label = { Text("Text Content") },
+                            placeholder = { Text("Enter text content...") },
                             modifier = Modifier.fillMaxWidth(),
-                            readOnly = true
+                            minLines = 2,
+                            maxLines = 4
                         )
+                    }
+                    FieldType.NUMBER -> {
+                        OutlinedTextField(
+                            value = (field.content as? Int)?.toString() ?: "",
+                            onValueChange = { 
+                                val value = it.toIntOrNull()
+                                onFieldUpdated(FieldUpdate.Content(value))
+                            },
+                            label = { Text("Number Content") },
+                            placeholder = { Text("Enter number...") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    FieldType.DATETIME -> {
+                        var showDatePicker by remember { mutableStateOf(false) }
+                        var showTimePicker by remember { mutableStateOf(false) }
+                        val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
                         
-                        Spacer(modifier = Modifier.height(spacing.small))
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(spacing.small)
-                        ) {
-                            Button(
-                                onClick = { showDatePicker = true },
-                                modifier = Modifier.weight(1f)
+                        Column {
+                            OutlinedTextField(
+                                value = currentDateTime.toString(),
+                                onValueChange = { 
+                                    try {
+                                        val dateTime = java.time.LocalDateTime.parse(it)
+                                        onFieldUpdated(FieldUpdate.Content(dateTime))
+                                    } catch (e: Exception) {
+                                        // Invalid format, don't update
+                                    }
+                                },
+                                label = { Text("Date/Time Content") },
+                                placeholder = { Text("YYYY-MM-DDTHH:mm:ss") },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true
+                            )
+                            
+                            Spacer(modifier = Modifier.height(spacing.small))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(spacing.small)
                             ) {
-                                Text("Pick Date")
-                            }
-                            Button(
-                                onClick = { showTimePicker = true },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Pick Time")
+                                Button(
+                                    onClick = { showDatePicker = true },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Pick Date")
+                                }
+                                Button(
+                                    onClick = { showTimePicker = true },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Pick Time")
+                                }
                             }
                         }
                     }

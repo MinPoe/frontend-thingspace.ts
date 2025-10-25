@@ -80,7 +80,7 @@ fun NoteContent(
                         Icon(name = R.drawable.ic_edit)
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(name = R.drawable.ic_arrow_back) // Replace with delete icon if available
+                        Icon(name = R.drawable.ic_delete_forever)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -1,14 +1,17 @@
 package com.cpen321.usermanagement.ui.screens
 
-import Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -123,17 +126,25 @@ private fun InviteWsBody(
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier
 ){
-    Column(horizontalAlignment = Alignment.CenterHorizontally,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = modifier.fillMaxSize()){
+        modifier = modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(16.dp)
+    ){
         var textValue by remember { mutableStateOf(uiState.typedEmail) }
         OutlinedTextField(
             value = textValue,
             onValueChange = { newText -> textValue = newText },
             label = { Text("Enter the email of the user to invite") },
-            modifier = modifier
+            modifier = Modifier.fillMaxWidth()
         )
-        Button(onClick = {onInviteClick(textValue)}){
+        Button(
+            onClick = {onInviteClick(textValue)},
+            modifier = Modifier.fillMaxWidth()
+        ){
             Text("Invite to the workspace")
         }
     }

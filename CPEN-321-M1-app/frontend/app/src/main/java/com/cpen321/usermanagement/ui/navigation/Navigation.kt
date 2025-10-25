@@ -263,9 +263,7 @@ private fun handleNavigationEvent(
 
         //when cases for the feature events
         is NavigationEvent.NavigateToChat -> {
-            navController.navigate(NavRoutes.CHAT) {
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.CHAT)
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -376,9 +374,7 @@ private fun handleNavigationEvent(
         }
 
         is NavigationEvent.NavigateToChatTagReset -> {
-            navController.navigate(NavRoutes.CHAT){
-                popUpTo(0) { inclusive = true }
-            }
+            navController.navigate(NavRoutes.CHAT)
             navigationStateManager.clearNavigationEvent()
         }
 

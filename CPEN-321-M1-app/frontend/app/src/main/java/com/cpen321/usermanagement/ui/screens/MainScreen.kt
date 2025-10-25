@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -174,7 +175,7 @@ private fun AppTitle(
         text = stringResource(R.string.app_name),
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Medium,
-        modifier = modifier
+        modifier = modifier.clickable { /* Do nothing - title is not clickable */ }
     )
 }
 

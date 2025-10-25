@@ -251,7 +251,7 @@ export class NoteService {
         };
 
         if (tags.length > 0) {
-            query.tags = { $all: tags };
+            query.tags = { $in: tags };
         }
 
         const notes = await noteModel.find(query).sort({ createdAt: -1 });

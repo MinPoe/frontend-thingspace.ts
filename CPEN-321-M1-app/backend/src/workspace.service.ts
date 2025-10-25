@@ -9,6 +9,16 @@ import { IUser } from './user.types';
 
 export class WorkspaceService {
     async createWorkspace(userId: mongoose.Types.ObjectId, data: CreateWorkspaceRequest): Promise<Workspace> {
+        // Check if user already has a workspace with this name
+        const existingWorkspace = await workspaceModel.findOne({
+            ownerId: userId,
+            name: data.name
+        });
+
+        if (existingWorkspace) {
+            throw new Error('Workspace name already in use');
+        }
+
         const newWorkspace = await workspaceModel.create({
             name: data.name,
             profile: {

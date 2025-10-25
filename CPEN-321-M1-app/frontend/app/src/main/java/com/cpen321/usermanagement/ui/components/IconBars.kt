@@ -42,9 +42,14 @@ fun WsProfileManagerBar(
 ){
     BottomAppBar(
         actions = {
-            MembersActionButton(onClick = onMembersClick)
-            InviteActionButton(onClick = onInviteClick)
-            DeleteActionButton(onClick = onDeleteClick)
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                MembersActionButton(onClick = onMembersClick)
+                InviteActionButton(onClick = onInviteClick)
+                DeleteActionButton(onClick = onDeleteClick)
+            }
         },
         modifier = modifier
     )
