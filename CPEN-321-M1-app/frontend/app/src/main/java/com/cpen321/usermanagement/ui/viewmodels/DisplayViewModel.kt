@@ -26,7 +26,7 @@ open class DisplayViewModel @Inject constructor(
     private val noteRepository: NoteRepository) : ViewModel() {
 
     private var _wsname = "personal"
-    private var _wsid = ""
+    private var _wsid = "personal"
     private var _wsdescr = ""
     private var _wspic = ""
 
