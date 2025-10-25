@@ -70,7 +70,6 @@ export class WorkspaceService {
             members: userId
         };
         
-        // Exclude personal workspace if it exists
         if (user?.personalWorkspaceId) {
             query._id = { $ne: user.personalWorkspaceId };
         }
@@ -87,6 +86,31 @@ export class WorkspaceService {
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         }));
+    }
+
+    async getWorkspace(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<Workspace> {
+        const workspace = await workspaceModel.findById(workspaceId);
+        
+        if (!workspace) {
+            throw new Error('Workspace not found');
+        }
+
+        const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
+
+        if (!isMember) {
+            throw new Error('Access denied: You are not a member of this workspace');
+        }
+
+        return {
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        };
     }
 
     async getWorkspaceMembers(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<IUser[]> {
