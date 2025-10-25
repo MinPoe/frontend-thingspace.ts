@@ -316,6 +316,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)
+            noteEditViewModel.loadWorkspaces()
             navigationStateManager.clearNavigationEvent()
         }
 

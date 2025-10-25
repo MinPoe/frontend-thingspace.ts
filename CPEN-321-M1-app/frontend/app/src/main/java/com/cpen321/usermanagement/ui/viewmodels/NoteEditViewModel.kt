@@ -41,20 +41,30 @@ class NoteEditViewModel @Inject constructor(
     private val _editState = MutableStateFlow(NoteEditState())
     val editState: StateFlow<NoteEditState> = _editState.asStateFlow()
 
-    init {
-        loadWorkspaces()
-    }
+//    init {
+//        loadWorkspaces()
+//    }
 
     fun loadWorkspaces() {
         viewModelScope.launch {
             _editState.value = _editState.value.copy(isLoadingWorkspaces = true)
+
+            var workspacesToDisplay = emptyList<Workspace>()
+            val personalResult = workspaceRepository.getPersonalWorkspace()
+            personalResult.fold(
+                onSuccess = {workspace -> workspacesToDisplay+=listOf(workspace)},
+                onFailure = {_editState.value = _editState.value.copy(
+                    isLoadingWorkspaces = false,
+                    error = "Failed to load personal workspace!",
+                )}
+            )
 
             val result = workspaceRepository.getWorkspacesForUser()
 
             result.fold(
                 onSuccess = { workspaces ->
                     _editState.value = _editState.value.copy(
-                        workspaces = workspaces,
+                        workspaces = workspaces+workspacesToDisplay,
                         isLoadingWorkspaces = false
                     )
                 },
@@ -65,6 +75,7 @@ class NoteEditViewModel @Inject constructor(
                     )
                 }
             )
+
         }
     }
 
