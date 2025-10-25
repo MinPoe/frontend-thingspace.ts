@@ -267,7 +267,6 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.CHAT) {
                 popUpTo(0) { inclusive = true }
             }
-            chatViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -316,6 +315,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)
+            noteEditViewModel.loadWorkspaces()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -382,8 +382,6 @@ private fun handleNavigationEvent(
                 popUpTo(0) { inclusive = true }
             }
             navigationStateManager.clearNavigationEvent()
-            chatViewModel.onLoad()
-            runBlocking { chatViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToTemplateTagReset -> {
@@ -392,7 +390,7 @@ private fun handleNavigationEvent(
             }
             templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
-            runBlocking { chatViewModel.loadAllUserTags() }
+            runBlocking { templateViewModel.loadAllUserTags() }
         }
     }
 }
@@ -654,7 +652,26 @@ private fun AppNavHost(
         composable(NavRoutes.WS_SELECT) {
             WorkspacesScreen(
                 workspacesViewModel = wsSelectViewModel,
-                onBackClick = {navigationStateManager.navigateBack()},
+                onBackClick = {
+                    //faking the "on back click" into always going back to the last selected workspace
+                    when (navigationStateManager.getNoteType()){
+                        NoteType.CHAT -> {
+                            navigationStateManager.navigateToChatTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                        NoteType.CONTENT -> {
+                            navigationStateManager.navigateToMainTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                        NoteType.TEMPLATE -> {
+                            navigationStateManager.navigateToTemplateTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                    }
+                              },
                 featureActions = featureActions,
                 onPersonalProfileClick = { navigationStateManager.navigateToProfile() })
         }
@@ -663,7 +680,7 @@ private fun AppNavHost(
             ChatScreen(
                 chatViewModel = chatViewModel,
                 onProfileClick = { navigationStateManager.navigateToProfile() },
-                //TODO: change 'personal' to user id once we have access to
+                onBackClick = { navigationStateManager.navigateBack() },
                 featureActions = featureActions
             )
         }

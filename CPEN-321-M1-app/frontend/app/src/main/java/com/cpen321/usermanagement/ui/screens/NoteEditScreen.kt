@@ -760,17 +760,19 @@ fun WorkspaceSelectionDialog(
 ) {
     var selectedWorkspaceId by remember { mutableStateOf("") }
     // TODO: Load actual workspaces from WorkspaceRepository
-    val workspaces = remember { listOf(
-        Pair("workspace1", "Personal Workspace"),
-        Pair("workspace2", "Team Project"),
-        Pair("workspace3", "Study Notes")
-    ) }
+    val workspaces = remember { workspaces.map{Pair(it._id, it.profile.name)}}
 
     AlertDialog(
         onDismissRequest = { if (!isProcessing) onDismiss() },
         title = { Text(title) },
         text = {
-            Column {
+            if (isLoadingWorkspaces){
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {CircularProgressIndicator()}
+            }
+            else Column {
                 Text("Select a workspace:")
                 Spacer(modifier = Modifier.height(8.dp))
                 workspaces.forEach { (id, name) ->

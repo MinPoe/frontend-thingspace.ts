@@ -31,10 +31,6 @@ data class FindNotesData(
     val notes: List<Note>
 )
 
-data class CreateNoteData(
-    val note: Note
-)
-
 interface NoteInterface {
     @GET("notes/{id}")
     suspend fun getNote(
@@ -77,4 +73,10 @@ interface NoteInterface {
         @Query("tags") tags: List<String>,
         @Query("query") query: String
     ): Response<ApiResponse<FindNotesData>>
+
+    @DELETE("notes/{id}")
+    suspend fun deleteNote(
+        @Header("Authorization") authHeader: String,
+        @Path("id") noteId: String
+    ): Response<Unit>
 }

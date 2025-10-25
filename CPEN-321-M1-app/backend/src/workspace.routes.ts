@@ -49,6 +49,13 @@ router.get(
   workspaceController.pollForNewMessages
 );
 
+// Get a single workspace
+router.get(
+  '/:id',
+  authenticateToken,
+  workspaceController.getWorkspace
+);
+
 // Create a new workspace
 router.post(
   '/',
