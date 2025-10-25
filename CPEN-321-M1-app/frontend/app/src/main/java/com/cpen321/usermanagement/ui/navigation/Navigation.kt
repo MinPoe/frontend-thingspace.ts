@@ -655,7 +655,26 @@ private fun AppNavHost(
         composable(NavRoutes.WS_SELECT) {
             WorkspacesScreen(
                 workspacesViewModel = wsSelectViewModel,
-                onBackClick = {navigationStateManager.navigateBack()},
+                onBackClick = {
+                    //faking the "on back click" into always going back to the last selected workspace
+                    when (navigationStateManager.getNoteType()){
+                        NoteType.CHAT -> {
+                            navigationStateManager.navigateToChatTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                        NoteType.CONTENT -> {
+                            navigationStateManager.navigateToMainTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                        NoteType.TEMPLATE -> {
+                            navigationStateManager.navigateToTemplateTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                    }
+                              },
                 featureActions = featureActions,
                 onPersonalProfileClick = { navigationStateManager.navigateToProfile() })
         }
