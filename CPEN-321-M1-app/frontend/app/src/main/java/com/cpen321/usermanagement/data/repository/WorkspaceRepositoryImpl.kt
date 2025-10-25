@@ -43,6 +43,7 @@ class WorkspaceRepositoryImpl @Inject constructor(
         }
     }
 
+
     override suspend fun getWorkspacesForUser(): Result<List<Workspace>> {
         return try {
             val response = workspaceApi.getWorkspacesForUser(AUTH_HEADER_PLACEHOLDER)
