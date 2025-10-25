@@ -28,8 +28,7 @@ const workspaceSchema = new Schema<IWorkspaceDocument>(
     name: { 
       type: String, 
       required: true,
-      trim: true,
-      index: true
+      trim: true
     },
     profile: {
       type: profileSchema,
@@ -38,13 +37,11 @@ const workspaceSchema = new Schema<IWorkspaceDocument>(
     ownerId: { 
       type: Schema.Types.ObjectId, 
       ref: 'User',
-      required: true,
-      index: true
+      required: true
     },
     members: [{ 
       type: Schema.Types.ObjectId, 
-      ref: 'User',
-      index: true
+      ref: 'User'
     }],
     bannedMembers: [{ 
       type: Schema.Types.ObjectId, 
@@ -63,6 +60,7 @@ const workspaceSchema = new Schema<IWorkspaceDocument>(
 );
 
 // Indexes for faster queries
+workspaceSchema.index({ name: 1 });
 workspaceSchema.index({ ownerId: 1, createdAt: -1 });
 workspaceSchema.index({ members: 1 });
 

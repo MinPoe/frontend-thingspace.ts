@@ -101,5 +101,13 @@ router.delete(
   workspaceController.deleteWorkspace
 );
 
+// Get a specific workspace by ID
+router.get(
+  '/:id',
+  authenticateToken,
+  workspaceController.getWorkspace
+);
+
+
 export default router;
 
