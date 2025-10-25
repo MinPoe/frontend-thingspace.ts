@@ -259,7 +259,7 @@ private fun ProfileTopBar(
         modifier = modifier,
         title = {
             Text(
-                text = stringResource(R.string.manage_profile),
+                text = stringResource(R.string.manage_workspace_profile),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Medium
             )

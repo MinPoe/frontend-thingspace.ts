@@ -145,27 +145,41 @@ private fun WsBody(
     onCreateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(paddingValues)
     ) {
-        WorkspaceRow(
-            workspaceName = username, //TODO: for now
-            onContentClick = onPersonalContentClick,
-            onTemplatesClick = onPersonalTemplateClick,
-            onProfileClick = onPersonalProfileClick,
-            onChatClick = onPersonalChatClick
-        )
-        for (i in 0..(availableWs.size-1))
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             WorkspaceRow(
-                workspaceName = availableWs[i],
-                onContentClick = {onWsMainClick(i)},
-                onProfileClick = {onWsProfileClick(i)},//TODO: for Now,
-                onChatClick = {onWsChatClick(i)},
-                onTemplatesClick = {onWsTemplateClick(i)}
+                workspaceName = username, //TODO: for now
+                onContentClick = onPersonalContentClick,
+                onTemplatesClick = onPersonalTemplateClick,
+                onProfileClick = onPersonalProfileClick,
+                onChatClick = onPersonalChatClick
             )
-        Button(onClick = onCreateClick) {Text("Create a new workspace...") }
+            for (i in 0..(availableWs.size-1))
+                WorkspaceRow(
+                    workspaceName = availableWs[i],
+                    onContentClick = {onWsMainClick(i)},
+                    onProfileClick = {onWsProfileClick(i)},//TODO: for Now,
+                    onChatClick = {onWsChatClick(i)},
+                    onTemplatesClick = {onWsTemplateClick(i)}
+                )
+        }
+        
+        // Create button at bottom with proper padding
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(com.cpen321.usermanagement.ui.theme.LocalSpacing.current.medium)
+        ) {
+            Button(onClick = onCreateClick) {
+                Text("Create a new workspace...")
+            }
+        }
     }
 }

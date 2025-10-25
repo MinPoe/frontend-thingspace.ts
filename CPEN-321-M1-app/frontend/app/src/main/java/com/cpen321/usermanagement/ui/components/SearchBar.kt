@@ -33,36 +33,46 @@ fun SearchBar(
     modifier:Modifier = Modifier,
     query:String=""
 ){
+    var _query by remember { mutableStateOf(query) }
+    val spacing = LocalSpacing.current
+    
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = spacing.medium)
     ){
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ){
-            var _query by remember { mutableStateOf(query) }
             OutlinedTextField(
                 value = _query,
                 onValueChange = {newVal:String->_query=newVal
                                 onQueryChange(_query)},
-                label = { Text(stringResource(R.string.bio)) },
-                placeholder = { Text(stringResource(R.string.bio_placeholder)) },
-                modifier = modifier.weight(1f).padding(16.dp),
+                label = { Text(stringResource(R.string.search)) },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = spacing.small),
                 singleLine = true,
-                readOnly = false //Here a fix was conducted: Users SHOULD be able to edit their bio after account creation
+                readOnly = false,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             )
             FilterActionButton(
-                onClick = onFilterClick, modifier=modifier
+                onClick = onFilterClick
             )
         }
-        Button(onClick = onSearchClick) {
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = "search",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = spacing.medium)
+        ) {
+            Button(onClick = onSearchClick) {
+                Text(text = stringResource(R.string.search))
+            }
         }
     }
 
@@ -85,6 +95,6 @@ private fun FilterActionButton(
 @Composable
 private fun FilterIcon() {
     Icon(
-        name = R.drawable.ic_arrow_back,
+        name = R.drawable.filter,
     )
 }

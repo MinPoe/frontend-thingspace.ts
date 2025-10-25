@@ -2,6 +2,7 @@ package com.cpen321.usermanagement.ui.components
 
 import Icon
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.IconButton
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun WsProfileBar(
@@ -101,10 +103,15 @@ fun WorkspaceRow(
        horizontalArrangement = Arrangement.Center
     ){
         Button(
-            onClick=onProfileClick,
-            modifier=modifier) {
+            onClick = {},
+            modifier = modifier.weight(1f, fill = false)
+        ) {
             Text(
-            if(workspaceName.length<11) workspaceName else workspaceName.take(10)+"...")}
+                text = if(workspaceName.length < 25) workspaceName else workspaceName.take(24) + "...",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
         ContentNoteActionButton(
             onClick = onContentClick,
             modifier=modifier
@@ -115,6 +122,10 @@ fun WorkspaceRow(
         )
         ChatActionButton(
             onClick = onChatClick,
+            modifier=modifier
+        )
+        EditActionButton(
+            onClick = onProfileClick,
             modifier=modifier
         )
     }
@@ -130,14 +141,20 @@ fun MainBottomBar(
     modifier: Modifier = Modifier
 ){
     BottomAppBar(
-        actions = {
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             ContentNoteActionButton(onClick = onContentClick)
             TemplateActionButton(onClick = onTemplatesClick)
             ChatActionButton(onClick = onChatClick)
             WorkspaceActionButton(onClick = onWorkspacesClick)
-            CreateNoteActionButton(onClick = onCreateNoteClick)},
-        modifier = modifier
-    )
+            CreateNoteActionButton(onClick = onCreateNoteClick)
+        }
+    }
 }
 
 @Composable
@@ -158,7 +175,7 @@ private fun ContentNoteActionButton(
 @Composable
 private fun ContentIcon() {
     Icon(
-        name = R.drawable.ic_google,
+        name = R.drawable.ic_notes,
     )
 }
 
@@ -180,7 +197,7 @@ private fun ChatActionButton(
 @Composable
 private fun ChatIcon() {
     Icon(
-        name = R.drawable.ic_account_circle,
+        name = R.drawable.chat,
     )
 }
 
@@ -224,7 +241,7 @@ private fun TemplateActionButton(
 @Composable
 private fun TemplateIcon() {
     Icon(
-        name = R.drawable.ic_check, //TODO: change the icon to sth more meaningful
+        name = R.drawable.ic_templates,
     )
 }
 
@@ -246,7 +263,29 @@ private fun WorkspaceActionButton(
 @Composable
 private fun WorkspaceIcon() {
     Icon(
-        name = R.drawable.ic_heart_smile, //TODO: change the icon to sth more meaningful
+        name = R.drawable.ic_workspaces,
+    )
+}
+
+@Composable
+private fun EditActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(spacing.extraLarge2)
+    ) {
+        EditIcon()
+    }
+}
+
+@Composable
+private fun EditIcon() {
+    Icon(
+        name = R.drawable.ic_edit,
     )
 }
 

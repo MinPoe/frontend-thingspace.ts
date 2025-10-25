@@ -255,14 +255,14 @@ private fun WorkspaceName(
     workspaceName: String,
     modifier: Modifier = Modifier
 ) {
-    val fontSizes = LocalFontSizes.current
-
     Text(
-        text = workspaceName+stringResource(R.string.plusContent),
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = fontSizes.extraLarge3,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
+        text = workspaceName + stringResource(R.string.plusContent),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = modifier.padding(horizontal = LocalSpacing.current.medium),
+        maxLines = 2,
+        softWrap = true
     )
 }
 

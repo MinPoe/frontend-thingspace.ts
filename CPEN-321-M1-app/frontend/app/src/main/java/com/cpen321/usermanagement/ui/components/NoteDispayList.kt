@@ -2,15 +2,24 @@ package com.cpen321.usermanagement.ui.components
 
 import androidx.compose.runtime.Composable
 import Button
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.TextField
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
+import com.cpen321.usermanagement.ui.theme.LocalSpacing
 
 @Composable
 fun NoteDisplayList(
@@ -18,16 +27,43 @@ fun NoteDisplayList(
     notes: List<Note>,
     modifier: Modifier = Modifier
 ){
+    val spacing = LocalSpacing.current
+    
     for(note in notes){
-        Button(onClick = {onNoteClick(note._id)}){
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = note._id, //TODO: for now just displays a note id, we need to add note header-ing
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
+        // Get the first text field's content or use a default
+        val notePreview = note.fields.firstOrNull()?.let { field ->
+            when (field) {
+                is TextField -> field.content ?: "Empty note"
+                else -> "Note content"
+            }
+        } ?: "Empty note"
+        
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing.medium, vertical = spacing.small)
+                .clickable { onNoteClick(note._id) },
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = spacing.extraSmall
             )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(spacing.medium)
+            ) {
+                Text(
+                    text = notePreview,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = modifier
+                )
+            }
         }
     }
 }

@@ -63,15 +63,14 @@ export class WorkspaceService {
         };
     }
 
-    async getWorkspacesForUser(userId: mongoose.Types.ObjectId): Promise<Workspace[]> {
-        const user = await userModel.findById(userId);
-        
+    async getWorkspacesForUser(userId: mongoose.Types.ObjectId, personalWorkspaceId?: mongoose.Types.ObjectId): Promise<Workspace[]> {
         const query: any = {
             members: userId
         };
         
-        if (user?.personalWorkspaceId) {
-            query._id = { $ne: user.personalWorkspaceId };
+        // Exclude personal workspace if provided
+        if (personalWorkspaceId) {
+            query._id = { $ne: personalWorkspaceId };
         }
         
         const workspaces = await workspaceModel.find(query).sort({ updatedAt: -1 });

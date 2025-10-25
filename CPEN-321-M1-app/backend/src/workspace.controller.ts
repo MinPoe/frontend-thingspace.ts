@@ -58,13 +58,13 @@ export class WorkspaceController {
 
     async getWorkspacesForUser(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
+            const user = req.user;
+            if (!user) {
                 res.status(401).json({ error: 'User not authenticated' });
                 return;
             }
 
-            const workspaces = await workspaceService.getWorkspacesForUser(userId);
+            const workspaces = await workspaceService.getWorkspacesForUser(user._id, user.personalWorkspaceId);
 
             res.status(200).json({
                 message: 'Workspaces retrieved successfully',
