@@ -249,6 +249,8 @@ private fun handleNavigationEvent(
             membersManagerViewModel.loadUsers()
             wsSelectViewModel.setToUpdate() //TODO: for now here later on make a full updatemethod
             wsProfileViewModel.loadProfile()
+            mainViewModel.onLoad()
+            templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
 
