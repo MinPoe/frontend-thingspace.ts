@@ -55,7 +55,6 @@ import com.cpen321.usermanagement.ui.screens.WsMembersScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileScreen
 import com.cpen321.usermanagement.utils.IFeatureActions
-import kotlinx.coroutines.runBlocking
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -211,9 +210,8 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
-            mainViewModel.onLoad()
+            mainViewModel.onLoadTagReset()
             navigationStateManager.clearNavigationEvent()
-            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToMainWithMessage -> {
@@ -221,9 +219,8 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(0) { inclusive = true }
             }
-            mainViewModel.onLoad()
+            mainViewModel.onLoadTagReset()
             navigationStateManager.clearNavigationEvent()
-            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToProfileCompletion -> {
@@ -374,9 +371,8 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.MAIN){
                 popUpTo(0) { inclusive = true }
             }
-            mainViewModel.onLoad()
+            mainViewModel.onLoadTagReset()
             navigationStateManager.clearNavigationEvent()
-            runBlocking { mainViewModel.loadAllUserTags() }
         }
 
         is NavigationEvent.NavigateToChatTagReset -> {
@@ -390,9 +386,8 @@ private fun handleNavigationEvent(
             navController.navigate(NavRoutes.TEMPLATE){
                 popUpTo(0) { inclusive = true }
             }
-            templateViewModel.onLoad()
+            templateViewModel.onLoadTagReset()
             navigationStateManager.clearNavigationEvent()
-            runBlocking { templateViewModel.loadAllUserTags() }
         }
     }
 }

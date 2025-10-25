@@ -124,4 +124,14 @@ open class DisplayViewModel @Inject constructor(
                 false)
         }
     }
+
+    fun onLoadTagReset(){
+        _fetching.value = true
+        viewModelScope.launch{
+            cacheUpdateWorkspaceOrUser(navigationStateManager.getWorkspaceId())
+            loadAllUserTags()
+            searchResults()
+            _fetching.value=false
+        }
+    }
 }
