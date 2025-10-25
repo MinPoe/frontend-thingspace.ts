@@ -56,6 +56,7 @@ data class NoteCreationState(
 class NoteCreationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val noteRepository: NoteRepository,
+    private val workspaceRepository: WorkspaceRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -199,7 +200,7 @@ class NoteCreationViewModel @Inject constructor(
 
             // Create note
             val result = noteRepository.createNote(
-                workspaceId = effectiveWorkspaceId,
+                workspaceId = workspaceId,
                 authorId = userId,
                 tags = _creationState.value.tags,
                 fields = fields,

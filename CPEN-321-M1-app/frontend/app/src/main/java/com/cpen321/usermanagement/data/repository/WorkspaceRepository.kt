@@ -6,6 +6,7 @@ import com.cpen321.usermanagement.data.remote.dto.Workspace
 
 interface WorkspaceRepository {
     suspend fun getWorkspace(workspaceId:String): Result<Workspace>
+    suspend fun getPersonalWorkspace(): Result<Workspace>
     suspend fun getWorkspacesForUser(): Result<List<Workspace>>
     suspend fun getWorkspaceMembers(workspaceId:String): Result<List<User>>
     suspend fun createWorkspace(managerId:String,
@@ -24,7 +25,6 @@ interface WorkspaceRepository {
     suspend fun getMembershipStatus(userId:String, workspaceId: String): Result<WsMembershipStatus>
     suspend fun getAllTags(workspaceId: String): Result<List<String>>
     suspend fun chatPoll(workspaceId: String): Result<Boolean>
-    suspend fun getPersonalWorkspace(): Result<Workspace>
 }
 
 enum class WsMembershipStatus{
