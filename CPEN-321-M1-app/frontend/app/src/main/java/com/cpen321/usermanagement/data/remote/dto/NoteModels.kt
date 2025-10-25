@@ -1,6 +1,8 @@
 package com.cpen321.usermanagement.data.remote.dto
 import com.google.gson.annotations.SerializedName
+import com.google.gson.*
 import java.time.LocalDateTime
+import java.lang.reflect.Type
 
 /*
  * Note and Field data classes
@@ -19,6 +21,7 @@ data class Note(
 )
 
 // Field Types implemented here:
+@JsonAdapter(FieldDeserializer::class)
 sealed class Field {
     abstract val _id: String
     abstract val label: String
@@ -56,4 +59,39 @@ enum class NoteType {
     CONTENT,
     CHAT,
     TEMPLATE
+}
+
+/**
+ * Custom Gson deserializer for Field sealed class
+ * Uses fieldType discriminator to determine which concrete class to deserialize to
+ */
+class FieldDeserializer : JsonDeserializer<Field> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext
+    ): Field {
+        val jsonObject = json.asJsonObject
+        val fieldType = jsonObject.get("fieldType")?.asString
+        
+        // Remove fieldType from JSON before deserializing to avoid property conflicts
+        val cleanJson = jsonObject.deepCopy()
+        cleanJson.remove("fieldType")
+        
+        return when (fieldType) {
+            "text" -> context.deserialize(cleanJson, TextField::class.java)
+            "datetime" -> context.deserialize(cleanJson, DateTimeField::class.java)
+            "number" -> context.deserialize(cleanJson, NumberField::class.java)
+            null -> {
+                // Handle missing fieldType - default to TextField for backward compatibility
+                // This ensures existing data without fieldType still works
+                context.deserialize(cleanJson, TextField::class.java)
+            }
+            else -> {
+                // Handle unknown field types - default to TextField to prevent crashes
+                // Log a warning in production
+                context.deserialize(cleanJson, TextField::class.java)
+            }
+        }
+    }
 }

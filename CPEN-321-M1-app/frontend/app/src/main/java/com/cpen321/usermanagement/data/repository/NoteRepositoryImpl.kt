@@ -23,6 +23,40 @@ class NoteRepositoryImpl @Inject constructor(
         private const val AUTH_HEADER_PLACEHOLDER = "" // Handled by Interceptor
     }
 
+    /**
+     * Converts Field objects to backend format with proper fieldType serialization
+     */
+    private fun convertToBackendFields(fields: List<Field>): List<Map<String, Any?>> {
+        return fields.map { field ->
+            when (field) {
+                is TextField -> mapOf(
+                    "_id" to field._id,
+                    "fieldType" to "text",
+                    "label" to field.label,
+                    "required" to field.required,
+                    "placeholder" to field.placeholder,
+                    "maxLength" to field.maxLength
+                )
+                is DateTimeField -> mapOf(
+                    "_id" to field._id,
+                    "fieldType" to "datetime",
+                    "label" to field.label,
+                    "required" to field.required,
+                    "minDate" to field.minDate?.toString(),
+                    "maxDate" to field.maxDate?.toString()
+                )
+                is NumberField -> mapOf(
+                    "_id" to field._id,
+                    "fieldType" to "number",
+                    "label" to field.label,
+                    "required" to field.required,
+                    "min" to field.min,
+                    "max" to field.max
+                )
+            }
+        }
+    }
+
     override suspend fun getNote(noteId: String): Result<Note> {
         return try {
             val response = noteApi.getNote(AUTH_HEADER_PLACEHOLDER, noteId)
@@ -49,14 +83,8 @@ class NoteRepositoryImpl @Inject constructor(
         noteType: NoteType
     ): Result<Unit> {
         return try {
-            // Transform fields to backend format (simple maps)
-            val backendFields = fields.map { field ->
-                mapOf(
-                    "_id" to field._id,
-                    "fieldType" to "textbox",
-                    "content" to ""
-                )
-            }
+            // Transform fields to backend format with proper field types
+            val backendFields = convertToBackendFields(fields)
 
             val requestMap = mapOf(
                 "workspaceId" to workspaceId,
@@ -88,8 +116,31 @@ class NoteRepositoryImpl @Inject constructor(
         tags: List<String>,
         fields: List<Field>
     ): Result<Unit> {
-        // TODO: Implement when backend endpoint is ready
-        return Result.success(Unit)
+        return try {
+            // Transform fields to backend format with proper field types
+            val backendFields = convertToBackendFields(fields)
+
+            val requestMap = mapOf(
+                "fields" to backendFields,
+                "tags" to tags
+            )
+
+            val response = noteApi.updateNote(AUTH_HEADER_PLACEHOLDER, noteId, requestMap)
+
+            if (response.isSuccessful) {
+                Log.d(TAG, "Note updated successfully")
+                Result.success(Unit)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to update note."
+                )
+                Log.e(TAG, "updateNote error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("updateNote", e)
+        }
     }
 
     override suspend fun deleteNote(noteId: String): Result<Unit> {

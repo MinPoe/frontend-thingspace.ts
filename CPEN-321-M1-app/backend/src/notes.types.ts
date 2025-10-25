@@ -31,27 +31,25 @@ export enum NoteType {
 export interface Note {
   _id: string;
   userId: string;
-  fields: Field[];
+  workspaceId: string;
+  fields: any[]; // Just JSON objects as requested
   noteType: NoteType;
-  tags?: string[];
-  workspaceId?: string;
+  tags: string[];
   vectorData: number[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateNoteRequest {
-  tags?: string[];
-  fields: Field[];
-  noteType?: NoteType;
+  tags: string[];
+  fields: any[]; // Just JSON objects as requested
+  noteType: NoteType;
   workspaceId: string;
 }
 
 export interface UpdateNoteRequest {
-  tags?: string[];
-  fields?: Field[];
-  noteType?: NoteType;
-  workspaceId?: string;
+  tags: string[];
+  fields: any[]; // Just JSON objects as requested
 }
 
 export interface GetNoteRequest {
@@ -65,12 +63,11 @@ export interface GetNoteRequest {
 export const createNoteSchema = z.object({
   fields: z.array(z.any()),
   workspaceId: z.string().min(1, 'workspaceId is required'),
-  tags: z.array(z.string()).optional(),
-  noteType: z.enum([NoteType.CONTENT, NoteType.CHAT, NoteType.TEMPLATE]).optional(),
+  tags: z.array(z.string()),
+  noteType: z.enum([NoteType.CONTENT, NoteType.CHAT, NoteType.TEMPLATE]),
 }).strict();
 
 export const updateNoteSchema = z.object({
-  tags: z.array(z.string()).optional(),
-  fields: z.array(z.any()).optional(),
-  noteType: z.enum([NoteType.CONTENT, NoteType.CHAT, NoteType.TEMPLATE]).optional(),
+  tags: z.array(z.string()),
+  fields: z.array(z.any()),
 }).strict();
