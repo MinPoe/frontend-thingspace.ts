@@ -36,7 +36,8 @@ data class TextField(
     override val label: String,
     override val required: Boolean = false,
     val placeholder: String? = null,
-    val maxLength: Int? = null
+    val maxLength: Int? = null,
+    val content: String? = null
 ) : Field()
 
 data class DateTimeField(
@@ -44,7 +45,8 @@ data class DateTimeField(
     override val label: String,
     override val required: Boolean = false,
     val minDate: LocalDateTime? = null,
-    val maxDate: LocalDateTime? = null
+    val maxDate: LocalDateTime? = null,
+    val content: LocalDateTime? = null
 ) : Field()
 
 data class NumberField(
@@ -53,6 +55,7 @@ data class NumberField(
     override val required: Boolean = false,
     val min: Int? = null,
     val max: Int? = null,
+    val content: Int? = null
 ): Field()
 
 // TODO: ADD MORE ENUMS FOR NOTETYPE LATER
@@ -85,13 +88,15 @@ class FieldDeserializer : JsonDeserializer<Field> {
                 // Convert string dates to LocalDateTime objects and create DateTimeField directly
                 val minDate = jsonObject.get("minDate")?.asString?.let { LocalDateTime.parse(it) }
                 val maxDate = jsonObject.get("maxDate")?.asString?.let { LocalDateTime.parse(it) }
+                val content = jsonObject.get("content")?.asString?.let { LocalDateTime.parse(it) }
                 
                 DateTimeField(
                     _id = jsonObject.get("_id")?.asString ?: "",
                     label = jsonObject.get("label")?.asString ?: "",
                     required = jsonObject.get("required")?.asBoolean ?: false,
                     minDate = minDate,
-                    maxDate = maxDate
+                    maxDate = maxDate,
+                    content = content
                 )
             }
             "number" -> context.deserialize(cleanJson, NumberField::class.java)

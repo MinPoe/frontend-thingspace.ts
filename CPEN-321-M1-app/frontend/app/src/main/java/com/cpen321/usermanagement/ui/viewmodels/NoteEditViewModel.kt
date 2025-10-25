@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class NoteEditState(
@@ -83,7 +84,8 @@ class NoteEditViewModel @Inject constructor(
                                 label = field.label,
                                 required = field.required,
                                 placeholder = field.placeholder,
-                                maxLength = field.maxLength
+                                maxLength = field.maxLength,
+                                content = field.content
                             )
                             is NumberField -> FieldCreationData(
                                 id = field._id,
@@ -91,13 +93,15 @@ class NoteEditViewModel @Inject constructor(
                                 label = field.label,
                                 required = field.required,
                                 min = field.min,
-                                max = field.max
+                                max = field.max,
+                                content = field.content
                             )
                             is DateTimeField -> FieldCreationData(
                                 id = field._id,
                                 type = FieldType.DATETIME,
                                 label = field.label,
-                                required = field.required
+                                required = field.required,
+                                content = field.content
                             )
                         }
                     }
@@ -170,6 +174,7 @@ class NoteEditViewModel @Inject constructor(
                         is FieldUpdate.MaxLength -> field.copy(maxLength = update.value)
                         is FieldUpdate.Min -> field.copy(min = update.value)
                         is FieldUpdate.Max -> field.copy(max = update.value)
+                        is FieldUpdate.Content -> field.copy(content = update.value)
                     }
                 } else field
             }
@@ -187,19 +192,33 @@ class NoteEditViewModel @Inject constructor(
                         label = fieldData.label,
                         required = fieldData.required,
                         placeholder = fieldData.placeholder,
-                        maxLength = fieldData.maxLength
+                        maxLength = fieldData.maxLength,
+                        content = when (fieldData.content) {
+                            is String -> fieldData.content
+                            else -> fieldData.content?.toString()
+                        }
                     )
                     FieldType.NUMBER -> NumberField(
                         _id = fieldData.id,
                         label = fieldData.label,
                         required = fieldData.required,
                         min = fieldData.min,
-                        max = fieldData.max
+                        max = fieldData.max,
+                        content = when (fieldData.content) {
+                            is Int -> fieldData.content
+                            is String -> fieldData.content.toIntOrNull()
+                            else -> null
+                        }
                     )
                     FieldType.DATETIME -> DateTimeField(
                         _id = fieldData.id,
                         label = fieldData.label,
-                        required = fieldData.required
+                        required = fieldData.required,
+                        content = when (fieldData.content) {
+                            is LocalDateTime -> fieldData.content
+                            is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: Exception) { null }
+                            else -> null
+                        }
                     )
                 }
             }

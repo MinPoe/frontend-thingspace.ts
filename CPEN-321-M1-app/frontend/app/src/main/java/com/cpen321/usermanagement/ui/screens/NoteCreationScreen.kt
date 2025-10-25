@@ -453,10 +453,97 @@ private fun FieldEditCard(
                 Text("Required")
             }
 
-            // Type-specific fields
+            // Content input section
+            Spacer(modifier = Modifier.height(spacing.medium))
+            Text(
+                text = "Field Content",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(spacing.small))
+            
             when (field.type) {
                 FieldType.TEXT -> {
-                    Spacer(modifier = Modifier.height(spacing.small))
+                    OutlinedTextField(
+                        value = (field.content as? String) ?: "",
+                        onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
+                        label = { Text("Text Content") },
+                        placeholder = { Text("Enter text content...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 4
+                    )
+                }
+                FieldType.NUMBER -> {
+                    OutlinedTextField(
+                        value = (field.content as? Int)?.toString() ?: "",
+                        onValueChange = { 
+                            val value = it.toIntOrNull()
+                            onFieldUpdated(FieldUpdate.Content(value))
+                        },
+                        label = { Text("Number Content") },
+                        placeholder = { Text("Enter number...") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                FieldType.DATETIME -> {
+                    var showDatePicker by remember { mutableStateOf(false) }
+                    var showTimePicker by remember { mutableStateOf(false) }
+                    val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
+                    
+                    Column {
+                        OutlinedTextField(
+                            value = currentDateTime.toString(),
+                            onValueChange = { 
+                                try {
+                                    val dateTime = java.time.LocalDateTime.parse(it)
+                                    onFieldUpdated(FieldUpdate.Content(dateTime))
+                                } catch (e: Exception) {
+                                    // Invalid format, don't update
+                                }
+                            },
+                            label = { Text("Date/Time Content") },
+                            placeholder = { Text("YYYY-MM-DDTHH:mm:ss") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true
+                        )
+                        
+                        Spacer(modifier = Modifier.height(spacing.small))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(spacing.small)
+                        ) {
+                            Button(
+                                onClick = { showDatePicker = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Pick Date")
+                            }
+                            Button(
+                                onClick = { showTimePicker = true },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Pick Time")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Type-specific configuration fields
+            Spacer(modifier = Modifier.height(spacing.medium))
+            Text(
+                text = "Field Configuration",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(spacing.small))
+            
+            when (field.type) {
+                FieldType.TEXT -> {
                     OutlinedTextField(
                         value = field.placeholder ?: "",
                         onValueChange = { onFieldUpdated(FieldUpdate.Placeholder(it)) },
@@ -475,7 +562,6 @@ private fun FieldEditCard(
                     )
                 }
                 FieldType.NUMBER -> {
-                    Spacer(modifier = Modifier.height(spacing.small))
                     OutlinedTextField(
                         value = field.min?.toString() ?: "",
                         onValueChange = {
@@ -497,9 +583,8 @@ private fun FieldEditCard(
                     )
                 }
                 FieldType.DATETIME -> {
-                    // DateTime-specific fields could be added here
                     Text(
-                        text = "Date/Time field configuration coming soon",
+                        text = "Date/Time field configuration options coming soon",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
