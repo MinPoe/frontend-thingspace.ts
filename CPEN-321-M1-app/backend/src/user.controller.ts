@@ -105,4 +105,74 @@ export class UserController {
       next(error);
     }
   }
+
+  async getUserById(req: Request, res: Response<GetProfileResponse>, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          message: 'Invalid user ID format',
+        });
+      }
+
+      const user = await userModel.findById(new mongoose.Types.ObjectId(id));
+
+      if (!user) {
+        return res.status(404).json({
+          message: 'User not found',
+        });
+      }
+
+      res.status(200).json({
+        message: 'User fetched successfully',
+        data: { user },
+      });
+    } catch (error) {
+      logger.error('Failed to get user by ID:', error);
+
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Failed to get user',
+        });
+      }
+
+      next(error);
+    }
+  }
+
+  async getUserByEmail(req: Request, res: Response<GetProfileResponse>, next: NextFunction) {
+    try {
+      const { email } = req.params;
+
+      if (!email) {
+        return res.status(400).json({
+          message: 'Invalid email',
+        });
+      }
+
+      const user = await userModel.findByEmail(email);
+
+      if (!user) {
+        return res.status(404).json({
+          message: 'User not found',
+        });
+      }
+
+      res.status(200).json({
+        message: 'User fetched successfully',
+        data: { user },
+      });
+    } catch (error) {
+      logger.error('Failed to get user by email:', error);
+
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Failed to get user',
+        });
+      }
+
+      next(error);
+    }
+  }
 }
