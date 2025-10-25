@@ -69,6 +69,12 @@ interface WorkspaceInterface {
         @Path("id") workspaceId: String
     ): Response<ApiResponse<GetWorkspaceData>>
 
+    // Get the personal workspace of the currently authenticated user
+    @GET("workspace/personal")
+    suspend fun getPersonalWorkspace(
+        @Header("Authorization") authHeader: String,
+    ): Response<ApiResponse<GetWorkspaceData>>
+
     // Get members (users) of a workspace
     @GET("workspace/{id}/members")
     suspend fun getWorkspaceMembers(
