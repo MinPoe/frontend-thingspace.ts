@@ -20,7 +20,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WsSelectViewModel@Inject constructor(
-    private val profileRepository: ProfileRepository,
     private val workspaceRepository: WorkspaceRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
@@ -35,16 +34,16 @@ class WsSelectViewModel@Inject constructor(
     fun loadUserAndWorkspaces(){
         viewModelScope.launch{
             _uiState.value = _uiState.value.copy(state = WsSelectUIStateE.LOADING)
-            _uiState.value = _uiState.value.copy(user = getUser())
+            _uiState.value = _uiState.value.copy(personalWs = getPersonalWs())
             _uiState.value = _uiState.value.copy(workspaces = getWorkspaces())
-            Log.d(TAG, "loading workspaces done ${uiState.value.workspaces}, ${uiState.value.user}")
+            Log.d(TAG, "loading workspaces done ${uiState.value.workspaces}, ${uiState.value.personalWs}")
 
-            if(_uiState.value.user != null) { //todo parallelize later or make a grouped backend call
+            if(_uiState.value.personalWs != null) { //todo parallelize later or make a grouped backend call
                 val workspaceManager = mutableListOf<Boolean>()
-                val user = _uiState.value.user!!
+                val personalWs = _uiState.value.personalWs!!
                 for (workspace in _uiState.value.workspaces) {
                     val membershipStatusRequest = workspaceRepository.getMembershipStatus(
-                        user._id, workspaceId = workspace._id
+                        personalWs._id, workspaceId = workspace._id
                     )
                     if (membershipStatusRequest.isSuccess &&
                         membershipStatusRequest.getOrNull()!! == WsMembershipStatus.MANAGER
@@ -62,20 +61,20 @@ class WsSelectViewModel@Inject constructor(
 
     }
 
-    private suspend fun getUser():User{
-        val profileResult = profileRepository.getProfile()
+    private suspend fun getPersonalWs():Workspace{
+        val profileResult = workspaceRepository.getPersonalWorkspace()
         if (profileResult.isSuccess){
-            val user = profileResult.getOrNull()!!
-            return user
+            val personalWs = profileResult.getOrNull()!!
+            return personalWs
         }
         else
         {
             val error = profileResult.exceptionOrNull()
-            Log.e(TAG, "Failed to load profile", error)
+            Log.e(TAG, "Failed to load personal workspace", error)
             error?.message ?: "Failed to load profile"
             //TODO: for now!!!
-            return User(_id = "", googleId = "", email = "", createdAt = null, updatedAt = null,
-                profile = Profile(imagePath = null, name = "nullname", description = null))
+            return Workspace(_id = "personal",
+                profile = Profile(imagePath = null, name = "personal", description = null))
         }
     }
     private suspend fun getWorkspaces():List<Workspace>{
@@ -98,7 +97,7 @@ class WsSelectViewModel@Inject constructor(
 }
 
 data class WsSelectUIState(
-    var user:User? = null,
+    var personalWs:Workspace? = null,
     var workspaces:List<Workspace> = emptyList(),
     var state: WsSelectUIStateE = WsSelectUIStateE.LOADING,
     var workspaceManager:List<Boolean>? = null
