@@ -76,19 +76,18 @@ open class DisplayViewModel @Inject constructor(
                 _wsdescr = ws.profile.description ?: ""
             }
             else{
-                val profileResult = profileRepository.getProfile()
-                if (profileResult.isSuccess){
-                    val user = profileResult.getOrNull()!!
-                    if (user._id==workspaceId){
-                        _wsid = workspaceId
-                        _wspic = user.profile.imagePath ?: ""
-                        _wsdescr = user.profile.description ?: ""
-                        _wsname = user.profile.name
-                    }
+                val personalResult = workspaceRepository.getPersonalWorkspace()
+                if (personalResult.isSuccess){
+                    val ws = personalResult.getOrNull()!!
+                    _wsid = ws._id
+                    _wspic = ws.profile.imagePath ?: ""
+                    _wsdescr = ws.profile.description ?: ""
+                    _wsname = ws.profile.name
+
                 }
                 else
                 {
-                    val error = profileResult.exceptionOrNull()
+                    val error = personalResult.exceptionOrNull()
                     Log.e(TAG, "Failed to load workspace/profile", error)
                     error?.message ?: "Failed to load workspace/profile"
                 }
