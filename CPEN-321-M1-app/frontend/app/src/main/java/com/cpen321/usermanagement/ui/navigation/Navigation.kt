@@ -136,7 +136,8 @@ fun AppNavigation(
             wsProfileManagerViewModel = wsProfileManagerViewModel,
             wsProfileViewModel = wsProfileViewModel,
             wsSelectViewModel = wsSelectViewModel,
-            mainViewModel = mainViewModel
+            mainViewModel = mainViewModel,
+            profileViewModel = profileViewModel
         )
     }
 
@@ -171,6 +172,7 @@ private fun handleNavigationEvent(
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
     chatViewModel: ChatViewModel,
     copyViewModel: CopyViewModel,
     fieldsViewModel: FieldsViewModel,
@@ -317,6 +319,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToOtherProfile -> {
             navController.navigate(NavRoutes.OTHER_PROFILE)
+            profileViewModel.loadProfile(navigationStateManager.getOtherUserId())
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -707,7 +710,6 @@ private fun AppNavHost(
             OtherProfileScreen(
                 profileViewModel = profileViewModel,
                 onBackClick = { navigationStateManager.navigateBack() },
-                otherProfileId = navigationStateManager.getOtherUserId()
             )
         }
 

@@ -12,6 +12,7 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import com.cpen321.usermanagement.data.remote.dto.Field
+import kotlin.reflect.typeOf
 
 class NoteRepositoryImpl @Inject constructor(
     private val noteApi: NoteInterface,

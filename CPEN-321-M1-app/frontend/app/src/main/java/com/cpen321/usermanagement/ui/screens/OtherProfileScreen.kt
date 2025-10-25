@@ -42,16 +42,8 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 fun OtherProfileScreen(
     profileViewModel: ProfileViewModel,
     onBackClick: () -> Unit,
-    otherProfileId:String
 ) {
     val uiState by profileViewModel.uiState.collectAsState()
-
-    // Load the profile only once
-    LaunchedEffect(Unit) {
-        if (uiState.user == null) {
-            profileViewModel.loadProfile(otherProfileId) // Or loadOtherUserProfile(id) if needed
-        }
-    }
 
     Scaffold(
         topBar = { ViewProfileTopBar(onBackClick = onBackClick) }
