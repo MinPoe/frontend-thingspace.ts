@@ -64,10 +64,18 @@ export class WorkspaceService {
     }
 
     async getWorkspacesForUser(userId: mongoose.Types.ObjectId): Promise<Workspace[]> {
-        // Find workspaces where user is a member (includes owners)
-        const workspaces = await workspaceModel.find({
+        const user = await userModel.findById(userId);
+        
+        const query: any = {
             members: userId
-        }).sort({ updatedAt: -1 });
+        };
+        
+        // Exclude personal workspace if it exists
+        if (user?.personalWorkspaceId) {
+            query._id = { $ne: user.personalWorkspaceId };
+        }
+        
+        const workspaces = await workspaceModel.find(query).sort({ updatedAt: -1 });
 
         return workspaces.map(workspace => ({
             _id: workspace._id.toString(),
@@ -155,6 +163,12 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
+        // Check if this is a personal workspace
+        const requestingUser = await userModel.findById(requestingUserId);
+        if (requestingUser?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot invite members to personal workspace');
+        }
+
         // Check if requesting user is a member
         const isMember = workspace.members.some(memberId => memberId.toString() === requestingUserId.toString());
         if (!isMember) {
@@ -227,6 +241,12 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
+        // Check if this is a personal workspace
+        const user = await userModel.findById(userId);
+        if (user?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot leave your personal workspace');
+        }
+
         // Check if user is the owner
         if (workspace.ownerId.toString() === userId.toString()) {
             throw new Error('Owner cannot leave the workspace. Transfer ownership or delete the workspace instead.');
@@ -259,6 +279,12 @@ export class WorkspaceService {
         
         if (!workspace) {
             throw new Error('Workspace not found');
+        }
+
+        // Check if this is a personal workspace
+        const user = await userModel.findById(requestingUserId);
+        if (user?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot ban members from personal workspace');
         }
 
         // Only owner can ban members
@@ -368,6 +394,12 @@ export class WorkspaceService {
         
         if (!workspace) {
             throw new Error('Workspace not found');
+        }
+
+        // Check if this is a personal workspace
+        const user = await userModel.findById(requestingUserId);
+        if (user?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot delete your personal workspace');
         }
 
         // Only owner can delete workspace
