@@ -47,7 +47,7 @@ fun WsMembersManagerScreen(
             val user = userAndOthers.first
 
             val onPersonalProfileClick = onPersonalProfileClick
-            val onOtherProfileClick = {index:Int -> featureActions.navigateToWsProfile(
+            val onOtherProfileClick = {index:Int -> featureActions.navigateToOtherProfile(
                 otherUsers[index]._id) }
             val onBanClick = {index:Int -> membersManagerViewModel.ban(
                 otherUsers[index]._id)}

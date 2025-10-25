@@ -21,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class WsSelectViewModel@Inject constructor(
     private val workspaceRepository: WorkspaceRepository,
+    private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
     companion object{
@@ -38,12 +39,13 @@ class WsSelectViewModel@Inject constructor(
             _uiState.value = _uiState.value.copy(workspaces = getWorkspaces())
             Log.d(TAG, "loading workspaces done ${uiState.value.workspaces}, ${uiState.value.personalWs}")
 
-            if(_uiState.value.personalWs != null) { //todo parallelize later or make a grouped backend call
+            val userRequest = profileRepository.getProfile()
+            if(userRequest.isSuccess) { //todo parallelize later or make a grouped backend call
                 val workspaceManager = mutableListOf<Boolean>()
-                val personalWs = _uiState.value.personalWs!!
+                val user = userRequest.getOrNull()!!
                 for (workspace in _uiState.value.workspaces) {
                     val membershipStatusRequest = workspaceRepository.getMembershipStatus(
-                        personalWs._id, workspaceId = workspace._id
+                        user._id, workspaceId = workspace._id
                     )
                     if (membershipStatusRequest.isSuccess &&
                         membershipStatusRequest.getOrNull()!! == WsMembershipStatus.MANAGER
