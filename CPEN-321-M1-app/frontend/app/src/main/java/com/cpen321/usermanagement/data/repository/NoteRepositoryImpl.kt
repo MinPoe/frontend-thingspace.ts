@@ -148,8 +148,23 @@ class NoteRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteNote(noteId: String): Result<Unit> {
-        // TODO: Implement when backend endpoint is ready
-        return Result.success(Unit)
+        return try {
+            val response = noteApi.deleteNote("", noteId)
+
+            if (response.isSuccessful) {
+                Log.d(TAG, "Note deleted successfully")
+                Result.success(Unit)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to delete note."
+                )
+                Log.e(TAG, "deleteNote error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("deleteNote", e)
+        }
     }
 
     override suspend fun findNotes(
