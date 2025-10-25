@@ -246,6 +246,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
+            membersManagerViewModel.loadUsers()
             wsSelectViewModel.setToUpdate() //TODO: for now here later on make a full updatemethod
             wsProfileViewModel.loadProfile()
             navigationStateManager.clearNavigationEvent()
@@ -293,6 +294,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToMembersManager -> {
             navController.navigate(NavRoutes.MEMBERS_MANAGER)
+            membersManagerViewModel.loadUsers()
             navigationStateManager.clearNavigationEvent()
         }
 
