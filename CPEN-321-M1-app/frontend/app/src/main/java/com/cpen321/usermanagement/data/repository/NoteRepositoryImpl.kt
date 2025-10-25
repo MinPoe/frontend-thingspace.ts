@@ -12,6 +12,7 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import com.cpen321.usermanagement.data.remote.dto.Field
+import kotlin.reflect.typeOf
 
 class NoteRepositoryImpl @Inject constructor(
     private val noteApi: NoteInterface,
@@ -53,7 +54,7 @@ class NoteRepositoryImpl @Inject constructor(
             val backendFields = fields.map { field ->
                 mapOf(
                     "_id" to field._id,
-                    "fieldType" to "textbox",
+                    "fieldType" to "typeOf(field)",
                     "content" to ""
                 )
             }
