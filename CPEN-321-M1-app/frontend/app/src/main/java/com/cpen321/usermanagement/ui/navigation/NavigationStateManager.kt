@@ -147,6 +147,10 @@ class NavigationStateManager @Inject constructor() {
            allTagsSelected = allTagsSelected)
     }
 
+    fun setWorkspaceId(workspaceId: String){
+        _navigationState.value = _navigationState.value.copy(workspaceId = workspaceId)
+    }
+
     /**
      * Updates the authentication state and triggers appropriate navigation
      */
