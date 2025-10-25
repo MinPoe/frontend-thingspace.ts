@@ -169,8 +169,15 @@ class WorkspaceRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun leave(userId: String, workspaceId: String): Result<Unit> =
-        banMember(userId, workspaceId) // same path
+    override suspend fun leave(userId: String, workspaceId: String): Result<Unit>{
+        return try {
+            val response = workspaceApi.leaveWorkspace(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to remove user.")))
+        } catch (e: Exception) {
+            handleException("banMember", e)
+        }
+    }
 
     override suspend fun banMember(userId: String, workspaceId: String): Result<Unit> {
         return try {

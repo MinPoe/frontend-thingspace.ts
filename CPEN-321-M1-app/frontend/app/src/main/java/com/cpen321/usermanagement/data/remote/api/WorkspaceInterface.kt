@@ -137,6 +137,13 @@ interface WorkspaceInterface {
         @Path("id") workspaceId: String
     ): Response<ApiResponse<Unit>>
 
+    //leaving Workspace
+    @POST("workspace/{id}/leave")
+    suspend fun leaveWorkspace(
+        @Header("Authorization") authHeader: String,
+        @Path("id") workspaceId: String
+    ): Response<ApiResponse<Unit>>
+
     //chat polling
     @GET("workspace/{id}/poll")
     suspend fun pollChat(
