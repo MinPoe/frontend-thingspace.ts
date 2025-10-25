@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement.data.remote.dto
 import com.google.gson.annotations.SerializedName
+import com.google.gson.annotations.JsonAdapter
 import com.google.gson.*
 import java.time.LocalDateTime
 import java.lang.reflect.Type
@@ -80,7 +81,19 @@ class FieldDeserializer : JsonDeserializer<Field> {
         
         return when (fieldType) {
             "text" -> context.deserialize(cleanJson, TextField::class.java)
-            "datetime" -> context.deserialize(cleanJson, DateTimeField::class.java)
+            "datetime" -> {
+                // Convert string dates to LocalDateTime objects and create DateTimeField directly
+                val minDate = jsonObject.get("minDate")?.asString?.let { LocalDateTime.parse(it) }
+                val maxDate = jsonObject.get("maxDate")?.asString?.let { LocalDateTime.parse(it) }
+                
+                DateTimeField(
+                    _id = jsonObject.get("_id")?.asString ?: "",
+                    label = jsonObject.get("label")?.asString ?: "",
+                    required = jsonObject.get("required")?.asBoolean ?: false,
+                    minDate = minDate,
+                    maxDate = maxDate
+                )
+            }
             "number" -> context.deserialize(cleanJson, NumberField::class.java)
             null -> {
                 // Handle missing fieldType - default to TextField for backward compatibility
