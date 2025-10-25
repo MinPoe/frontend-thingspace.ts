@@ -40,6 +40,7 @@ object RetrofitClient {
 
     val workspaceInterface: WorkspaceInterface = retrofit.create(WorkspaceInterface::class.java)
     val noteInterface: NoteInterface = retrofit.create(NoteInterface::class.java)
+    val messageInterface: MessageInterface = retrofit.create(MessageInterface::class.java)
 
     fun setAuthToken(token: String?) {
         authToken = token

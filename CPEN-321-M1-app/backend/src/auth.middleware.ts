@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from './user.model';
 
+
 export const authenticateToken: RequestHandler = async (
   req: Request,
   res: Response,
@@ -63,5 +64,31 @@ export const authenticateToken: RequestHandler = async (
     }
 
     next(error);
+  }
+};
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+export const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET not configured');
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded as any;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
   }
 };
