@@ -234,6 +234,19 @@ class WorkspaceRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getPersonalWorkspace(): Result<Workspace> {
+        return try {
+            val response = workspaceApi.getPersonalWorkspace(AUTH_HEADER_PLACEHOLDER)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.workspace)
+            } else {
+                Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to check for chat updates.")))
+            }
+        } catch (e: Exception) {
+            handleException("chatPoll", e)
+        }
+    }
+
     private fun <T> handleException(method: String, e: Exception): Result<T> {
         when (e) {
             is SocketTimeoutException -> Log.e(TAG, "Timeout in $method", e)

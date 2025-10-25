@@ -43,7 +43,7 @@ fun WorkspacesScreen(
         WsSelectUIStateE.DISPLAYING -> {
             val availableWs = uiState.workspaces
             val availableWsNames=availableWs.map { it.profile.name }
-            val user = uiState.user!!
+            val personalWs = uiState.personalWs!!
 
             val onWsMainClick = {index:Int ->
                 featureActions.navigateToMainTagReset(availableWs[index]._id)}
@@ -53,11 +53,11 @@ fun WorkspacesScreen(
                 featureActions.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
             val onPersonalChatClick={ featureActions.navigateToChatTagReset(
-                user._id) }
+                personalWs._id) }
             val onPersonalContentClick={ featureActions.navigateToMainTagReset(
-                user._id) }
+                personalWs._id) }
             val onPersonalTemplateClick={ featureActions.navigateToTemplateTagReset(
-                user._id) }
+                personalWs._id) }
             val onWsProfileClick = {index:Int ->
                 if (uiState.workspaceManager != null){
                     val wsMan = uiState.workspaceManager!!
@@ -75,7 +75,7 @@ fun WorkspacesScreen(
             WsContent(onWsMainClick = onWsMainClick,
                 onBackClick = onBackClick,
                 availableWs = availableWsNames,
-                username = user.profile.name,
+                username = personalWs.profile.name,
                 onWsChatClick= onWsChatClick,
                 onWsTemplateClick = onWsTemplateClick,
                 onWsProfileClick = onWsProfileClick,
