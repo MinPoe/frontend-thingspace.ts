@@ -23,4 +23,7 @@ router.post(
   userController.updateFcmToken.bind(userController)
 );
 
+router.get('/:id', userController.getUserById);
+router.get('/email/:email', userController.getUserByEmail);
+
 export default router;

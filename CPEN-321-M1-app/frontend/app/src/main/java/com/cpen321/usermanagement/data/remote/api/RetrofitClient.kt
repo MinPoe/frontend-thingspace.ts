@@ -1,11 +1,16 @@
 package com.cpen321.usermanagement.data.remote.api
 
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
 import com.cpen321.usermanagement.BuildConfig
 import com.cpen321.usermanagement.data.remote.interceptors.AuthInterceptor
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {

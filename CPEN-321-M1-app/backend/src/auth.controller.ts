@@ -8,6 +8,7 @@ import {
 } from './auth.types';
 import logger from './logger.util';
 import { workspaceService } from './workspace.service';
+import { userModel } from './user.model';
 
 export class AuthController {
   async signUp(
@@ -24,8 +25,15 @@ export class AuthController {
         profilePicture: data.user.profile?.imagePath || '', 
         description: 'Your personal workspace for all your personal notes'
       }
-      await workspaceService.createWorkspace(new mongoose.Types.ObjectId(data.user._id), workspace_data);
+      const personalWorkspace = await workspaceService.createWorkspace(
+        data.user._id, 
+        workspace_data
+      );
 
+      await userModel.updatePersonalWorkspace(
+        data.user._id,
+        new mongoose.Types.ObjectId(personalWorkspace._id)
+      );
 
       return res.status(201).json({
         message: 'User signed up successfully',

@@ -52,7 +52,7 @@ fun TemplateScreen(
 
     TemplateContent(
         onProfileClick = onProfileClick,
-        onNoteClick = { noteId:String -> featureActions.navigateToNote(noteId) }, //TODO: for now
+        onNoteClick = { noteId:String -> featureActions.navigateToNote(noteId) },
         onContentClick = {  featureActions.navigateToMainTagReset(
             featureActions.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.navigateToWsSelect() },
@@ -76,7 +76,8 @@ fun TemplateScreen(
         onCreateNoteClick = { featureActions.navigateToNoteCreation() },
         notes = templateViewModel.getNotesTitlesFound(0),
         fetching = fetching,
-        query = featureActions.getSearchQuery() // TODO: BAD
+        wsname = templateViewModel.getWorkspaceName(),
+        query = featureActions.getSearchQuery()
     )
 }
 
@@ -93,6 +94,7 @@ private fun TemplateContent(
     query:String,
     fetching: Boolean,
     onSearchClick: ()->Unit,
+    wsname:String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -119,13 +121,14 @@ private fun TemplateContent(
             ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
         }
         else{
-            MainBody(
+            TemplateBody(
             paddingValues = paddingValues,
             onFilterClick = onFilterClick,
             onSearchClick = onSearchClick,
             onQueryChange = onQueryChange,
             onNoteClick = onNoteClick,
             notes = notes,
+            wsname = wsname,
             query = query)
         }
     }
@@ -187,7 +190,7 @@ private fun ProfileIcon() {
 }
 
 @Composable
-private fun MainBody(
+private fun TemplateBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
     query: String,
@@ -195,6 +198,7 @@ private fun MainBody(
     onQueryChange: (String)->Unit,
     onNoteClick: (String)-> Unit,
     notes:List<Note>,
+    wsname:String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -203,7 +207,7 @@ private fun MainBody(
             .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage()
+        WelcomeMessage(wsname = wsname)
         SearchBar(
             onSearchClick = onSearchClick,//TODO: for now
             onFilterClick = onFilterClick,
@@ -218,12 +222,13 @@ private fun MainBody(
 }
 @Composable
 private fun WelcomeMessage(
+    wsname: String,
     modifier: Modifier = Modifier
 ) {
     val fontSizes = LocalFontSizes.current
 
     Text(
-        text = stringResource(R.string.welcome),
+        text = wsname + stringResource(R.string.plusTemplates),
         style = MaterialTheme.typography.bodyLarge,
         fontSize = fontSizes.extraLarge3,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

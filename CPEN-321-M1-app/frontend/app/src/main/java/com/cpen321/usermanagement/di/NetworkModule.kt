@@ -3,6 +3,7 @@ package com.cpen321.usermanagement.di
 import com.cpen321.usermanagement.data.remote.api.AuthInterface
 import com.cpen321.usermanagement.data.remote.api.ImageInterface
 import com.cpen321.usermanagement.data.remote.api.MessageInterface
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
 import com.cpen321.usermanagement.data.remote.api.RetrofitClient
 import com.cpen321.usermanagement.data.remote.api.UserInterface
 import com.cpen321.usermanagement.data.remote.api.WorkspaceInterface
@@ -11,7 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
-import com.cpen321.usermanagement.data.remote.api.NoteInterface
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -43,7 +43,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideNoteInterface(): NoteInterface {
+    fun provideNoteService(): NoteInterface{
         return RetrofitClient.noteInterface
     }
 

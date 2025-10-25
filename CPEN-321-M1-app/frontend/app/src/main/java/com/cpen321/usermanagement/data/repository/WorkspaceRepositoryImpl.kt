@@ -45,6 +45,24 @@ class WorkspaceRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getPersonalWorkspace(): Result<Workspace> {
+        return try {
+            val response = workspaceApi.getPersonalWorkspace(AUTH_HEADER_PLACEHOLDER)
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.workspace)
+            } else {
+                val errorMessage = parseErrorMessage(
+                    response.errorBody()?.string(),
+                    "Failed to fetch personal workspace."
+                )
+                Log.e(TAG, "getPersonalWorkspace error: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: Exception) {
+            handleException("getPersonalWorkspace", e)
+        }
+    }
+
     override suspend fun getWorkspacesForUser(): Result<List<Workspace>> {
         return try {
             val response = workspaceApi.getWorkspacesForUser(AUTH_HEADER_PLACEHOLDER)
@@ -171,8 +189,15 @@ class WorkspaceRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun leave(userId: String, workspaceId: String): Result<Unit> =
-        banMember(userId, workspaceId) // same path
+    override suspend fun leave(userId: String, workspaceId: String): Result<Unit>{
+        return try {
+            val response = workspaceApi.leaveWorkspace(AUTH_HEADER_PLACEHOLDER, workspaceId)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to remove user.")))
+        } catch (e: Exception) {
+            handleException("banMember", e)
+        }
+    }
 
     override suspend fun banMember(userId: String, workspaceId: String): Result<Unit> {
         return try {

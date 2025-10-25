@@ -22,7 +22,7 @@ export class WorkspaceController {
         }
     }
 
-    async getWorkspace(req: Request, res: Response): Promise<void> {
+    async getPersonalWorkspace(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.user?._id;
             if (!userId) {
@@ -30,27 +30,29 @@ export class WorkspaceController {
                 return;
             }
 
-            const workspaceId = req.params.id;
-            const workspace = await workspaceService.getWorkspace(workspaceId, userId);
-
-            if (!workspace) {
-                res.status(404).json({ error: 'Workspace not found' });
-                return;
-            }
+            const workspace = await workspaceService.getPersonalWorkspaceForUser(userId);
 
             res.status(200).json({
-                message: 'Workspace retrieved successfully',
+                message: 'Personal workspace retrieved successfully',
                 data: { workspace },
             });
         } catch (error) {
-            console.error('Error retrieving workspace:', error);
+            console.error('Error retrieving personal workspace:', error);
             
-            if (error instanceof Error && error.message.includes('Access denied')) {
-                res.status(403).json({ error: error.message });
-                return;
+            if (error instanceof Error) {
+                if (error.message.includes('User does not have a personal workspace') || 
+                    error.message.includes('Personal workspace not found')) {
+                    res.status(404).json({ error: error.message });
+                    return;
+                }
+                
+                if (error.message.includes('User not found')) {
+                    res.status(404).json({ error: error.message });
+                    return;
+                }
             }
             
-            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspace' });
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve personal workspace' });
         }
     }
 
@@ -71,6 +73,40 @@ export class WorkspaceController {
         } catch (error) {
             console.error('Error retrieving workspaces:', error);
             res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspaces' });
+        }
+    }
+
+    async getWorkspace(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const workspaceId = req.params.id;
+            const workspace = await workspaceService.getWorkspace(workspaceId, userId);
+
+            res.status(200).json({
+                message: 'Workspace retrieved successfully',
+                data: { workspace },
+            });
+        } catch (error) {
+            console.error('Error retrieving workspace:', error);
+            
+            if (error instanceof Error) {
+                if (error.message.includes('Access denied')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                
+                if (error.message.includes('Workspace not found')) {
+                    res.status(404).json({ error: error.message });
+                    return;
+                }
+            }
+            
+            res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve workspace' });
         }
     }
 

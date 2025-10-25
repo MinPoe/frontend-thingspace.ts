@@ -136,7 +136,8 @@ fun AppNavigation(
             wsProfileManagerViewModel = wsProfileManagerViewModel,
             wsProfileViewModel = wsProfileViewModel,
             wsSelectViewModel = wsSelectViewModel,
-            mainViewModel = mainViewModel
+            mainViewModel = mainViewModel,
+            profileViewModel = profileViewModel
         )
     }
 
@@ -171,6 +172,7 @@ private fun handleNavigationEvent(
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
     authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
     chatViewModel: ChatViewModel,
     copyViewModel: CopyViewModel,
     fieldsViewModel: FieldsViewModel,
@@ -244,6 +246,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
+            membersManagerViewModel.loadUsers()
             wsSelectViewModel.setToUpdate() //TODO: for now here later on make a full updatemethod
             wsProfileViewModel.loadProfile()
             navigationStateManager.clearNavigationEvent()
@@ -290,6 +293,7 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToMembersManager -> {
             navController.navigate(NavRoutes.MEMBERS_MANAGER)
+            membersManagerViewModel.loadUsers()
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -311,11 +315,13 @@ private fun handleNavigationEvent(
 
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)
+            noteEditViewModel.loadWorkspaces()
             navigationStateManager.clearNavigationEvent()
         }
 
         is NavigationEvent.NavigateToOtherProfile -> {
             navController.navigate(NavRoutes.OTHER_PROFILE)
+            profileViewModel.loadProfile(navigationStateManager.getOtherUserId())
             navigationStateManager.clearNavigationEvent()
         }
 
@@ -646,7 +652,26 @@ private fun AppNavHost(
         composable(NavRoutes.WS_SELECT) {
             WorkspacesScreen(
                 workspacesViewModel = wsSelectViewModel,
-                onBackClick = {navigationStateManager.navigateBack()},
+                onBackClick = {
+                    //faking the "on back click" into always going back to the last selected workspace
+                    when (navigationStateManager.getNoteType()){
+                        NoteType.CHAT -> {
+                            navigationStateManager.navigateToChatTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                        NoteType.CONTENT -> {
+                            navigationStateManager.navigateToMainTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                        NoteType.TEMPLATE -> {
+                            navigationStateManager.navigateToTemplateTagReset(
+                                navigationStateManager.getWorkspaceId()
+                            )
+                        }
+                    }
+                              },
                 featureActions = featureActions,
                 onPersonalProfileClick = { navigationStateManager.navigateToProfile() })
         }
@@ -704,7 +729,6 @@ private fun AppNavHost(
             OtherProfileScreen(
                 profileViewModel = profileViewModel,
                 onBackClick = { navigationStateManager.navigateBack() },
-                otherProfileId = navigationStateManager.getOtherUserId()
             )
         }
 

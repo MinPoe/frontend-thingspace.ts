@@ -14,6 +14,13 @@ router.get(
   workspaceController.getWorkspacesForUser
 );
 
+// Get a user's personal workspace
+router.get(
+  '/personal',
+  authenticateToken,
+  workspaceController.getPersonalWorkspace
+);
+
 // Get members of a workspace
 router.get(
   '/:id/members',
@@ -100,6 +107,14 @@ router.delete(
   authenticateToken,
   workspaceController.deleteWorkspace
 );
+
+// Get a specific workspace by ID
+router.get(
+  '/:id',
+  authenticateToken,
+  workspaceController.getWorkspace
+);
+
 
 export default router;
 

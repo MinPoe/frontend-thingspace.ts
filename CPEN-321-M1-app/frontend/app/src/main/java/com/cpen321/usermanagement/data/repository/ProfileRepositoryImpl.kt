@@ -122,13 +122,57 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getOtherProfile(userId: String): Result<User> {
-        //TODO for now, just the same as the other profile
-        return getProfile()
+        return try {
+            val response = userInterface.getProfileById("", userId) // Auth header is handled by interceptor
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.user)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage =
+                    parseErrorMessage(errorBodyString, "Failed to fetch user information.")
+                Log.e(TAG, "Failed to get profile: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while getting profile", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while getting profile", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while getting profile", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while getting profile: ${e.code()}", e)
+            Result.failure(e)
+        }
     }
 
     override suspend fun getProfileByEmail(email: String): Result<User> {
-        //TODO("Not yet implemented")
-        return  getProfile()
+        return try {
+            val response = userInterface.getProfileByEmail("", email) // Auth header is handled by interceptor
+            if (response.isSuccessful && response.body()?.data != null) {
+                Result.success(response.body()!!.data!!.user)
+            } else {
+                val errorBodyString = response.errorBody()?.string()
+                val errorMessage =
+                    parseErrorMessage(errorBodyString, "Failed to fetch user information.")
+                Log.e(TAG, "Failed to get profile: $errorMessage")
+                Result.failure(Exception(errorMessage))
+            }
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "Network timeout while getting profile", e)
+            Result.failure(e)
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "Network connection failed while getting profile", e)
+            Result.failure(e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "IO error while getting profile", e)
+            Result.failure(e)
+        } catch (e: retrofit2.HttpException) {
+            Log.e(TAG, "HTTP error while getting profile: ${e.code()}", e)
+            Result.failure(e)
+        }
     }
 
     override suspend fun updateFcmToken(fcmToken: String): Result<User> {

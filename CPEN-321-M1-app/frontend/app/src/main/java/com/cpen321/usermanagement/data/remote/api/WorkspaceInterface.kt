@@ -29,7 +29,7 @@ data class UpdateWorkspaceProfileRequest(
 )
 
 data class UpdateWorkspacePictureRequest(
-    val pictureUrl: String
+    val profilePicture: String
 )
 
 data class AddMemberRequest(
@@ -63,6 +63,12 @@ interface WorkspaceInterface {
     suspend fun getWorkspacesForUser(
         @Header("Authorization") authHeader: String
     ): Response<ApiResponse<GetWorkspacesForUserData>>
+
+    // Get a user's personal workspace
+    @GET("workspace/personal")
+    suspend fun getPersonalWorkspace(
+        @Header("Authorization") authHeader: String
+    ): Response<ApiResponse<GetWorkspaceData>>
 
     // Get a single workspace
     @GET("workspace/{id}")
@@ -135,6 +141,13 @@ interface WorkspaceInterface {
     // Delete workspace
     @DELETE("workspace/{id}")
     suspend fun deleteWorkspace(
+        @Header("Authorization") authHeader: String,
+        @Path("id") workspaceId: String
+    ): Response<ApiResponse<Unit>>
+
+    //leaving Workspace
+    @POST("workspace/{id}/leave")
+    suspend fun leaveWorkspace(
         @Header("Authorization") authHeader: String,
         @Path("id") workspaceId: String
     ): Response<ApiResponse<Unit>>

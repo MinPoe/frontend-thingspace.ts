@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.data.repository.AuthRepository
 import com.cpen321.usermanagement.data.repository.NoteRepository
+import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
+import java.time.LocalDateTime
 import javax.inject.Inject
 import android.util.Log
 enum class FieldType {
@@ -28,7 +30,8 @@ data class FieldCreationData(
     val placeholder: String? = null,
     val maxLength: Int? = null,
     val min: Int? = null,
-    val max: Int? = null
+    val max: Int? = null,
+    val content: Any? = null
 )
 
 sealed class FieldUpdate {
@@ -38,6 +41,7 @@ sealed class FieldUpdate {
     data class MaxLength(val value: Int?) : FieldUpdate()
     data class Min(val value: Int?) : FieldUpdate()
     data class Max(val value: Int?) : FieldUpdate()
+    data class Content(val value: Any?) : FieldUpdate()
 }
 
 data class NoteCreationState(
@@ -53,6 +57,7 @@ data class NoteCreationState(
 class NoteCreationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val noteRepository: NoteRepository,
+    private val workspaceRepository: WorkspaceRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -105,6 +110,7 @@ class NoteCreationViewModel @Inject constructor(
                         is FieldUpdate.MaxLength -> field.copy(maxLength = update.value)
                         is FieldUpdate.Min -> field.copy(min = update.value)
                         is FieldUpdate.Max -> field.copy(max = update.value)
+                        is FieldUpdate.Content -> field.copy(content = update.value)
                     }
                 } else {
                     field
@@ -121,6 +127,20 @@ class NoteCreationViewModel @Inject constructor(
                 isCreating = true,
                 error = null
             )
+
+            var actualWorkspaceId = workspaceId
+            if (workspaceId.isBlank()) {
+                val personalWorkspace = workspaceRepository.getPersonalWorkspace()
+                if (personalWorkspace.isSuccess) {
+                    actualWorkspaceId = personalWorkspace.getOrNull()!!._id
+                } else {
+                    _creationState.value = _creationState.value.copy(
+                        isCreating = false,
+                        error = "Failed to get personal workspace"
+                    )
+                    return@launch
+                }
+            }
 
             // Validate
             if (_creationState.value.fields.isEmpty()) {
@@ -149,23 +169,38 @@ class NoteCreationViewModel @Inject constructor(
                         label = fieldData.label,
                         required = fieldData.required,
                         placeholder = fieldData.placeholder,
-                        maxLength = fieldData.maxLength
+                        maxLength = fieldData.maxLength,
+                        content = when (fieldData.content) {
+                            is String -> fieldData.content
+                            else -> fieldData.content?.toString()
+                        }
                     )
                     FieldType.NUMBER -> NumberField(
                         _id = fieldData.id,
                         label = fieldData.label,
                         required = fieldData.required,
                         min = fieldData.min,
-                        max = fieldData.max
+                        max = fieldData.max,
+                        content = when (fieldData.content) {
+                            is Int -> fieldData.content
+                            is String -> fieldData.content.toIntOrNull()
+                            else -> null
+                        }
                     )
                     FieldType.DATETIME -> DateTimeField(
                         _id = fieldData.id,
                         label = fieldData.label,
                         required = fieldData.required,
                         minDate = null,
-                        maxDate = null
+                        maxDate = null,
+                        content = when (fieldData.content) {
+                            is LocalDateTime -> fieldData.content
+                            is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: Exception) { null }
+                            else -> null
+                        }
                     )
                 }
+                
             }
 
             // Get current user ID
@@ -180,7 +215,7 @@ class NoteCreationViewModel @Inject constructor(
 
             // Create note
             val result = noteRepository.createNote(
-                workspaceId = workspaceId,
+                workspaceId = actualWorkspaceId,
                 authorId = userId,
                 tags = _creationState.value.tags,
                 fields = fields,

@@ -32,14 +32,69 @@ export class WorkspaceService {
         };
     }
 
-    async getWorkspace(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<Workspace | null> {
+    async getPersonalWorkspaceForUser(userId: mongoose.Types.ObjectId): Promise<Workspace | null> {
+        // Fetch user to get their personal workspace ID
+        const user = await userModel.findById(userId);
+        
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        if (!user.personalWorkspaceId) {
+            throw new Error('User does not have a personal workspace');
+        }
+
+        // Get the workspace
+        const workspace = await workspaceModel.findById(user.personalWorkspaceId);
+        
+        if (!workspace) {
+            throw new Error('Personal workspace not found');
+        }
+
+        return {
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        };
+    }
+
+    async getWorkspacesForUser(userId: mongoose.Types.ObjectId): Promise<Workspace[]> {
+        const user = await userModel.findById(userId);
+        
+        const query: any = {
+            members: userId
+        };
+        
+        if (user?.personalWorkspaceId) {
+            query._id = { $ne: user.personalWorkspaceId };
+        }
+        
+        const workspaces = await workspaceModel.find(query).sort({ updatedAt: -1 });
+
+        return workspaces.map(workspace => ({
+            _id: workspace._id.toString(),
+            name: workspace.name,
+            profile: workspace.profile,
+            ownerId: workspace.ownerId.toString(),
+            members: workspace.members.map(id => id.toString()),
+            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
+            createdAt: workspace.createdAt,
+            updatedAt: workspace.updatedAt,
+        }));
+    }
+
+    async getWorkspace(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<Workspace> {
         const workspace = await workspaceModel.findById(workspaceId);
         
         if (!workspace) {
-            return null;
+            throw new Error('Workspace not found');
         }
 
-        // Check if user is a member
         const isMember = workspace.members.some(memberId => memberId.toString() === userId.toString());
 
         if (!isMember) {
@@ -56,24 +111,6 @@ export class WorkspaceService {
             createdAt: workspace.createdAt,
             updatedAt: workspace.updatedAt,
         };
-    }
-
-    async getWorkspacesForUser(userId: mongoose.Types.ObjectId): Promise<Workspace[]> {
-        // Find workspaces where user is a member (includes owners)
-        const workspaces = await workspaceModel.find({
-            members: userId
-        }).sort({ updatedAt: -1 });
-
-        return workspaces.map(workspace => ({
-            _id: workspace._id.toString(),
-            name: workspace.name,
-            profile: workspace.profile,
-            ownerId: workspace.ownerId.toString(),
-            members: workspace.members.map(id => id.toString()),
-            latestChatMessageTimestamp: workspace.latestChatMessageTimestamp,
-            createdAt: workspace.createdAt,
-            updatedAt: workspace.updatedAt,
-        }));
     }
 
     async getWorkspaceMembers(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<IUser[]> {
@@ -150,6 +187,12 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
+        // Check if this is a personal workspace
+        const requestingUser = await userModel.findById(requestingUserId);
+        if (requestingUser?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot invite members to personal workspace');
+        }
+
         // Check if requesting user is a member
         const isMember = workspace.members.some(memberId => memberId.toString() === requestingUserId.toString());
         if (!isMember) {
@@ -222,6 +265,12 @@ export class WorkspaceService {
             throw new Error('Workspace not found');
         }
 
+        // Check if this is a personal workspace
+        const user = await userModel.findById(userId);
+        if (user?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot leave your personal workspace');
+        }
+
         // Check if user is the owner
         if (workspace.ownerId.toString() === userId.toString()) {
             throw new Error('Owner cannot leave the workspace. Transfer ownership or delete the workspace instead.');
@@ -254,6 +303,12 @@ export class WorkspaceService {
         
         if (!workspace) {
             throw new Error('Workspace not found');
+        }
+
+        // Check if this is a personal workspace
+        const user = await userModel.findById(requestingUserId);
+        if (user?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot ban members from personal workspace');
         }
 
         // Only owner can ban members
@@ -363,6 +418,12 @@ export class WorkspaceService {
         
         if (!workspace) {
             throw new Error('Workspace not found');
+        }
+
+        // Check if this is a personal workspace
+        const user = await userModel.findById(requestingUserId);
+        if (user?.personalWorkspaceId?.toString() === workspaceId) {
+            throw new Error('Cannot delete your personal workspace');
         }
 
         // Only owner can delete workspace

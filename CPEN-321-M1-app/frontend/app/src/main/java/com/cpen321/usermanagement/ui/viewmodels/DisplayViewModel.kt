@@ -26,7 +26,7 @@ open class DisplayViewModel @Inject constructor(
     private val noteRepository: NoteRepository) : ViewModel() {
 
     private var _wsname = "personal"
-    private var _wsid = ""
+    private var _wsid = "personal"
     private var _wsdescr = ""
     private var _wspic = ""
 
@@ -66,7 +66,6 @@ open class DisplayViewModel @Inject constructor(
 //    }
 
     private suspend fun cacheUpdateWorkspaceOrUser(workspaceId:String){
-        if (_wsid != workspaceId) {
             val wsRequest = workspaceRepository.getWorkspace(workspaceId)
             if (wsRequest.isSuccess) {
                 val ws: Workspace = wsRequest.getOrNull()!!
@@ -76,24 +75,22 @@ open class DisplayViewModel @Inject constructor(
                 _wsdescr = ws.profile.description ?: ""
             }
             else{
-                val profileResult = profileRepository.getProfile()
-                if (profileResult.isSuccess){
-                    val user = profileResult.getOrNull()!!
-                    if (user._id==workspaceId){
-                        _wsid = workspaceId
-                        _wspic = user.profile.imagePath ?: ""
-                        _wsdescr = user.profile.description ?: ""
-                        _wsname = user.profile.name
-                    }
+                val personalResult = workspaceRepository.getPersonalWorkspace()
+                if (personalResult.isSuccess){
+                    val ws = personalResult.getOrNull()!!
+                    _wsid = ws._id
+                    _wspic = ws.profile.imagePath ?: ""
+                    _wsdescr = ws.profile.description ?: ""
+                    _wsname = ws.profile.name
+                    navigationStateManager.setWorkspaceId(ws._id)
                 }
                 else
                 {
-                    val error = profileResult.exceptionOrNull()
+                    val error = personalResult.exceptionOrNull()
                     Log.e(TAG, "Failed to load workspace/profile", error)
                     error?.message ?: "Failed to load workspace/profile"
                 }
             }
-        }
     }
 
     protected open suspend fun searchResults(){

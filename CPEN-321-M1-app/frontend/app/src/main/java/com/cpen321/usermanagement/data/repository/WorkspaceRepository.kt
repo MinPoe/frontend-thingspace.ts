@@ -6,6 +6,7 @@ import com.cpen321.usermanagement.data.remote.dto.Workspace
 
 interface WorkspaceRepository {
     suspend fun getWorkspace(workspaceId:String): Result<Workspace>
+    suspend fun getPersonalWorkspace(): Result<Workspace>
     suspend fun getWorkspacesForUser(): Result<List<Workspace>>
     suspend fun getWorkspaceMembers(workspaceId:String): Result<List<User>>
     suspend fun createWorkspace(managerId:String,

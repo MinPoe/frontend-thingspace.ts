@@ -22,10 +22,12 @@ fun FilterScreen(
     onBackClick: () -> Unit,
     featureActions: IFeatureActions
 ){
+    val loading = filterViewModel.loading.collectAsState()
     FilterContent(
         onBackClick,
         availableTags = filterViewModel.getAvailTags(),
         selectedTags = featureActions.getSelectedTags(),
+        loading = loading.value,
         allTagsSelected = featureActions.getAllTagsSelected(),
         onSelectionChanged = {selection:Set<String>, allSelected:Boolean ->
             featureActions.updateTagSelection(
@@ -39,6 +41,7 @@ fun FilterScreen(
 fun FilterContent(onBackClick: () -> Unit,
                   availableTags:List<String>,
                   selectedTags:List<String>,
+                  loading: Boolean,
                   allTagsSelected: Boolean,
                   onSelectionChanged: (Set<String>, Boolean) -> Unit,
                   modifier:Modifier = Modifier)
@@ -51,15 +54,24 @@ fun FilterContent(onBackClick: () -> Unit,
                 modifier = modifier)
         }
     ){paddingValues ->
-        FilterBody(
-            onBackClick = onBackClick,
-            availableTags = availableTags,
-            allTagsSelected = allTagsSelected,
-            selectedTags = selectedTags,
-            onSelectionChanged = onSelectionChanged,
-            paddingValues = paddingValues,
-            modifier = modifier
-        )
+        if (loading){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
+        }
+        else {
+            FilterBody(
+                onBackClick = onBackClick,
+                availableTags = availableTags,
+                allTagsSelected = allTagsSelected,
+                selectedTags = selectedTags,
+                onSelectionChanged = onSelectionChanged,
+                paddingValues = paddingValues,
+                modifier = modifier
+            )
+        }
     }
 }
 
