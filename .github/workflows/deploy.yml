@@ -12,14 +12,13 @@ jobs:
     - name: CheckOut
       uses: actions/checkout@v3
 
-    # very bad, copies entire project to the vm not just a backend
     - name: Copy files to EC2
       uses: appleboy/scp-action@v1
       with: 
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
-        source: "."
+        source: "CPEN-321-M1-app/backend" #The problem is here!!!
         target: "/home/ubuntu/cpen321M3"
 
     - name: Rebuild and Deploy
@@ -29,7 +28,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          cd /home/ubuntu/cpen321M3/CPEN-321-M1-app/backend
+          cd /home/ubuntu/cpen321M3/
 
           # write secrets into env
           cat > .env << FOF
