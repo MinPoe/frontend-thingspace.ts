@@ -31,7 +31,7 @@ jobs:
           cd /home/ubuntu/cpen321M3/CPEN-321-M1-app/backend/
 
           # write secrets into env
-          cat > .env << FOF
+          cat > .env << EOF
           PORT=${{ secrets.PROD_PORT }}
           MONGODB_URI=${{ secrets.PROD_DB_URI }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
@@ -39,7 +39,7 @@ jobs:
           EOF
 
           # write into the firebase json file
-          cat > firebase-service-account.json << FOF
+          cat > firebase-service-account.json << EOF
           ${{secrets.FIREBASE_JSON}}
           EOF
 
