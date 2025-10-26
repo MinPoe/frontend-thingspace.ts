@@ -38,8 +38,14 @@ jobs:
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           EOF
 
-          # Give .envpermissions
+          # write into the firebase json file
+          cat > firebase-service-account.json << FOF
+          ${{secrets.FIREBASE_JSON}}
+          EOF
+
+          # Give .env and firebase-service-account.json permissions
           chmod 600 .env
+          chmod 600 firebase-service-account.json
 
           # Build and run the container
           docker-compose down
