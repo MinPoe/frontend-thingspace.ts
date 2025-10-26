@@ -12,8 +12,8 @@
 | 14.10.2025 | 3.3, 4.2, 4.3 | Templates will work by created a template note and copying the note over to other workspaces. This was done to simplify implementation and for clarity |
 | ----------------- | --------------------- | ------------- |
 | 20.10.2025 | 3.3, 4.2, 4.3 | Adding a user to a workspace will now send a push notification. This was done to meet the milestone specs (push notifications) |
-| ----------------- | --------------------- | ------------- |
-| 20.10.2025 | 3.3, 4.2, 4.3 | Adding a user to a workspace will now send a push notification. This was done to meet the milestone specs (push notifications) |
+| 20.10.2025 | 4.1 | Add component interfaces|
+| 20.10.2025 | 4.4 | Add more frameworks and libraries used during implementation|
 | ----------------- | --------------------- | ------------- |
 
 ---
@@ -207,7 +207,6 @@ The target audience is the general public. If one has a large amount of differen
 4. User is taken to an altered version of note creation screen with the default text field template that spans the lower portion of the screen, while the upper part displays previous messages on the chat. User can expand and contract the note creation part, as well as change the template.
 5. User performs a note creation with the template of their liking
 6. System adds the note to the workspace/conversation and displays the notes with their content expanded and sorted as latest notes at the bottom of the page. The chat notes have an additional tag "chat@<workspace_name>"
-7. Users in the workspace or the other user in the conversation receive a push notification that the message is sent.
 
 **Failure scenario(s)**:
 - 1.1a. The email entered is invalid
@@ -265,7 +264,7 @@ The target audience is the general public. If one has a large amount of differen
 
 
 3. **Workspaces**
-    - **Purpose**: The workspace contains its own general information, as well as a reference to member users and included notes. This component would be responsible for forwarding push notifications to member users, and the banning functionality. 
+    - **Purpose**: The workspace contains its own general information, as well as a reference to member users and included notes. This component would be responsible for forwarding push notifications to member users on invite, and the banning functionality. 
 
 
 4. **Templates**
@@ -286,17 +285,50 @@ Note: we may need to use a vector database like FAISS or Pinecone, but that's pr
 
 
 ### **4.4. Frameworks**
-1. **[Firebase]**
+1. **[Firebase Cloud Messaging]**
     - **Purpose**: Push notification support
-    - **Reason**: Firebase is allowed for push notifications, and can significantly decrease complexity of implementing them. 
+    - **Reason**: Provides routing, middleware, request handling, and all relevant backend API logic
+  
+2. **[Express.js]**
+    - **Purpose**: Web framework for building REST apis
+    - **Reason**: Firebase is allowed for push notifications, and can significantly decrease complexity of implementing them.
+  
+3. **[Jetpack Compose]**
+    - **Purpose**: Declarative UI framework for Android
+    - **Reason**: It enables UI development with less boilerplate than other alternatives
+
+4. **[Dagger Hilt]**
+    - **Purpose**: Dependency injection framework
+    - **Reason**: Streamlines dependency management and improves testability in Android apps.
 
 **Libraries**:
 1. **[Retrofit]**
     - **Purpose**: Managing API calls and frontend-backend connection
-    - **Reason**: Retrofit is already implemented in M1, and it is much neater to use interfaces created by it than making direct HTTP calls from the frontend.
+    - **Reason**: Streamlines dependency management and improves testability in Android apps.
+   
+2  **[Mongoose]**
+    - **Purpose**: MongoDB object modeling library
+    - **Reason**: Simplifies schema definitions and database interactions in Node.js
 
+3. **[MongoDB]**
+    - **Purpose**: NoSQL document database
+    - **Reason**: Stores and retrieves user, workspace, and message data efficiently.
 
+4. **[OpenAI]**
+    - **Purpose**: Vectorization of notes on creation and search
+    - **Reason**: Used to generate vector embeddings for synoptic search, OpenAI is the cheapest and most convenient option
 
+5. **[JWT]**
+    - **Purpose**: Authentication and authorization library
+    - **Reason**: Implements secure token-based user authentication for REST APIs.
+  
+6 **[Material3]**
+    - **Purpose**: Modern UI component library
+    - **Reason**: Provides Material Design 3 components for the interface
+
+7 **[Coil]**
+    - **Purpose**: Image loading and caching library
+    - **Reason**: Efficiently loads, caches, and displays images in Android apps
 
 
 ### **4.5. Dependencies Diagram**
