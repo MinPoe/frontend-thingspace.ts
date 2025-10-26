@@ -18,7 +18,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
-        source: "CPEN-321-M1-app/backend"
+        source: "."
         target: "/home/ubuntu/cpen321M3"
 
     - name: Rebuild and Deploy

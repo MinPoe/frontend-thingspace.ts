@@ -1,14 +1,16 @@
 ARG PORT
 
-FROM node:2.6-alpine
+FROM node:20.6-alpine
 
-WORKDIR /app
+WORKDIR /
 
 COPY package*.json ./
 
 RUN npm ci
 
 COPY . .
+
+RUN npm run build
 
 EXPOSE $PORT
 
