@@ -44,9 +44,8 @@ The server runs on port 3000 (configurable via PORT env var) with the following 
 
 - `/api/auth/*` - Authentication
 - `/api/user/*` - User management
-- `/api/hobbies/*` - Hobby management
 - `/api/media/*` - Media uploads
-  - Uploaded files are stored in the `uploads/` directory. Ensure this directory exists and has write permissions.
+  - Uploaded files are stored in the `uploads/images/` directory. Ensure this directory exists and has write permissions.
 
 ## Code Formatting
 

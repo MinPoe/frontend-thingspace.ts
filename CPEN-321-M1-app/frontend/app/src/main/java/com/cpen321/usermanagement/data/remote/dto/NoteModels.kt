@@ -1,20 +1,28 @@
 package com.cpen321.usermanagement.data.remote.dto
-import kotlinx.datetime.*;
+import com.google.gson.annotations.SerializedName
+import com.google.gson.annotations.JsonAdapter
+import com.google.gson.*
+import java.time.LocalDateTime
+import java.lang.reflect.Type
 
 /*
  * Note and Field data classes
  */
 
 data class Note(
+    @SerializedName("_id")
     val _id: String,
-    val dateCreation: LocalDateTime,
-    val dateLastEdit: LocalDateTime,
-    val tags: ArrayList<String>,
+    @SerializedName("createdAt")
+    val createdAt: String,
+    @SerializedName("updatedAt")
+    val updatedAt: String,
+    val tags: List<String> = emptyList(),
     val noteType: NoteType,
-    val fields: Field,
+    val fields: List<Field> = emptyList(),
 )
 
 // Field Types implemented here:
+@JsonAdapter(FieldDeserializer::class)
 sealed class Field {
     abstract val _id: String
     abstract val label: String
@@ -28,7 +36,8 @@ data class TextField(
     override val label: String,
     override val required: Boolean = false,
     val placeholder: String? = null,
-    val maxLength: Int? = null
+    val maxLength: Int? = null,
+    val content: String? = null
 ) : Field()
 
 data class DateTimeField(
@@ -36,7 +45,8 @@ data class DateTimeField(
     override val label: String,
     override val required: Boolean = false,
     val minDate: LocalDateTime? = null,
-    val maxDate: LocalDateTime? = null
+    val maxDate: LocalDateTime? = null,
+    val content: LocalDateTime? = null
 ) : Field()
 
 data class NumberField(
@@ -45,6 +55,7 @@ data class NumberField(
     override val required: Boolean = false,
     val min: Int? = null,
     val max: Int? = null,
+    val content: Int? = null
 ): Field()
 
 // TODO: ADD MORE ENUMS FOR NOTETYPE LATER
@@ -52,4 +63,53 @@ enum class NoteType {
     CONTENT,
     CHAT,
     TEMPLATE
+}
+
+/**
+ * Custom Gson deserializer for Field sealed class
+ * Uses fieldType discriminator to determine which concrete class to deserialize to
+ */
+class FieldDeserializer : JsonDeserializer<Field> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext
+    ): Field {
+        val jsonObject = json.asJsonObject
+        val fieldType = jsonObject.get("fieldType")?.asString
+        
+        // Remove fieldType from JSON before deserializing to avoid property conflicts
+        val cleanJson = jsonObject.deepCopy()
+        cleanJson.remove("fieldType")
+        
+        return when (fieldType) {
+            "text" -> context.deserialize(cleanJson, TextField::class.java)
+            "datetime" -> {
+                // Convert string dates to LocalDateTime objects and create DateTimeField directly
+                val minDate = jsonObject.get("minDate")?.asString?.let { LocalDateTime.parse(it) }
+                val maxDate = jsonObject.get("maxDate")?.asString?.let { LocalDateTime.parse(it) }
+                val content = jsonObject.get("content")?.asString?.let { LocalDateTime.parse(it) }
+                
+                DateTimeField(
+                    _id = jsonObject.get("_id")?.asString ?: "",
+                    label = jsonObject.get("label")?.asString ?: "",
+                    required = jsonObject.get("required")?.asBoolean ?: false,
+                    minDate = minDate,
+                    maxDate = maxDate,
+                    content = content
+                )
+            }
+            "number" -> context.deserialize(cleanJson, NumberField::class.java)
+            null -> {
+                // Handle missing fieldType - default to TextField for backward compatibility
+                // This ensures existing data without fieldType still works
+                context.deserialize(cleanJson, TextField::class.java)
+            }
+            else -> {
+                // Handle unknown field types - default to TextField to prevent crashes
+                // Log a warning in production
+                context.deserialize(cleanJson, TextField::class.java)
+            }
+        }
+    }
 }

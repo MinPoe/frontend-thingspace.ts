@@ -1,98 +1,170 @@
 package com.cpen321.usermanagement.ui.screens
 
-import Icon
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.BackActionButton
-import com.cpen321.usermanagement.ui.theme.LocalFontSizes
-import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.viewmodels.FilterViewModel
+import com.cpen321.usermanagement.utils.IFeatureActions
+import androidx.compose.foundation.layout.PaddingValues
+
+//AI-generated imports
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun FilterScreen(
+    filterViewModel: FilterViewModel,
     onBackClick: () -> Unit,
-    context_workspace: String?
-) {
+    featureActions: IFeatureActions
+){
+    val loading = filterViewModel.loading.collectAsState()
     FilterContent(
-        onBackClick = onBackClick,
-        context_workspace = context_workspace
-    )
+        onBackClick,
+        availableTags = filterViewModel.getAvailTags(),
+        selectedTags = featureActions.getSelectedTags(),
+        loading = loading.value,
+        allTagsSelected = featureActions.getAllTagsSelected(),
+        onSelectionChanged = {selection:Set<String>, allSelected:Boolean ->
+            featureActions.updateTagSelection(
+            selectedTags = selection.toList(),
+            allTagsSelected = allSelected
+            ) }
+        )
 }
 
 @Composable
-private fun FilterContent(
-    onBackClick: () -> Unit,
-    context_workspace: String?,
-    modifier: Modifier = Modifier
-) {
+fun FilterContent(onBackClick: () -> Unit,
+                  availableTags:List<String>,
+                  selectedTags:List<String>,
+                  loading: Boolean,
+                  allTagsSelected: Boolean,
+                  onSelectionChanged: (Set<String>, Boolean) -> Unit,
+                  modifier:Modifier = Modifier)
+{
     Scaffold(
         modifier = modifier,
         bottomBar = {
-            //TODO: change attributes later
-            FilterBottomBar(
-                onBackClick = onBackClick,
+            BackActionButton(
+                onBackClick,
                 modifier = modifier)
         }
-    ) { paddingValues ->
-        FilterScreenBody(paddingValues = paddingValues, context_workspace = context_workspace)
+    ){paddingValues ->
+        if (loading){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
+        }
+        else {
+            FilterBody(
+                onBackClick = onBackClick,
+                availableTags = availableTags,
+                allTagsSelected = allTagsSelected,
+                selectedTags = selectedTags,
+                onSelectionChanged = onSelectionChanged,
+                paddingValues = paddingValues,
+                modifier = modifier
+            )
+        }
     }
 }
 
 @Composable
-private fun FilterScreenBody( //TODO:for now copy of main, change to actual note adding
-    paddingValues: PaddingValues,
-    context_workspace: String?,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues),
-        contentAlignment = Alignment.Center
-    ) {
-        WorkspaceMessage(context_workspace)
-    }
-}
-
-@Composable //TODO: Replace with actual content
-private fun WorkspaceMessage(
-    context_workspace: String?,
-    modifier: Modifier = Modifier
-) {
-    val fontSizes = LocalFontSizes.current
-
-    Text(
-        text = "filter "+(context_workspace?.toString() ?: "No workspace info"),
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = fontSizes.extraLarge3,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
-    )
+fun FilterBody(onBackClick: ()-> Unit,
+               availableTags:List<String>,
+               selectedTags:List<String>,
+               allTagsSelected: Boolean,
+               onSelectionChanged: (Set<String>, Boolean) -> Unit,
+               paddingValues:PaddingValues,
+               modifier: Modifier = Modifier)
+{
+    TagSelector(availableTags, selectedTags.toSet(),
+        allTagsSelected, onSelectionChanged)
 }
 
 @Composable
-private fun FilterBottomBar(
-    onBackClick: ()->Unit,
-    modifier: Modifier = Modifier
-){
-    BottomAppBar(
-        actions = {BackActionButton(onClick = onBackClick)},
-        modifier = modifier
-    )
+fun TagSelector(
+    tags: List<String>,
+    selectedTags: Set<String>,
+    allTagsSelected: Boolean,
+    onSelectionChanged: (Set<String>, Boolean) -> Unit
+) {
+    var currentSelectedTags by remember { mutableStateOf(selectedTags.toMutableSet()) }
+    var isAllSelected by remember { mutableStateOf(allTagsSelected) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        // "All" checkbox row — now fully clickable
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp)
+        ) {
+            Checkbox(
+                checked = isAllSelected,
+                onCheckedChange = { checked ->
+                    isAllSelected = checked
+                    if (checked) {
+                        currentSelectedTags = tags.toMutableSet()
+                    } else {
+                        currentSelectedTags.clear()
+                    }
+                    onSelectionChanged(currentSelectedTags, isAllSelected)
+                }
+            )
+            Text(
+                text = "All",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+
+        // Replace deprecated Divider with HorizontalDivider
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        // Tag checkboxes
+        // Tag checkboxes
+        tags.forEach { tag ->
+            val isChecked = currentSelectedTags.contains(tag)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp)
+            ) {
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = { checked ->
+                        currentSelectedTags = if (isChecked) {
+                            (currentSelectedTags - tag).toMutableSet()
+                        } else {
+                            (currentSelectedTags + tag).toMutableSet()
+                        }
+                        // "All" does not change automatically
+                        onSelectionChanged(currentSelectedTags, isAllSelected)
+                    }
+                )
+                Text(
+                    text = tag,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .clickable {
+                            currentSelectedTags = if (isChecked) {
+                                (currentSelectedTags - tag).toMutableSet()
+                            } else {
+                                (currentSelectedTags + tag).toMutableSet()
+                            }
+                            onSelectionChanged(currentSelectedTags, isAllSelected)
+                        }
+                )
+            }
+        }
+    }
 }

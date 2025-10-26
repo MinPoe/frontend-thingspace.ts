@@ -1,12 +1,14 @@
 package com.cpen321.usermanagement.ui.screens
 
-import Button
 import Icon
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -15,9 +17,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
+import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
@@ -33,28 +35,50 @@ import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
+import com.cpen321.usermanagement.ui.components.NoteDisplayList
+import com.cpen321.usermanagement.ui.components.SearchBar
+import com.cpen321.usermanagement.utils.IFeatureActions
+import kotlinx.coroutines.flow.compose
 
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
     onProfileClick: () -> Unit,
-    onNoteClick: () -> Unit,
-    onTemplateClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit,
-    onFilterClick: ()-> Unit
+    featureActions: IFeatureActions
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
+    val fetching by mainViewModel.fetching.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+    val wsname =  mainViewModel.getWorkspaceName()
 
     MainContent(
         uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
-        onNoteClick = onNoteClick,
-        onTemplateClick = onTemplateClick,
-        onWorkspaceClick = onWorkspaceClick,
-        onFilterClick = onFilterClick,
-        onSuccessMessageShown = mainViewModel::clearSuccessMessage
+        onTemplateClick = {  featureActions.navigateToTemplateTagReset(
+            featureActions.getWorkspaceId())},
+        onWorkspaceClick = { featureActions.navigateToWsSelect()},
+        onFilterClick = { featureActions.navigateToFilter(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected()
+        ) },
+        onSearchClick = {featureActions.navigateToMainWithContext(
+            workspaceId = featureActions.getWorkspaceId(),
+            selectedTags = featureActions.getSelectedTags(),
+            allTagsSelected = featureActions.getAllTagsSelected(),
+            searchQuery = featureActions.getSearchQuery()
+        )},
+        onChatClick = { featureActions.navigateToChatTagReset(
+            featureActions.getWorkspaceId()) },
+        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
+        workspaceName = wsname,
+        query = featureActions.getSearchQuery(),
+        onSuccessMessageShown = mainViewModel::clearSuccessMessage,
+        onCreateNoteClick = { featureActions.navigateToNoteCreation() },
+        onNoteClick = {noteId:String -> featureActions.navigateToNote(noteId)},
+        fetching = fetching,
+        notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )
 }
 
@@ -63,11 +87,19 @@ private fun MainContent(
     uiState: MainUiState,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
-    onNoteClick: ()-> Unit,
     onTemplateClick: ()-> Unit,
     onWorkspaceClick: () -> Unit,
     onFilterClick: () -> Unit,
+    onChatClick: ()->Unit,
+    onSearchClick: ()-> Unit,
+    onQueryChange: (String)-> Unit,
+    query: String,
     onSuccessMessageShown: () -> Unit,
+    workspaceName: String,
+    onCreateNoteClick: ()-> Unit,
+    onNoteClick: (String)->Unit,
+    notes:List<Note>,
+    fetching: Boolean,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -84,16 +116,33 @@ private fun MainContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = onNoteClick,
+                onCreateNoteClick = onCreateNoteClick,
                 onWorkspacesClick = onWorkspaceClick,
                 onTemplatesClick = onTemplateClick,
-                onProfileClick = onProfileClick,
+                onContentClick = {  },
+                onChatClick = onChatClick,
                 modifier = modifier)
         }
     ) { paddingValues ->
-        MainBody(
-            paddingValues = paddingValues,
-            onFilterClick = onFilterClick)
+        if(!fetching) {
+            MainBody(
+                paddingValues = paddingValues,
+                workspaceName = workspaceName,
+                onFilterClick = onFilterClick,
+                onSearchClick = onSearchClick,
+                onQueryChange = onQueryChange,
+                onNoteClick = onNoteClick,
+                notes = notes,
+                query = query
+            )
+        }
+        else{
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {CircularProgressIndicator(modifier = modifier.align(Alignment.Center))}
+        }
     }
 }
 
@@ -126,7 +175,7 @@ private fun AppTitle(
         text = stringResource(R.string.app_name),
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Medium,
-        modifier = modifier
+        modifier = modifier.clickable { /* Do nothing - title is not clickable */ }
     )
 }
 
@@ -175,44 +224,46 @@ private fun MainSnackbarHost(
 private fun MainBody(
     paddingValues: PaddingValues,
     onFilterClick: () -> Unit,
+    workspaceName: String,
+    query: String,
+    onSearchClick: ()-> Unit,
+    onQueryChange: (String) -> Unit,
+    onNoteClick: (String) -> Unit,
+    notes:List<Note>,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage()
-        Button(
-            fullWidth = true,
-            enabled = true,
-            //TODO: Make Nicer Later, the point is we need a way to return to main somehow
-            onClick = { onFilterClick() },
-        ) {
-            val fontSizes = LocalFontSizes.current
-            Text(
-                text = "filter",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = modifier
-            )
-        }
+        WorkspaceName(workspaceName)
+        SearchBar(
+            onSearchClick = onSearchClick,
+            onFilterClick = onFilterClick,
+            onQueryChange = onQueryChange,
+            query = query
+        )
+        NoteDisplayList(
+            onNoteClick = onNoteClick,
+            notes = notes,
+        )
     }
 }
 @Composable
-private fun WelcomeMessage(
+private fun WorkspaceName(
+    workspaceName: String,
     modifier: Modifier = Modifier
 ) {
-    val fontSizes = LocalFontSizes.current
-
     Text(
-        text = stringResource(R.string.welcome),
-        style = MaterialTheme.typography.bodyLarge,
-        fontSize = fontSizes.extraLarge3,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
+        text = workspaceName + stringResource(R.string.plusContent),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = modifier.padding(horizontal = LocalSpacing.current.medium),
+        maxLines = 2,
+        softWrap = true
     )
 }
 

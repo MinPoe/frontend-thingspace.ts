@@ -1,6 +1,5 @@
 import mongoose, { Document } from 'mongoose';
 import z from 'zod';
-import { HOBBIES } from './hobbies';
 
 // User model
 // ------------------------------------------------------------
@@ -8,10 +7,13 @@ export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   googleId: string;
   email: string;
-  name: string;
-  profilePicture?: string;
-  bio?: string;
-  hobbies: string[];
+  profile: {
+    imagePath?: string;
+    name: string;
+    description?: string;
+  };
+  fcmToken?: string;
+  personalWorkspaceId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,23 +22,24 @@ export interface IUser extends Document {
 // ------------------------------------------------------------
 export const createUserSchema = z.object({
   email: z.string().email(),
-  name: z.string().min(1),
   googleId: z.string().min(1),
-  profilePicture: z.string().optional(),
-  bio: z.string().max(500).optional(),
-  hobbies: z.array(z.string()).default([]),
+  profile: z.object({
+    imagePath: z.string().optional(),
+    name: z.string().min(1),
+    description: z.string().max(500).optional(),
+  }),
 });
 
 export const updateProfileSchema = z.object({
-  name: z.string().min(1).optional(),
-  bio: z.string().max(500).optional(),
-  hobbies: z
-    .array(z.string())
-    .refine(val => val.length === 0 || val.every(v => HOBBIES.includes(v)), {
-      message: 'Hobby must be in the available hobbies list',
-    })
-    .optional(),
-  profilePicture: z.string().min(1).optional(),
+  profile: z.object({
+    imagePath: z.string().optional(),
+    name: z.string().min(1).optional(),
+    description: z.string().max(500).optional(),
+  }).optional(),
+});
+
+export const updateFcmTokenSchema = z.object({
+  fcmToken: z.string().min(1),
 });
 
 // Request types

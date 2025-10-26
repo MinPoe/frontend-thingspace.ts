@@ -1,12 +1,12 @@
 import mongoose, { Schema } from 'mongoose';
 import { z } from 'zod';
 
-import { HOBBIES } from './hobbies';
 import {
   createUserSchema,
   GoogleUserInfo,
   IUser,
   updateProfileSchema,
+  UpdateProfileRequest,
 } from './user.types';
 import logger from './logger.util';
 
@@ -25,35 +25,32 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
     },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    profilePicture: {
-      type: String,
-      required: false,
-      trim: true,
-    },
-    bio: {
-      type: String,
-      required: false,
-      trim: true,
-      maxlength: 500,
-    },
-    hobbies: {
-      type: [String],
-      default: [],
-      validate: {
-        validator: function (hobbies: string[]) {
-          return (
-            hobbies.length === 0 ||
-            hobbies.every(hobby => HOBBIES.includes(hobby))
-          );
-        },
-        message:
-          'Hobbies must be non-empty strings and must be in the available hobbies list',
+    profile: {
+      imagePath: {
+        type: String,
+        required: false,
+        trim: true,
       },
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      description: {
+        type: String,
+        required: false,
+        trim: true,
+        maxlength: 500,
+      },
+    },
+    fcmToken: {
+      type: String,
+      required: false,
+    },
+    personalWorkspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Workspace',
+      required: false,
     },
   },
   {
@@ -70,7 +67,18 @@ export class UserModel {
 
   async create(userInfo: GoogleUserInfo): Promise<IUser> {
     try {
-      const validatedData = createUserSchema.parse(userInfo);
+      // Convert GoogleUserInfo to the new structure
+      const userData = {
+        email: userInfo.email,
+        googleId: userInfo.googleId,
+        profile: {
+          imagePath: userInfo.profilePicture,
+          name: userInfo.name,
+          description: '',
+        },
+      };
+      
+      const validatedData = createUserSchema.parse(userData);
 
       return await this.user.create(validatedData);
     } catch (error) {
@@ -85,14 +93,17 @@ export class UserModel {
 
   async update(
     userId: mongoose.Types.ObjectId,
-    user: Partial<IUser>
+    updateProfileReq: UpdateProfileRequest
   ): Promise<IUser | null> {
     try {
-      const validatedData = updateProfileSchema.parse(user);
+      const validatedData = updateProfileSchema.parse(updateProfileReq);
+
+      // Handle nested profile object for MongoDB update
+      const updateData = validatedData.profile ? { profile: validatedData.profile } : {};
 
       const updatedUser = await this.user.findByIdAndUpdate(
         userId,
-        validatedData,
+        updateData,
         {
           new: true,
         }
@@ -128,6 +139,15 @@ export class UserModel {
     }
   }
 
+  async findByIds(ids: mongoose.Types.ObjectId[]): Promise<IUser[]> {
+    try {
+      return await this.user.find({ _id: { $in: ids } });
+    } catch (error) {
+      console.error('Error finding users by IDs:', error);
+      throw new Error('Failed to find users');
+    }
+  }   
+
   async findByGoogleId(googleId: string): Promise<IUser | null> {
     try {
       const user = await this.user.findOne({ googleId });
@@ -140,6 +160,50 @@ export class UserModel {
     } catch (error) {
       console.error('Error finding user by Google ID:', error);
       throw new Error('Failed to find user');
+    }
+  }
+
+  async findByEmail(email: string): Promise<IUser | null> {
+    try {
+      const user = await this.user.findOne({ email });
+      return user;
+    } catch (error) {
+      logger.error('Error finding user by email:', error);
+      throw new Error('Failed to find user');
+    }
+  }
+
+  async updateFcmToken(
+    userId: mongoose.Types.ObjectId,
+    fcmToken: string
+  ): Promise<IUser | null> {
+    try {
+      const updatedUser = await this.user.findByIdAndUpdate(
+        userId,
+        { fcmToken },
+        { new: true }
+      );
+      return updatedUser;
+    } catch (error) {
+      logger.error('Error updating FCM token:', error);
+      throw new Error('Failed to update FCM token');
+    }
+  }
+
+  async updatePersonalWorkspace(
+    userId: mongoose.Types.ObjectId,
+    workspaceId: mongoose.Types.ObjectId
+  ): Promise<IUser | null> {
+    try {
+      const updatedUser = await this.user.findByIdAndUpdate(
+        userId,
+        { personalWorkspaceId: workspaceId },
+        { new: true }
+      );
+      return updatedUser;
+    } catch (error) {
+      logger.error('Error updating personal workspace:', error);
+      throw new Error('Failed to update personal workspace');
     }
   }
 }

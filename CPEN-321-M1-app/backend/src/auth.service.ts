@@ -88,6 +88,37 @@ export class AuthService {
       throw error;
     }
   }
+
+  // DEV ONLY - Create test user and return token
+  async devLogin(email: string): Promise<AuthResult> {
+    try {
+      // Try to find user by email first (since email is unique)
+      const existingUserByEmail = await userModel.findByEmail(email);
+      
+      if (existingUserByEmail) {
+        // User exists, return token for them
+        const token = this.generateAccessToken(existingUserByEmail);
+        return { token, user: existingUserByEmail };
+      }
+
+      // Create new test user with consistent googleId
+      const consistentGoogleId = `dev-${email.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const testUserInfo: GoogleUserInfo = {
+        googleId: consistentGoogleId,
+        email: email,
+        name: 'Test User',
+        profilePicture: 'https://via.placeholder.com/150',
+      };
+
+      const user = await userModel.create(testUserInfo);
+      const token = this.generateAccessToken(user);
+
+      return { token, user };
+    } catch (error) {
+      logger.error('Dev login failed:', error);
+      throw error;
+    }
+  }
 }
 
 export const authService = new AuthService();

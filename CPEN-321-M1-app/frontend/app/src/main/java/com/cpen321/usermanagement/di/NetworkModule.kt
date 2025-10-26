@@ -1,10 +1,12 @@
 package com.cpen321.usermanagement.di
 
 import com.cpen321.usermanagement.data.remote.api.AuthInterface
-import com.cpen321.usermanagement.data.remote.api.HobbyInterface
 import com.cpen321.usermanagement.data.remote.api.ImageInterface
+import com.cpen321.usermanagement.data.remote.api.MessageInterface
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
 import com.cpen321.usermanagement.data.remote.api.RetrofitClient
 import com.cpen321.usermanagement.data.remote.api.UserInterface
+import com.cpen321.usermanagement.data.remote.api.WorkspaceInterface
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +37,20 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideHobbyService(): HobbyInterface {
-        return RetrofitClient.hobbyInterface
+    fun provideWorkspaceService(): WorkspaceInterface {
+        return RetrofitClient.workspaceInterface
     }
+
+    @Provides
+    @Singleton
+    fun provideNoteService(): NoteInterface{
+        return RetrofitClient.noteInterface
+    }
+
+    @Provides
+    @Singleton
+    fun provideMessageInterface(): MessageInterface {
+        return RetrofitClient.messageInterface
+    }
+
 }

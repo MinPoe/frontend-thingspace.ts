@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { UserController } from './user.controller';
-import { UpdateProfileRequest, updateProfileSchema } from './user.types';
+import { UpdateProfileRequest, updateProfileSchema, updateFcmTokenSchema } from './user.types';
 import { validateBody } from './validation.middleware';
 
 const router = Router();
@@ -9,12 +9,21 @@ const userController = new UserController();
 
 router.get('/profile', userController.getProfile);
 
-router.post(
+router.put(
   '/profile',
   validateBody<UpdateProfileRequest>(updateProfileSchema),
   userController.updateProfile
 );
 
 router.delete('/profile', userController.deleteProfile);
+
+router.post(
+  '/fcm-token',
+  validateBody(updateFcmTokenSchema),
+  userController.updateFcmToken.bind(userController)
+);
+
+router.get('/:id', userController.getUserById);
+router.get('/email/:email', userController.getUserByEmail);
 
 export default router;

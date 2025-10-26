@@ -1,11 +1,16 @@
 package com.cpen321.usermanagement.data.remote.api
 
+import com.cpen321.usermanagement.data.remote.api.NoteInterface
 import com.cpen321.usermanagement.BuildConfig
 import com.cpen321.usermanagement.data.remote.interceptors.AuthInterceptor
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
@@ -37,7 +42,10 @@ object RetrofitClient {
     val authInterface: AuthInterface = retrofit.create(AuthInterface::class.java)
     val imageInterface: ImageInterface = retrofit.create(ImageInterface::class.java)
     val userInterface: UserInterface = retrofit.create(UserInterface::class.java)
-    val hobbyInterface: HobbyInterface = retrofit.create(HobbyInterface::class.java)
+
+    val workspaceInterface: WorkspaceInterface = retrofit.create(WorkspaceInterface::class.java)
+    val noteInterface: NoteInterface = retrofit.create(NoteInterface::class.java)
+    val messageInterface: MessageInterface = retrofit.create(MessageInterface::class.java)
 
     fun setAuthToken(token: String?) {
         authToken = token

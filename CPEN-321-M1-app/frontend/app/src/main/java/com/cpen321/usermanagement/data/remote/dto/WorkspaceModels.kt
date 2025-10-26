@@ -11,8 +11,6 @@ package com.cpen321.usermanagement.data.remote.dto
  */
 data class Workspace(
     val _id: String,
-    val workspaceName: String,
-    val workspacePicture: String? = null,
-    val workspaceDescription: String? = null
+    val profile: Profile
 )
 

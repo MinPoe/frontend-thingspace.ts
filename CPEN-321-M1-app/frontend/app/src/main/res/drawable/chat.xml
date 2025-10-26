@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960"
+    android:tint="?attr/colorControlNormal">
+
+    <!-- Chat bubble -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="
+            M160,120
+            H800
+            Q840,120 840,160
+            V640
+            Q840,680 800,680
+            H320
+            L160,840
+            V680
+            Q160,680 160,640
+            Z" />
+
+    <!-- Message lines -->
+    <path android:fillColor="@android:color/white" android:pathData="M280,280 H680 V320 H280 Z" />
+    <path android:fillColor="@android:color/white" android:pathData="M280,400 H600 V440 H280 Z" />
+    <path android:fillColor="@android:color/white" android:pathData="M280,520 H520 V560 H280 Z" />
+</vector>

@@ -7,9 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.AuthData
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.data.repository.AuthRepository
+import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.ui.navigation.NavRoutes
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.tasks.await
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +41,7 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -62,7 +66,7 @@ class AuthViewModel @Inject constructor(
 
                 val isAuthenticated = authRepository.isUserAuthenticated()
                 val user = if (isAuthenticated) authRepository.getCurrentUser() else null
-                val needsProfileCompletion = user?.bio == null || user.bio.isBlank()
+                val needsProfileCompletion = user?.profile?.description == null || user.profile.description.isBlank()
 
                 _uiState.value = _uiState.value.copy(
                     isAuthenticated = isAuthenticated,
@@ -127,7 +131,7 @@ class AuthViewModel @Inject constructor(
             authOperation(credential.idToken)
                 .onSuccess { authData ->
                     val needsProfileCompletion =
-                        authData.user.bio == null || authData.user.bio.isBlank()
+                        authData.user.profile.description == null || authData.user.profile.description.isBlank()
 
                     _uiState.value = _uiState.value.copy(
                         isSigningIn = false,
@@ -136,6 +140,9 @@ class AuthViewModel @Inject constructor(
                         user = authData.user,
                         errorMessage = null
                     )
+
+                    // Update FCM token after successful login
+                    updateFcmToken()
 
                     // Trigger navigation through NavigationStateManager
                     navigationStateManager.updateAuthenticationState(
@@ -201,5 +208,28 @@ class AuthViewModel @Inject constructor(
 
     fun clearSuccessMessage() {
         _uiState.value = _uiState.value.copy(successMessage = null)
+    }
+
+    private fun updateFcmToken() {
+        viewModelScope.launch {
+            try {
+                // Get FCM token from Firebase
+                val token = FirebaseMessaging.getInstance().token.await()
+                Log.d(TAG, "FCM Token retrieved: $token")
+                
+                // Send token to backend
+                profileRepository.updateFcmToken(token)
+                    .onSuccess {
+                        Log.d(TAG, "FCM token successfully sent to backend")
+                    }
+                    .onFailure { error ->
+                        Log.e(TAG, "Failed to send FCM token to backend", error)
+                        // Don't show error to user - this is a background operation
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to retrieve FCM token", e)
+                // Don't show error to user - this is a background operation
+            }
+        }
     }
 }

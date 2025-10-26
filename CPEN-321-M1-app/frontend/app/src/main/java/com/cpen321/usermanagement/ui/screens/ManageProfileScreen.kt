@@ -60,13 +60,13 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 private data class ProfileFormState(
     val name: String = "",
     val email: String = "",
-    val bio: String = "",
+    val description: String = "",
     val originalName: String = "",
-    val originalBio: String = ""
+    val originalDescription: String = ""
 ) {
     fun hasChanges(): Boolean {
         return (name.isNotBlank() && name != originalName) ||
-                (bio != originalBio && bio.isNotBlank())
+                (description != originalDescription && description.isNotBlank())
     }
 }
 
@@ -84,6 +84,17 @@ private data class ManageProfileScreenActions(
 )
 
 private data class ProfileFormData(
+    val formState: ProfileFormState,
+    val isLoadingPhoto: Boolean,
+    val isSavingProfile: Boolean,
+    val onNameChange: (String) -> Unit,
+    val onBioChange: (String) -> Unit,
+    val onEditPictureClick: () -> Unit,
+    val onSaveClick: () -> Unit,
+    val onLoadingPhotoChange: (Boolean) -> Unit
+)
+
+private data class UserProfileFormData(
     val user: User,
     val formState: ProfileFormState,
     val isLoadingPhoto: Boolean,
@@ -108,7 +119,7 @@ private data class ProfileBodyData(
 private data class ProfileFieldsData(
     val name: String,
     val email: String,
-    val bio: String,
+    val description: String,
     val onNameChange: (String) -> Unit,
     val onBioChange: (String) -> Unit
 )
@@ -140,11 +151,11 @@ fun ManageProfileScreen(
     LaunchedEffect(uiState.user) {
         uiState.user?.let { user ->
             formState = ProfileFormState(
-                name = user.name,
+                name = user.profile.name,
                 email = user.email,
-                bio = user.bio ?: "",
-                originalName = user.name,
-                originalBio = user.bio ?: ""
+                description = user.profile.description ?: "",
+                originalName = user.profile.name,
+                originalDescription = user.profile.description ?: ""
             )
         }
     }
@@ -152,10 +163,10 @@ fun ManageProfileScreen(
     val actions = ManageProfileScreenActions(
         onBackClick = onBackClick,
         onNameChange = { formState = formState.copy(name = it) },
-        onBioChange = { formState = formState.copy(bio = it) },
+        onBioChange = { formState = formState.copy(description = it) },
         onEditPictureClick = { showImagePickerDialog = true },
         onSaveClick = {
-            profileViewModel.updateProfile(formState.name, formState.bio)
+            profileViewModel.updateProfile(formState.name, formState.description)
         },
         onImagePickerDismiss = { showImagePickerDialog = false },
         onImageSelected = { uri ->
@@ -272,7 +283,7 @@ private fun ProfileBody(
 
             data.uiState.user != null -> {
                 ProfileForm(
-                    data = ProfileFormData(
+                    data = UserProfileFormData(
                         user = data.uiState.user,
                         formState = data.formState,
                         isLoadingPhoto = data.uiState.isLoadingPhoto,
@@ -291,7 +302,7 @@ private fun ProfileBody(
 
 @Composable
 private fun ProfileForm(
-    data: ProfileFormData,
+    data: UserProfileFormData,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -306,7 +317,7 @@ private fun ProfileForm(
         verticalArrangement = Arrangement.spacedBy(spacing.large)
     ) {
         ProfilePictureCard(
-            profilePicture = data.user.profilePicture,
+            profilePicture = data.user.profile.imagePath ?: "",
             isLoadingPhoto = data.isLoadingPhoto,
             onEditClick = data.onEditPictureClick,
             onLoadingChange = data.onLoadingPhotoChange
@@ -316,7 +327,7 @@ private fun ProfileForm(
             data = ProfileFieldsData(
                 name = data.formState.name,
                 email = data.user.email,
-                bio = data.formState.bio,
+                description = data.formState.description,
                 onNameChange = data.onNameChange,
                 onBioChange = data.onBioChange
             )
@@ -448,16 +459,16 @@ private fun ProfileFields(
 
         //Row(Modifier.focusProperties { canFocus = false }) {
         OutlinedTextField(
-            value = data.bio,
+            value = data.description,
             onValueChange = data.onBioChange,
             label = { Text(stringResource(R.string.bio)) },
             placeholder = { Text(stringResource(R.string.bio_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             minLines = 3,
             maxLines = 5,
-            readOnly = false //Here a fix was conducted: Users SHOULD be able to edit their bio after account creation
+            readOnly = false //Here a fix was conducted: Users SHOULD be able to edit their description after account creation
         )
-        //} //this modifier was also blocking bio editability, hence commented out
+        //} //this modifier was also blocking description editability, hence commented out
     }
 }
 

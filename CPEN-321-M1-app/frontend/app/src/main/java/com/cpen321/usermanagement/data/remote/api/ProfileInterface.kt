@@ -2,6 +2,7 @@ package com.cpen321.usermanagement.data.remote.api
 
 import com.cpen321.usermanagement.data.remote.dto.ApiResponse
 import com.cpen321.usermanagement.data.remote.dto.ProfileData
+import com.cpen321.usermanagement.data.remote.dto.UpdateFcmTokenRequest
 import com.cpen321.usermanagement.data.remote.dto.UpdateProfileRequest
 import com.cpen321.usermanagement.data.remote.dto.UploadImageData
 import okhttp3.MultipartBody
@@ -12,13 +13,23 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface UserInterface {
     @GET("user/profile")
     suspend fun getProfile(@Header("Authorization") authHeader: String): Response<ApiResponse<ProfileData>>
 
-    @POST("user/profile")
+    @GET("user/{id}")
+    suspend fun getProfileById(@Header("Authorization") authHeader: String,
+                           @Path("id") id:String): Response<ApiResponse<ProfileData>>
+
+    @GET("user/email/{email}")
+    suspend fun getProfileByEmail(@Header("Authorization") authHeader: String,
+                           @Path("email") id:String): Response<ApiResponse<ProfileData>>
+
+    @PUT("user/profile")
     suspend fun updateProfile(
         @Header("Authorization") authHeader: String,
         @Body request: UpdateProfileRequest
@@ -27,6 +38,12 @@ interface UserInterface {
     @DELETE("user/profile")
     suspend fun deleteProfile(
         @Header("Authorization") authHeader: String,
+    ): Response<ApiResponse<ProfileData>>
+
+    @POST("user/fcm-token")
+    suspend fun updateFcmToken(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateFcmTokenRequest
     ): Response<ApiResponse<ProfileData>>
 }
 
