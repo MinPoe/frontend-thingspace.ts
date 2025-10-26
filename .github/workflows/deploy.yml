@@ -36,6 +36,7 @@ jobs:
           MONGODB_URI=${{ secrets.PROD_DB_URI }}
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}
           EOF
 
           # write into the firebase json file
