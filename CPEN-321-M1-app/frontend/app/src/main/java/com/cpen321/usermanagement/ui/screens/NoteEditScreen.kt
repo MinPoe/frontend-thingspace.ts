@@ -193,8 +193,7 @@ fun NoteEditContent(
                 },
                 actions = {
                     IconButton(onClick = onShareClick) {
-                        // TODO: REPLACE ICON
-                        Icon(name = R.drawable.ic_edit)
+                        Icon(name = R.drawable.ic_share_note)
                     }
                     IconButton(onClick = onCopyClick) {
                         Icon(name = R.drawable.ic_copy)
