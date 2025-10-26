@@ -20,10 +20,9 @@ export class NoteService {
         let vectorInput = "";
 
         for (const field of data.fields) {
+            vectorInput += "field label: " + field.label + " ";
             if ('content' in field) {
-                vectorInput += field.content + " ";
-            } else if ('dateTime' in field) {
-                vectorInput += field.dateTime.toString() + " ";
+                vectorInput += "field content: " + field.content + " ";
             }
         }
 
