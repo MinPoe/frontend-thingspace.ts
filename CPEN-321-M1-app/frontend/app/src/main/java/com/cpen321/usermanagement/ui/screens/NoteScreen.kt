@@ -458,6 +458,23 @@ private fun TextFieldInfo(
     val spacing = LocalSpacing.current
 
     Column(modifier = modifier) {
+        // Display content if available
+        if (field.content != null && field.content.isNotBlank()) {
+            Text(
+                text = field.content,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        } else {
+            Text(
+                text = "No content",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(spacing.small))
+
         Text(
             text = "Type: Text Field",
             style = MaterialTheme.typography.bodySmall,
@@ -490,9 +507,26 @@ private fun DateTimeFieldInfo(
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
-    val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+    val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a")
 
     Column(modifier = modifier) {
+        // Display content if available
+        field.content?.let { content ->
+            Text(
+                text = content.format(formatter),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        } ?: run {
+            Text(
+                text = "No date selected",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(spacing.small))
+
         Text(
             text = "Type: Date/Time Field",
             style = MaterialTheme.typography.bodySmall,
@@ -527,6 +561,23 @@ private fun NumberFieldInfo(
     val spacing = LocalSpacing.current
 
     Column(modifier = modifier) {
+        // Display content if available
+        field.content?.let { content ->
+            Text(
+                text = content.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        } ?: run {
+            Text(
+                text = "No value",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(spacing.small))
+
         Text(
             text = "Type: Number Field",
             style = MaterialTheme.typography.bodySmall,
