@@ -6,15 +6,11 @@
 
 | **Change Date**   | **Modified Sections** | **Rationale** |
 | 01.08.2025 | 3.3, 4.2, 4.3 | Removed all speech-to-text references. Made the Vector DB non-optional. This is because the docummentation has to be consistent and optional features are not a valid basis for requirements |
-| ----------------- | --------------------- | ------------- |
 | 14.10.2025 | 3.3, 4.2, 4.3 | Vector Database has been removed, we will maintin only one database. This is because an entire database dedicated to vectors is unnessesary and overly complicated for the scope and scale of our project |
-| ----------------- | --------------------- | ------------- |
 | 14.10.2025 | 3.3, 4.2, 4.3 | Templates will work by created a template note and copying the note over to other workspaces. This was done to simplify implementation and for clarity |
-| ----------------- | --------------------- | ------------- |
 | 20.10.2025 | 3.3, 4.2, 4.3 | Adding a user to a workspace will now send a push notification. This was done to meet the milestone specs (push notifications) |
 | 20.10.2025 | 4.1 | Add component interfaces|
 | 20.10.2025 | 4.4 | Add more frameworks and libraries used during implementation|
-| ----------------- | --------------------- | ------------- |
 
 ---
 
