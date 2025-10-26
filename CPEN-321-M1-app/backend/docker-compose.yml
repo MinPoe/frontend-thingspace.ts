@@ -20,6 +20,7 @@ services:
     environment:
       - DB_URI=${DB_URI}
       - PORT=${PORT}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     ports:
     - "${PORT}:${PORT}"
     depends_on:
