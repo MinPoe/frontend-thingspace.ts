@@ -17,6 +17,9 @@ export class NoteService {
     }
 
     async createNote(userId: mongoose.Types.ObjectId, data: CreateNoteRequest): Promise<Note> {
+
+        console.log("Creating note");
+        
         let vectorInput = "";
 
         for (const field of data.fields) {
