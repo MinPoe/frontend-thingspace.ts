@@ -12,6 +12,7 @@ jobs:
     - name: CheckOut
       uses: actions/checkout@v3
 
+    # very bad, copies entire project to the vm not just a backend
     - name: Copy files to EC2
       uses: appleboy/scp-action@v1
       with: 
