@@ -200,7 +200,7 @@ export class NoteService {
             dateCreation: new Date(),
             dateLastEdit: new Date(),
             tags: note.tags,
-            noteType: note.noteType,
+            noteType: NoteType.CONTENT,
             fields: note.fields,
             vectorData: note.vectorData
         });
