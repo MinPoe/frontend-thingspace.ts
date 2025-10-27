@@ -374,11 +374,11 @@ The target audience is the general public. If one has a large amount of differen
 
 
 **External Interfaces Used**:
-    1. **OpenAIClient.embeddings.create(model: String, input: String): EmbeddingResponse**
-        - **Purpose**: Called by NoteService.createNote() and getNotes() to generate vector embeddings for note/query content using OpenAI's text-embedding-3-large model. The embeddings are stored with each note for semantic search functionality.
+1. **OpenAIClient.embeddings.create(model: String, input: String): EmbeddingResponse**
+    - **Purpose**: Called by NoteService.createNote() and getNotes() to generate vector embeddings for note/query content using OpenAI's text-embedding-3-large model. The embeddings are stored with each note for semantic search functionality.
 
-    2. **FirebaseAdmin.messaging().send(message: Message): Promise<String>**
-        - **Purpose**: Called by sendNotification() to deliver push notifications to mobile devices. Used when users are invited to workspaces, sending notification data including workspace information and inviter details.
+2. **FirebaseAdmin.messaging().send(message: Message): Promise<String>**
+    - **Purpose**: Called by sendNotification() to deliver push notifications to mobile devices. Used when users are invited to workspaces, sending notification data including workspace information and inviter details.
    
 
 ### **4.2. Databases**
