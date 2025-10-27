@@ -10,9 +10,10 @@
 | 14.10.2025 | 3.3, 4.2, 4.3 | Vector Database has been removed, we will maintain only one database. This is because an entire database dedicated to vectors is unnecessary and overly complicated for the scope and scale of our project |
 | 14.10.2025 | 3.3, 4.2, 4.3 | Templates will work by created a template note and copying the note over to other workspaces. This was done to simplify implementation and for clarity |
 | 20.10.2025 | 3.3, 4.2, 4.3 | Adding a user to a workspace will now send a push notification. Chat messages will no longer send a push notification|
-| 20.10.2025 | 4.1 | Removed Template as a backend component since it's no longer a component. Added component interfaces |
-| 20.10.2025 | 4.4 | Add more frameworks and libraries used during implementation |
-| 20.10.2025 | 4.6 | Added sequence diagrams for components |
+| 24.10.2025 | 4.1 | Removed Template as a backend component since it's no longer a component. Added component interfaces |
+| 25.10.2025 | 4.4 | Add more frameworks and libraries used during implementation |
+| 25.10.2025 | All | Cleaned up doc and implemented feedback from M2 |
+| 26.10.2025 | 4.6 | Added sequence diagrams for components |
 ---
 
 
