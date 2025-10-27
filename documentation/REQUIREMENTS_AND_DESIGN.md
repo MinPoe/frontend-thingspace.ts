@@ -36,7 +36,7 @@ The target audience is the general public. If one has a large amount of differen
 
 ### **3.2. Use Case Diagram**
 
-![image info](./graphics/UseCaseD.jpg)
+![image info](./graphics/UseCaseD.png)
 
 
 ### **3.3. Actors Description**
@@ -408,15 +408,20 @@ The target audience is the general public. If one has a large amount of differen
     - **Reason**: Streamlines dependency management and improves testability in Android apps.
  
 ### **4.5. Dependencies Diagram**
-![image info](./graphics/backendD.jpg)
+![image info](./graphics/HighLevelDesign.png)
 
 The dependency of Users on interfaces from other components is because user deletion. When a user gets deleted, Users have to notify all other modules to remove all notes, templates and workspaces associated only with the user being deleted and make the user no longer an active member of any workspace they were in.
 
 
 ### **4.6. Use Case Sequence Diagram (5 Most Major Use Cases)**
-1. [**[WRITE_NAME_HERE]**](#uc1)\
-[SEQUENCE_DIAGRAM_HERE]
-2. ...
+1. [**[CREATE NOTE]**](#uc1)\
+![image info](./graphics/CreateNote.png)
+
+2. [**[SEARCH NOTE]**](#uc1)\
+![image info](./graphics/SearchNotes.png)
+
+3. [**[CREATE WORKSPACE]**](#uc1)\
+![image info](./graphics/CreateWORKSPACE.png)
 
 
 
