@@ -421,7 +421,7 @@ The dependency of Users on interfaces from other components is because user dele
 ![image info](./graphics/SearchNotes.png)
 
 3. [**[CREATE WORKSPACE]**](#uc1)\
-![image info](./graphics/CreateWORKSPACE.png)
+![image info](./graphics/CreateWorkspace.png)
 
 
 
