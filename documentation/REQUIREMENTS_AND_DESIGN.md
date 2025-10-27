@@ -417,11 +417,17 @@ The dependency of Users on interfaces from other components is because user dele
 1. [**[CREATE NOTE]**](#uc1)\
 ![image info](./graphics/CreateNote.png)
 
-2. [**[SEARCH NOTE]**](#uc1)\
+2. [**[SEARCH NOTE]**](#uc2)\
 ![image info](./graphics/SearchNotes.png)
 
-3. [**[CREATE WORKSPACE]**](#uc1)\
+3. [**[CREATE A NOTE TEMPLATE]**](#uc3)\
+![image info](./graphics/NoteTemplate.png)
+
+4. [**[CREATE WORKSPACE]**](#uc4)\
 ![image info](./graphics/CreateWorkspace.png)
+
+5. [**[SEND A CHAT MESSAGE]**](#uc5)\
+![image info](./graphics/ChatMessage.png)
 
 
 
