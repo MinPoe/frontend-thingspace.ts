@@ -28,8 +28,18 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+
+/*
+* Make sure you have the google account that will carry the tests signed up in your emulator!!!
+* */
+
+
 @HiltAndroidTest
 class TestCollaborate {
+
+    companion object{
+        val ACCT_NAME="Friedrich van Aukstin"
+    }
 
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
@@ -50,6 +60,10 @@ class TestCollaborate {
             onElement { textAsString() == "Allow" }.click()
         }
         composeRule.onNodeWithText("Sign in with Google").performClick()
+        uiAutomator {
+            onElement { textAsString() == ACCT_NAME }.click()
+            //onElement { textAsString() == "Search" }.click() //TODO: wait until loads
+        }
     }
 }
 
