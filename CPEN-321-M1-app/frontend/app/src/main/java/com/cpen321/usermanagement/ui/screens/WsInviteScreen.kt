@@ -20,6 +20,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
@@ -96,7 +98,7 @@ private fun InviteSnackbarHost(
                 hostState = hostState,
                 messageState = MessageSnackbarState(
                     successMessage = null,
-                    errorMessage = "Loading...",
+                    errorMessage = stringResource(R.string.loading),
                     onSuccessMessageShown = onSuccessMessageShown,
                     onErrorMessageShown = onErrorMessageShown
                 ),
@@ -138,14 +140,14 @@ private fun InviteWsBody(
         OutlinedTextField(
             value = textValue,
             onValueChange = { newText -> textValue = newText },
-            label = { Text("Enter the email of the user to invite") },
+            label = { Text(stringResource(R.string.enter_invite_email)) },
             modifier = Modifier.fillMaxWidth()
         )
         Button(
             onClick = {onInviteClick(textValue)},
             modifier = Modifier.fillMaxWidth()
         ){
-            Text("Invite to the workspace")
+            Text(stringResource(R.string.invite_to_workspace))
         }
     }
 }

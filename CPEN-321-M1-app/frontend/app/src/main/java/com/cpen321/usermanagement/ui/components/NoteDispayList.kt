@@ -14,7 +14,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.TextField
 import com.cpen321.usermanagement.data.remote.dto.NumberField
@@ -38,25 +40,25 @@ fun NoteDisplayList(
                     if (!field.content.isNullOrEmpty()) {
                         field.content
                     } else {
-                        field.label.ifEmpty { "Empty note" }
+                        field.label.ifEmpty { stringResource(R.string.empty_note) }
                     }
                 }
                 is NumberField -> {
                     if (field.content != null) {
                         field.content.toString()
                     } else {
-                        field.label.ifEmpty { "Empty note" }
+                        field.label.ifEmpty { stringResource(R.string.empty_note) }
                     }
                 }
                 is DateTimeField -> {
                     if (field.content != null) {
                         field.content.toString()
                     } else {
-                        field.label.ifEmpty { "Empty note" }
+                        field.label.ifEmpty { stringResource(R.string.empty_note) }
                     }
                 }
             }
-        } ?: "Empty note"
+        } ?: stringResource(R.string.empty_note)
         
         Card(
             modifier = Modifier
@@ -116,7 +118,7 @@ fun ChatDisplayList(
             else{
                 Button(onClick = {}){
                     Text(
-                        text = "unknown", //TODO: for now just displays a note id, we need to add note header-ing
+                        text = stringResource(R.string.unknown), //TODO: for now just displays a note id, we need to add note header-ing
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = fontSizes.extraLarge3,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -16,6 +16,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.components.WorkspaceRow
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
@@ -178,7 +180,7 @@ private fun WsBody(
                 .padding(com.cpen321.usermanagement.ui.theme.LocalSpacing.current.medium)
         ) {
             Button(onClick = onCreateClick) {
-                Text("Create a new workspace...")
+                Text(stringResource(R.string.create_new_workspace))
             }
         }
     }
