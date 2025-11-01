@@ -33,6 +33,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.lang.Thread.sleep
 
 /*
 * Make sure you have the google account that will carry the tests signed up in your emulator!!!
@@ -66,14 +67,14 @@ class TestCollaborate {
             UserManagementApp()
         }
         val signInString = composeRule.activity.getString(R.string.sign_in_with_google)
-        //val createWsString = composeRule.activity.getString(R.string.c)
+        val createWsString = "Create a new workspace..." //TODO: use the right R string
 
         uiAutomator {
             onElement { textAsString() == "Allow" }.click()
         }
-        composeRule.onNodeWithText("Sign in with Google").performClick()
+        composeRule.onNodeWithText(signInString).performClick()
         uiAutomator {
-            onElement { textAsString() == ACCT_NAME }.click()
+            onElement { textAsString() == "Marek Gryszka" }.click()
             val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
             device.wait(Until.hasObject(By.pkg("gbhj")), 5000)
         }
@@ -85,12 +86,10 @@ class TestCollaborate {
         Log.d("TEST", "Current package: ${device1.currentPackageName}")
         composeRule.waitForIdle()
         Log.d("TEST", "Current package: ${device1.currentPackageName}")
-        composeRule.onNodeWithText("Create a new workspace...").performClick()
+        composeRule.onNodeWithText(createWsString).performClick()
         //Log.d("TEST", "Current package: ${device1.currentPackageName}")
         //composeRule.waitForIdle()
-        val device2 = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        Log.d("TEST", "Current package: ${device2.currentPackageName}")
-        device2.wait(Until.hasObject(By.pkg("gbhj")), 10000)
+        sleep(5000)
         composeRule.waitForIdle()
     }
 }
