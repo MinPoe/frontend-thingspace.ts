@@ -81,6 +81,9 @@ class TestCollaborate {
     fun showsWelcomeAfterContinue() {
         composeRule.onNodeWithContentDescription("Workspaces").performClick()
         composeRule.waitForIdle()
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        device.wait(Until.hasObject(By.pkg("your.package.name")), 5000)
+        composeRule.waitForIdle()
     }
 }
 
