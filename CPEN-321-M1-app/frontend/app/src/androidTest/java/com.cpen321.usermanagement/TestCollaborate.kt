@@ -54,35 +54,43 @@ class TestCollaborate {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
 
-   @Before
-   fun setUp(){
-       hiltRule.inject()
-       composeRule.activity.setContent {
-           UserManagementApp()
-       }
-
-       uiAutomator {
-           onElement { textAsString() == "Allow" }.click()
-       }
-       composeRule.onNodeWithText("Sign in with Google").performClick()
-       uiAutomator {
-           onElement { textAsString() == ACCT_NAME }.click()
-           //waitForAppToBeVisible("com.cpen321.usermanagement")
-           //onElement { textAsString() == "Search" }.click() //TODO: wait until loads
-           val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-           Log.d("TEST", "Current package: ${device.currentPackageName}")
-           device.wait(Until.hasObject(By.pkg("your.package.name")), 5000)
-           Log.d("TEST", "Current package: ${device.currentPackageName}")
-       }
-       composeRule.waitForIdle()
-   }
+//   @Before
+//   fun setUp(){
+//
+//   }
 
     @Test
     fun showsWelcomeAfterContinue() {
+        hiltRule.inject()
+        composeRule.activity.setContent {
+            UserManagementApp()
+        }
+        val signInString = composeRule.activity.getString(R.string.sign_in_with_google)
+        //val createWsString = composeRule.activity.getString(R.string.c)
+
+        uiAutomator {
+            onElement { textAsString() == "Allow" }.click()
+        }
+        composeRule.onNodeWithText("Sign in with Google").performClick()
+        uiAutomator {
+            onElement { textAsString() == ACCT_NAME }.click()
+            val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+            device.wait(Until.hasObject(By.pkg("gbhj")), 5000)
+        }
+        composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("Workspaces").performClick()
         composeRule.waitForIdle()
-        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        device.wait(Until.hasObject(By.pkg("your.package.name")), 5000)
+        val device1 = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        device1.wait(Until.hasObject(By.pkg("gbhj")), 5000)
+        Log.d("TEST", "Current package: ${device1.currentPackageName}")
+        composeRule.waitForIdle()
+        Log.d("TEST", "Current package: ${device1.currentPackageName}")
+        composeRule.onNodeWithText("Create a new workspace...").performClick()
+        //Log.d("TEST", "Current package: ${device1.currentPackageName}")
+        //composeRule.waitForIdle()
+        val device2 = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        Log.d("TEST", "Current package: ${device2.currentPackageName}")
+        device2.wait(Until.hasObject(By.pkg("gbhj")), 10000)
         composeRule.waitForIdle()
     }
 }
