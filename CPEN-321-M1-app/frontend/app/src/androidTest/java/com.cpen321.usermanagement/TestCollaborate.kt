@@ -54,27 +54,31 @@ class TestCollaborate {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
 
+   @Before
+   fun setUp(){
+       hiltRule.inject()
+       composeRule.activity.setContent {
+           UserManagementApp()
+       }
+
+       uiAutomator {
+           onElement { textAsString() == "Allow" }.click()
+       }
+       composeRule.onNodeWithText("Sign in with Google").performClick()
+       uiAutomator {
+           onElement { textAsString() == ACCT_NAME }.click()
+           //waitForAppToBeVisible("com.cpen321.usermanagement")
+           //onElement { textAsString() == "Search" }.click() //TODO: wait until loads
+           val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+           Log.d("TEST", "Current package: ${device.currentPackageName}")
+           device.wait(Until.hasObject(By.pkg("your.package.name")), 5000)
+           Log.d("TEST", "Current package: ${device.currentPackageName}")
+       }
+       composeRule.waitForIdle()
+   }
+
     @Test
     fun showsWelcomeAfterContinue() {
-        hiltRule.inject()
-        composeRule.activity.setContent {
-            UserManagementApp()
-        }
-
-        uiAutomator {
-            onElement { textAsString() == "Allow" }.click()
-        }
-        composeRule.onNodeWithText("Sign in with Google").performClick()
-        uiAutomator {
-            onElement { textAsString() == ACCT_NAME }.click()
-            //waitForAppToBeVisible("com.cpen321.usermanagement")
-            //onElement { textAsString() == "Search" }.click() //TODO: wait until loads
-            val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-            Log.d("TEST", "Current package: ${device.currentPackageName}")
-            device.wait(Until.hasObject(By.pkg("your.package.name")), 5000)
-            Log.d("TEST", "Current package: ${device.currentPackageName}")
-        }
-        composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("Workspaces").performClick()
         composeRule.waitForIdle()
     }
