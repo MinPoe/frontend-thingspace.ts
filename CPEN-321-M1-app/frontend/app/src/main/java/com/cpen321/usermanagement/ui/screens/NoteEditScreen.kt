@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.*
@@ -85,8 +86,8 @@ fun NoteEditScreen(
 
             if (showShareDialog) {
                 WorkspaceSelectionDialog(
-                    title = "Share Note",
-                    confirmText = "Share",
+                    title = stringResource(R.string.share_note),
+                    confirmText = stringResource(R.string.share),
                     isProcessing = editState.isSharing,
                     workspaces = editState.workspaces,
                     isLoadingWorkspaces = editState.isLoadingWorkspaces,
@@ -99,8 +100,8 @@ fun NoteEditScreen(
 
             if (showCopyDialog) {
                 WorkspaceSelectionDialog(
-                    title = "Copy Note",
-                    confirmText = "Copy",
+                    title = stringResource(R.string.copy_note),
+                    confirmText = stringResource(R.string.copy),
                     isProcessing = editState.isCopying,
                     workspaces = editState.workspaces,
                     isLoadingWorkspaces = editState.isLoadingWorkspaces,
@@ -140,7 +141,7 @@ private fun ErrorEditContent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Error loading note",
+            text = stringResource(R.string.error_loading_note),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
@@ -152,7 +153,7 @@ private fun ErrorEditContent(
         )
         Spacer(modifier = Modifier.height(spacing.large))
         Button(onClick = onBackClick) {
-            Text("Go Back")
+            Text(stringResource(R.string.go_back))
         }
     }
 }
@@ -181,7 +182,7 @@ fun NoteEditContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Edit Note",
+                        text = stringResource(R.string.edit_note),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -221,7 +222,7 @@ fun NoteEditContent(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(spacing.medium))
                     Button(
@@ -235,7 +236,7 @@ fun NoteEditContent(
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                         } else {
-                            Text("Save")
+                            Text(stringResource(R.string.save))
                         }
                     }
                 }
@@ -343,7 +344,7 @@ private fun NoteTypeEditSection(
                 .padding(spacing.medium)
         ) {
             Text(
-                text = "Note Type",
+                text = stringResource(R.string.note_type),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -389,7 +390,7 @@ private fun TagsEditSection(
                 .padding(spacing.medium)
         ) {
             Text(
-                text = "Tags",
+                text = stringResource(R.string.tags),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -399,8 +400,8 @@ private fun TagsEditSection(
             OutlinedTextField(
                 value = tagInput,
                 onValueChange = { tagInput = it },
-                label = { Text("Add tag") },
-                placeholder = { Text("Enter tag name") },
+                label = { Text(stringResource(R.string.add_tag)) },
+                placeholder = { Text(stringResource(R.string.enter_tag_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 trailingIcon = {
@@ -414,7 +415,7 @@ private fun TagsEditSection(
                         enabled = tagInput.isNotBlank()
                     ) {
                         Text(
-                            text = "Add",
+                            text = stringResource(R.string.add),
                             style = MaterialTheme.typography.labelLarge,
                             color = if (tagInput.isNotBlank())
                                 MaterialTheme.colorScheme.primary
@@ -473,7 +474,7 @@ private fun FieldsEditSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Fields",
+                    text = stringResource(R.string.fields),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -482,7 +483,7 @@ private fun FieldsEditSection(
                     onClick = { showFieldTypeDialog = true },
                     modifier = Modifier.height(spacing.extraLarge)
                 ) {
-                    Text("Add Field")
+                    Text(stringResource(R.string.add_field))
                 }
             }
 
@@ -490,7 +491,7 @@ private fun FieldsEditSection(
 
             if (fields.isEmpty()) {
                 Text(
-                    text = "No fields added yet. Click 'Add Field' to create one.",
+                    text = stringResource(R.string.no_fields_added),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = spacing.medium)
@@ -559,7 +560,7 @@ private fun FieldEditCard(
             OutlinedTextField(
                 value = field.label,
                 onValueChange = { onFieldUpdated(FieldUpdate.Label(it)) },
-                label = { Text("Label") },
+                label = { Text(stringResource(R.string.label)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -572,14 +573,14 @@ private fun FieldEditCard(
                     checked = field.required,
                     onCheckedChange = { onFieldUpdated(FieldUpdate.Required(it)) }
                 )
-                Text("Required")
+                Text(stringResource(R.string.required))
             }
 
             // Content input section - only show for CONTENT and CHAT note types
             if (noteType != NoteType.TEMPLATE) {
                 Spacer(modifier = Modifier.height(spacing.medium))
                 Text(
-                    text = "Field Content",
+                    text = stringResource(R.string.field_content),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -591,8 +592,8 @@ private fun FieldEditCard(
                         OutlinedTextField(
                             value = (field.content as? String) ?: "",
                             onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
-                            label = { Text("Text Content") },
-                            placeholder = { Text("Enter text content...") },
+                            label = { Text(stringResource(R.string.text_content)) },
+                            placeholder = { Text(stringResource(R.string.enter_text_content)) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 2,
                             maxLines = 4
@@ -605,8 +606,8 @@ private fun FieldEditCard(
                                 val value = it.toIntOrNull()
                                 onFieldUpdated(FieldUpdate.Content(value))
                             },
-                            label = { Text("Number Content") },
-                            placeholder = { Text("Enter number...") },
+                            label = { Text(stringResource(R.string.number_content)) },
+                            placeholder = { Text(stringResource(R.string.enter_number)) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -626,8 +627,8 @@ private fun FieldEditCard(
                                         // Invalid format, don't update
                                     }
                                 },
-                                label = { Text("Date/Time Content") },
-                                placeholder = { Text("YYYY-MM-DDTHH:mm:ss") },
+                                label = { Text(stringResource(R.string.datetime_content)) },
+                                placeholder = { Text(stringResource(R.string.datetime_format)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true
                             )
@@ -642,13 +643,13 @@ private fun FieldEditCard(
                                     onClick = { showDatePicker = true },
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Pick Date")
+                                    Text(stringResource(R.string.pick_date))
                                 }
                                 Button(
                                     onClick = { showTimePicker = true },
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Pick Time")
+                                    Text(stringResource(R.string.pick_time))
                                 }
                             }
                         }
@@ -659,7 +660,7 @@ private fun FieldEditCard(
             // Type-specific configuration fields
             Spacer(modifier = Modifier.height(spacing.medium))
             Text(
-                text = "Field Configuration",
+                text = stringResource(R.string.field_configuration),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -671,7 +672,7 @@ private fun FieldEditCard(
                     OutlinedTextField(
                         value = field.placeholder ?: "",
                         onValueChange = { onFieldUpdated(FieldUpdate.Placeholder(it)) },
-                        label = { Text("Placeholder (optional)") },
+                        label = { Text(stringResource(R.string.placeholder_optional)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(spacing.small))
@@ -681,7 +682,7 @@ private fun FieldEditCard(
                             val value = it.toIntOrNull()
                             onFieldUpdated(FieldUpdate.MaxLength(value))
                         },
-                        label = { Text("Max Length (optional)") },
+                        label = { Text(stringResource(R.string.max_length_optional)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -692,7 +693,7 @@ private fun FieldEditCard(
                             val value = it.toIntOrNull()
                             onFieldUpdated(FieldUpdate.Min(value))
                         },
-                        label = { Text("Min (optional)") },
+                        label = { Text(stringResource(R.string.min_optional)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(spacing.small))
@@ -702,13 +703,13 @@ private fun FieldEditCard(
                             val value = it.toIntOrNull()
                             onFieldUpdated(FieldUpdate.Max(value))
                         },
-                        label = { Text("Max (optional)") },
+                        label = { Text(stringResource(R.string.max_optional)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
                 FieldType.DATETIME -> {
                     Text(
-                        text = "Date/Time field configuration options coming soon",
+                        text = stringResource(R.string.datetime_config_coming_soon),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -726,7 +727,7 @@ private fun FieldTypeDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select Field Type") },
+        title = { Text(stringResource(R.string.select_field_type)) },
         text = {
             Column {
                 FieldType.values().forEach { type ->
@@ -745,7 +746,7 @@ private fun FieldTypeDialog(
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         },
         modifier = modifier
@@ -777,7 +778,7 @@ fun WorkspaceSelectionDialog(
                 ) {CircularProgressIndicator()}
             }
             else Column {
-                Text("Select a workspace:")
+                Text(stringResource(R.string.select_workspace))
                 Spacer(modifier = Modifier.height(8.dp))
                 workspaces.forEach { (id, name) ->
                     Row(
@@ -820,7 +821,7 @@ fun WorkspaceSelectionDialog(
                 onClick = onDismiss,
                 enabled = !isProcessing
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

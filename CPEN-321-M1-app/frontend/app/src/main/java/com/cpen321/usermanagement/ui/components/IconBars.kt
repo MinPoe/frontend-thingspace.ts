@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun WsProfileBar(
@@ -181,7 +182,7 @@ private fun ContentNoteActionButton(
 private fun ContentIcon() {
     Icon(
         name = R.drawable.ic_notes,
-        contentDescription = "Content",
+        contentDescription = stringResource(R.string.content),
     )
 }
 
@@ -204,7 +205,7 @@ private fun ChatActionButton(
 private fun ChatIcon() {
     Icon(
         name = R.drawable.chat,
-        contentDescription = "Chat"
+        contentDescription = stringResource(R.string.chat)
     )
 }
 
@@ -227,7 +228,7 @@ private fun CreateNoteActionButton(
 private fun NoteIcon() {
     Icon(
         name = R.drawable.ic_edit,
-        contentDescription = "Create"
+        contentDescription = stringResource(R.string.create)
     )
 }
 
@@ -250,7 +251,7 @@ private fun TemplateActionButton(
 private fun TemplateIcon() {
     Icon(
         name = R.drawable.ic_templates,
-        contentDescription = "Templates"
+        contentDescription = stringResource(R.string.templates)
     )
 }
 
@@ -273,7 +274,7 @@ private fun WorkspaceActionButton(
 private fun WorkspaceIcon() {
     Icon(
         name = R.drawable.ic_workspaces,
-        contentDescription = "Workspaces"
+        contentDescription = stringResource(R.string.workspaces)
     )
 }
 
@@ -296,7 +297,7 @@ private fun EditActionButton(
 private fun EditIcon() {
     Icon(
         name = R.drawable.ic_edit,
-        contentDescription = "Edit"
+        contentDescription = stringResource(R.string.edit)
     )
 }
 
@@ -320,7 +321,7 @@ private fun MembersActionButton(
 private fun MembersIcon() {
     Icon(
         name = R.drawable.ic_account_circle,
-        contentDescription = "Members"
+        contentDescription = stringResource(R.string.members)
     )
 }
 
@@ -344,7 +345,7 @@ private fun InviteActionButton(
 private fun InviteIcon() {
     Icon(
         name = R.drawable.ic_manage_profile,
-        contentDescription = "Invite"
+        contentDescription = stringResource(R.string.invite)
     )
 }
 
@@ -368,7 +369,7 @@ private fun LeaveActionButton(
 private fun LeaveIcon() {
     Icon(
         name = R.drawable.ic_sign_out,
-        contentDescription = "Leave"
+        contentDescription = stringResource(R.string.leave)
     )
 }
 
@@ -391,7 +392,7 @@ private fun DeleteActionButton(
 private fun DeleteIcon() {
     Icon(
         name = R.drawable.ic_delete_forever,
-        contentDescription = "Delete"
+        contentDescription = stringResource(R.string.delete)
     )
 }
 
@@ -414,6 +415,6 @@ private fun BanActionButton(
 private fun BanIcon() {
     Icon(
         name = R.drawable.ic_delete_forever,
-        contentDescription = "Ban"
+        contentDescription = stringResource(R.string.ban)
     )
 }

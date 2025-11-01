@@ -23,9 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import java.io.File
 
@@ -176,7 +178,7 @@ private fun ImagePickerDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Select Image Source",
+                    text = stringResource(R.string.select_image_source),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -184,13 +186,13 @@ private fun ImagePickerDialog(
                 Spacer(modifier = Modifier.height(spacing.large))
 
                 Button(onClick = onCameraClick) {
-                    Text("Take Photo")
+                    Text(stringResource(R.string.take_photo))
                 }
 
                 Spacer(modifier = Modifier.height(spacing.small))
 
                 Button(onClick = onGalleryClick) {
-                    Text("Choose from Gallery")
+                    Text(stringResource(R.string.choose_from_gallery))
                 }
 
                 Spacer(modifier = Modifier.height(spacing.small))
@@ -199,7 +201,7 @@ private fun ImagePickerDialog(
                     type = "secondary",
                     onClick = onDismiss,
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         }

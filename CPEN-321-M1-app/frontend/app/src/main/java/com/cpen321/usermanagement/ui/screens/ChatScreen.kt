@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
@@ -146,7 +147,7 @@ private fun ChatTopBar(
     onProfileClick: () -> Unit
 ) {
     TopAppBar(
-        title = { Text("Chat") },
+        title = { Text(stringResource(R.string.chat)) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(name = R.drawable.ic_arrow_back)
@@ -181,7 +182,7 @@ private fun MessageInputBar(
                 value = messageText,
                 onValueChange = onMessageTextChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Type a message...") },
+                placeholder = { Text(stringResource(R.string.type_message)) },
                 maxLines = 4,
                 enabled = !isSending
             )
@@ -308,18 +309,18 @@ private fun EmptyMessagesPlaceholder(
     ) {
         Icon(
             painter = painterResource(id = R.drawable.chat),
-            contentDescription = "Chat",
+            contentDescription = stringResource(R.string.chat),
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "No messages yet",
+            text = stringResource(R.string.no_messages_yet),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Start the conversation!",
+            text = stringResource(R.string.start_conversation),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
