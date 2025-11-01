@@ -9,12 +9,17 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.printToLog
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
 import androidx.test.uiautomator.textAsString
 import androidx.test.uiautomator.uiAutomator
 import com.cpen321.usermanagement.ui.screens.MainScreen
@@ -62,8 +67,16 @@ class TestCollaborate {
         composeRule.onNodeWithText("Sign in with Google").performClick()
         uiAutomator {
             onElement { textAsString() == ACCT_NAME }.click()
+            //waitForAppToBeVisible("com.cpen321.usermanagement")
             //onElement { textAsString() == "Search" }.click() //TODO: wait until loads
+            val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+            Log.d("TEST", "Current package: ${device.currentPackageName}")
+            device.wait(Until.hasObject(By.pkg("your.package.name")), 5000)
+            Log.d("TEST", "Current package: ${device.currentPackageName}")
         }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithContentDescription("Workspaces").performClick()
+        composeRule.waitForIdle()
     }
 }
 

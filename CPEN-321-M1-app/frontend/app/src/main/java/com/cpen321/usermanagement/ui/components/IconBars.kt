@@ -181,6 +181,7 @@ private fun ContentNoteActionButton(
 private fun ContentIcon() {
     Icon(
         name = R.drawable.ic_notes,
+        contentDescription = "Content",
     )
 }
 
@@ -203,6 +204,7 @@ private fun ChatActionButton(
 private fun ChatIcon() {
     Icon(
         name = R.drawable.chat,
+        contentDescription = "Chat"
     )
 }
 
@@ -225,6 +227,7 @@ private fun CreateNoteActionButton(
 private fun NoteIcon() {
     Icon(
         name = R.drawable.ic_edit,
+        contentDescription = "Create"
     )
 }
 
@@ -247,6 +250,7 @@ private fun TemplateActionButton(
 private fun TemplateIcon() {
     Icon(
         name = R.drawable.ic_templates,
+        contentDescription = "Templates"
     )
 }
 
@@ -269,6 +273,7 @@ private fun WorkspaceActionButton(
 private fun WorkspaceIcon() {
     Icon(
         name = R.drawable.ic_workspaces,
+        contentDescription = "Workspaces"
     )
 }
 
@@ -291,6 +296,7 @@ private fun EditActionButton(
 private fun EditIcon() {
     Icon(
         name = R.drawable.ic_edit,
+        contentDescription = "Edit"
     )
 }
 
@@ -314,6 +320,7 @@ private fun MembersActionButton(
 private fun MembersIcon() {
     Icon(
         name = R.drawable.ic_account_circle,
+        contentDescription = "Members"
     )
 }
 
@@ -337,6 +344,7 @@ private fun InviteActionButton(
 private fun InviteIcon() {
     Icon(
         name = R.drawable.ic_manage_profile,
+        contentDescription = "Invite"
     )
 }
 
@@ -360,6 +368,7 @@ private fun LeaveActionButton(
 private fun LeaveIcon() {
     Icon(
         name = R.drawable.ic_sign_out,
+        contentDescription = "Leave"
     )
 }
 
@@ -382,6 +391,7 @@ private fun DeleteActionButton(
 private fun DeleteIcon() {
     Icon(
         name = R.drawable.ic_delete_forever,
+        contentDescription = "Delete"
     )
 }
 
@@ -404,5 +414,6 @@ private fun BanActionButton(
 private fun BanIcon() {
     Icon(
         name = R.drawable.ic_delete_forever,
+        contentDescription = "Ban"
     )
 }

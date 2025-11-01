@@ -9,6 +9,7 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 @Composable
 fun Icon(
     type: String = "dark",
+    contentDescription: String = "",
     name: Int
 ) {
     val spacing = LocalSpacing.current
@@ -20,7 +21,7 @@ fun Icon(
 
     Icon(
         painter = painterResource(name),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = Modifier.size(spacing.large),
         tint = color
     )
