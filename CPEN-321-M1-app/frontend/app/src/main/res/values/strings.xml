@@ -112,11 +112,11 @@
     <!-- Chat screen -->
     <string name="no_messages_yet">No messages yet</string>
     <string name="start_conversation">Start the conversation!</string>
-    <string name="type_message">Type a message...</string>
+    <string name="type_message">Type a message…</string>
     <!-- Workspace screens -->
     <string name="create_workspace_title">Create a Workspace</string>
     <string name="pick_workspace_name">Pick a workspace name</string>
-    <string name="create_new_workspace">Create a new workspace...</string>
+    <string name="create_new_workspace">Create a new workspace…</string>
     <!-- Note Display -->
     <string name="empty_note">Empty note</string>
     <string name="unknown">unknown</string>
@@ -127,4 +127,6 @@
     <!-- Invite screen -->
     <string name="enter_invite_email">Enter the email of the user to invite</string>
     <string name="invite_to_workspace">Invite to the workspace</string>
+    <!-- Go back -->
+    <string name="back_icon_description">Go back</string>
 </resources>

@@ -10,6 +10,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 
@@ -79,5 +80,6 @@ private fun ContentNoteActionButton(
 private fun ContentIcon() {
     Icon(
         name = R.drawable.ic_arrow_back,
+        contentDescription = stringResource(R.string.back_icon_description)
     )
 }
