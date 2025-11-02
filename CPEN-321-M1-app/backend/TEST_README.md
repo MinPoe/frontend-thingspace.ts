@@ -14,7 +14,7 @@ npm install
    - You can override with `MONGODB_TEST_URI` environment variable
    - Or tests will fall back to `MONGODB_URI` if set
 
-3. Run tests:
+3. Run tests (with coverage):
 ```bash
 npm test
 ```
@@ -24,10 +24,13 @@ npm test
 npm run test:watch
 ```
 
-5. Run tests with coverage:
-```bash
-npm test -- --coverage
-```
+## Code Coverage
+
+Coverage runs automatically with `npm test`:
+- Terminal output shows summary table
+- HTML report generated in `coverage/index.html`
+- Open `coverage/index.html` in your browser for detailed coverage
+- Coverage shows: statements, branches, functions, lines
 
 ## Test Structure
 
