@@ -41,19 +41,10 @@ class MessageRepositoryImpl @Inject constructor(
                 Log.e(TAG, errorMsg)
                 Result.failure(Exception(errorMsg))
             }
-        } catch (e: SocketTimeoutException) {
-            Log.e(TAG, "Timeout fetching messages", e)
-            Result.failure(e)
-        } catch (e: UnknownHostException) {
-            Log.e(TAG, "No internet fetching messages", e)
-            Result.failure(e)
-        } catch (e: IOException) {
-            Log.e(TAG, "IO error fetching messages", e)
-            Result.failure(e)
-        } catch (e: HttpException) {
-            Log.e(TAG, "HTTP error fetching messages", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getMessages", e) }
+        catch (e: UnknownHostException) { return handleException("getMessages", e) }
+        catch (e: IOException) { return handleException("getMessages", e) }
+        catch (e: HttpException) { return handleException("getMessages", e) }
     }
 
     override suspend fun sendMessage(
@@ -76,19 +67,10 @@ class MessageRepositoryImpl @Inject constructor(
                 Log.e(TAG, errorMsg)
                 Result.failure(Exception(errorMsg))
             }
-        } catch (e: SocketTimeoutException) {
-            Log.e(TAG, "Timeout sending message", e)
-            Result.failure(e)
-        } catch (e: UnknownHostException) {
-            Log.e(TAG, "No internet sending message", e)
-            Result.failure(e)
-        } catch (e: IOException) {
-            Log.e(TAG, "IO error sending message", e)
-            Result.failure(e)
-        } catch (e: HttpException) {
-            Log.e(TAG, "HTTP error sending message", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("sendMessage", e) }
+        catch (e: UnknownHostException) { return handleException("sendMessage", e) }
+        catch (e: IOException) { return handleException("sendMessage", e) }
+        catch (e: HttpException) { return handleException("sendMessage", e) }
     }
 
     override suspend fun deleteMessage(messageId: String): Result<Unit> {
@@ -102,24 +84,26 @@ class MessageRepositoryImpl @Inject constructor(
                 Log.e(TAG, errorMsg)
                 Result.failure(Exception(errorMsg))
             }
-        } catch (e: SocketTimeoutException) {
-            Log.e(TAG, "Timeout deleting message", e)
-            Result.failure(e)
-        } catch (e: UnknownHostException) {
-            Log.e(TAG, "No internet deleting message", e)
-            Result.failure(e)
-        } catch (e: IOException) {
-            Log.e(TAG, "IO error deleting message", e)
-            Result.failure(e)
-        } catch (e: HttpException) {
-            Log.e(TAG, "HTTP error deleting message", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("deleteMessage", e) }
+        catch (e: UnknownHostException) { return handleException("deleteMessage", e) }
+        catch (e: IOException) { return handleException("deleteMessage", e) }
+        catch (e: HttpException) { return handleException("deleteMessage", e) }
     }
 
     private fun formatDate(date: Date): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
         sdf.timeZone = TimeZone.getTimeZone("UTC")
         return sdf.format(date)
+    }
+
+    private fun <T> handleException(method: String, e: Exception): Result<T> {
+        when (e) {
+            is SocketTimeoutException -> Log.e(TAG, "Timeout in $method", e)
+            is UnknownHostException -> Log.e(TAG, "No internet in $method", e)
+            is IOException -> Log.e(TAG, "IO exception in $method", e)
+            is HttpException -> Log.e(TAG, "HTTP error ${e.code()} in $method", e)
+            else -> Log.e(TAG, "Unexpected error in $method", e)
+        }
+        return Result.failure(e)
     }
 }

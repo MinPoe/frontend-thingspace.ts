@@ -19,6 +19,10 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.cpen321.usermanagement.data.remote.dto.ProfileUpdate
+import retrofit2.HttpException
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 @Singleton
 class ProfileRepositoryImpl @Inject constructor(
@@ -45,19 +49,10 @@ class ProfileRepositoryImpl @Inject constructor(
                 RetrofitClient.setAuthToken(null)
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while getting profile", e)
-            Result.failure(e)
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while getting profile", e)
-            Result.failure(e)
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while getting profile", e)
-            Result.failure(e)
-        } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while getting profile: ${e.code()}", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getProfile", e) }
+        catch (e: UnknownHostException) { return handleException("getProfile", e) }
+        catch (e: IOException) { return handleException("getProfile", e) }
+        catch (e: HttpException) { return handleException("getProfile", e) }
     }
 
     override suspend fun updateProfile(name: String, bio: String): Result<User> {
@@ -74,19 +69,10 @@ class ProfileRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to update profile: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while updating profile", e)
-            Result.failure(e)
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while updating profile", e)
-            Result.failure(e)
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while updating profile", e)
-            Result.failure(e)
-        } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while updating profile: ${e.code()}", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("updateProfile", e) }
+        catch (e: UnknownHostException) { return handleException("updateProfile", e) }
+        catch (e: IOException) { return handleException("updateProfile", e) }
+        catch (e: HttpException) { return handleException("updateProfile", e) }
     }
 
     override suspend fun updatePhoto(profilePicture:String): Result<User> {
@@ -106,19 +92,10 @@ class ProfileRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to update the profile picture: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while updating the profile picture", e)
-            Result.failure(e)
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while updating the profile picture", e)
-            Result.failure(e)
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while updating the profile picture", e)
-            Result.failure(e)
-        } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while updating the profile picture: ${e.code()}", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("updatePhoto", e) }
+        catch (e: UnknownHostException) { return handleException("updatePhoto", e) }
+        catch (e: IOException) { return handleException("updatePhoto", e) }
+        catch (e: HttpException) { return handleException("updatePhoto", e) }
     }
 
     override suspend fun getOtherProfile(userId: String): Result<User> {
@@ -133,19 +110,10 @@ class ProfileRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to get profile: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while getting profile", e)
-            Result.failure(e)
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while getting profile", e)
-            Result.failure(e)
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while getting profile", e)
-            Result.failure(e)
-        } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while getting profile: ${e.code()}", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getOtherProfile", e) }
+        catch (e: UnknownHostException) { return handleException("getOtherProfile", e) }
+        catch (e: IOException) { return handleException("getOtherProfile", e) }
+        catch (e: HttpException) { return handleException("getOtherProfile", e) }
     }
 
     override suspend fun getProfileByEmail(email: String): Result<User> {
@@ -160,19 +128,10 @@ class ProfileRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to get profile: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while getting profile", e)
-            Result.failure(e)
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while getting profile", e)
-            Result.failure(e)
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while getting profile", e)
-            Result.failure(e)
-        } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while getting profile: ${e.code()}", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getProfileByEmail", e) }
+        catch (e: UnknownHostException) { return handleException("getProfileByEmail", e) }
+        catch (e: IOException) { return handleException("getProfileByEmail", e) }
+        catch (e: HttpException) { return handleException("getProfileByEmail", e) }
     }
 
     override suspend fun updateFcmToken(fcmToken: String): Result<User> {
@@ -188,27 +147,29 @@ class ProfileRepositoryImpl @Inject constructor(
                 Log.e(TAG, "Failed to update FCM token: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "Network timeout while updating FCM token", e)
-            Result.failure(e)
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "Network connection failed while updating FCM token", e)
-            Result.failure(e)
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "IO error while updating FCM token", e)
-            Result.failure(e)
-        } catch (e: retrofit2.HttpException) {
-            Log.e(TAG, "HTTP error while updating FCM token: ${e.code()}", e)
-            Result.failure(e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("updateFcmToken", e) }
+        catch (e: UnknownHostException) { return handleException("updateFcmToken", e) }
+        catch (e: IOException) { return handleException("updateFcmToken", e) }
+        catch (e: HttpException) { return handleException("updateFcmToken", e) }
     }
 
     override suspend fun getCurrentUserId(): String {
-            val profileResult = getProfile()
+        val profileResult = getProfile()
         return if (profileResult.isSuccess) {
-                profileResult.getOrNull()?._id ?: ""
-            } else {
+            profileResult.getOrNull()?._id ?: ""
+        } else {
             ""
         }
+    }
+
+    private fun <T> handleException(method: String, e: Exception): Result<T> {
+        when (e) {
+            is SocketTimeoutException -> Log.e(TAG, "Timeout in $method", e)
+            is UnknownHostException -> Log.e(TAG, "No internet in $method", e)
+            is IOException -> Log.e(TAG, "IO exception in $method", e)
+            is HttpException -> Log.e(TAG, "HTTP error ${e.code()} in $method", e)
+            else -> Log.e(TAG, "Unexpected error in $method", e)
+        }
+        return Result.failure(e)
     }
 }

@@ -279,9 +279,18 @@ class WorkspaceRepositoryImpl @Inject constructor(
             } else {
                 Result.success(false)  // Don't fail on error, just return false
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Poll error (ignoring)", e)
-            Result.success(false)  // Don't fail, just return false
+        } catch (e: SocketTimeoutException) {
+            Log.e(TAG, "Poll timeout (ignoring)", e)
+            Result.success(false)
+        } catch (e: UnknownHostException) {
+            Log.e(TAG, "Poll no internet (ignoring)", e)
+            Result.success(false)
+        } catch (e: IOException) {
+            Log.e(TAG, "Poll IO error (ignoring)", e)
+            Result.success(false)
+        } catch (e: HttpException) {
+            Log.e(TAG, "Poll HTTP error (ignoring)", e)
+            Result.success(false)
         }
     }
 
