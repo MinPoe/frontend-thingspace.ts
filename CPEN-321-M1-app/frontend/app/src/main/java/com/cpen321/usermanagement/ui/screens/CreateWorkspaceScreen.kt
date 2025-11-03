@@ -5,7 +5,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.navigation.FeatureActions
 import com.cpen321.usermanagement.ui.viewmodels.CreateWsUiStateE
@@ -33,7 +35,7 @@ fun CreateWorkspaceScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Create a Workspace") }
+                    title = { Text(stringResource(R.string.create_workspace_title)) }
                 )
             },
             bottomBar = {
@@ -52,7 +54,7 @@ fun CreateWorkspaceScreen(
                         text = it
                         wsCreationViewModel.clearError()
                     },
-                    label = { Text("Pick a workspace name") },
+                    label = { Text(stringResource(R.string.pick_workspace_name)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f, false),
@@ -77,7 +79,7 @@ fun CreateWorkspaceScreen(
                     enabled = text.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Create Workspace")
+                    Text(stringResource(R.string.create_workspace))
                 }
             }
 

@@ -198,6 +198,7 @@ private fun ProfileActionButton(
 private fun ProfileIcon() {
     Icon(
         name = R.drawable.ic_account_circle,
+        contentDescription = stringResource(R.string.profile)
     )
 }
 

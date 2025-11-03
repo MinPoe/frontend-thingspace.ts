@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun WsProfileBar(
@@ -119,19 +120,23 @@ fun WorkspaceRow(
         }
         ContentNoteActionButton(
             onClick = onContentClick,
-            modifier=modifier
+            modifier=modifier,
+            relatedWorkspace = workspaceName,
         )
         TemplateActionButton(
             onClick = onTemplatesClick,
-            modifier=modifier
+            modifier=modifier,
+            relatedWorkspace = workspaceName,
         )
         ChatActionButton(
             onClick = onChatClick,
-            modifier=modifier
+            modifier=modifier,
+            relatedWorkspace = workspaceName,
         )
         EditActionButton(
             onClick = onProfileClick,
-            modifier=modifier
+            modifier=modifier,
+            relatedWorkspace = workspaceName,
         )
     }
 }
@@ -165,7 +170,8 @@ fun MainBottomBar(
 @Composable
 private fun ContentNoteActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    relatedWorkspace: String=""
 ) {
     val spacing = LocalSpacing.current
 
@@ -173,21 +179,23 @@ private fun ContentNoteActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        ContentIcon()
+        ContentIcon(relatedWorkspace)
     }
 }
 
 @Composable
-private fun ContentIcon() {
+private fun ContentIcon(relatedWorkspace:String="") {
     Icon(
         name = R.drawable.ic_notes,
+        contentDescription = stringResource(R.string.content)+relatedWorkspace
     )
 }
 
 @Composable
 private fun ChatActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    relatedWorkspace: String = ""
 ) {
     val spacing = LocalSpacing.current
 
@@ -195,21 +203,22 @@ private fun ChatActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        ChatIcon()
+        ChatIcon(relatedWorkspace)
     }
 }
 
 @Composable
-private fun ChatIcon() {
+private fun ChatIcon(relatedWorkspace: String="") {
     Icon(
         name = R.drawable.chat,
+        contentDescription = stringResource(R.string.chat)+relatedWorkspace
     )
 }
 
 @Composable
 private fun CreateNoteActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
 
@@ -225,13 +234,15 @@ private fun CreateNoteActionButton(
 private fun NoteIcon() {
     Icon(
         name = R.drawable.ic_edit,
+        contentDescription = stringResource(R.string.create)
     )
 }
 
 @Composable
 private fun TemplateActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    relatedWorkspace:String="",
 ) {
     val spacing = LocalSpacing.current
 
@@ -239,14 +250,15 @@ private fun TemplateActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        TemplateIcon()
+        TemplateIcon(relatedWorkspace)
     }
 }
 
 @Composable
-private fun TemplateIcon() {
+private fun TemplateIcon(relatedWorkspace:String="") {
     Icon(
         name = R.drawable.ic_templates,
+        contentDescription = stringResource(R.string.templates)+relatedWorkspace
     )
 }
 
@@ -269,13 +281,15 @@ private fun WorkspaceActionButton(
 private fun WorkspaceIcon() {
     Icon(
         name = R.drawable.ic_workspaces,
+        contentDescription = stringResource(R.string.workspaces)
     )
 }
 
 @Composable
 private fun EditActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    relatedWorkspace: String
 ) {
     val spacing = LocalSpacing.current
 
@@ -283,14 +297,15 @@ private fun EditActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        EditIcon()
+        EditIcon(relatedWorkspace)
     }
 }
 
 @Composable
-private fun EditIcon() {
+private fun EditIcon(relatedWorkspace: String) {
     Icon(
         name = R.drawable.ic_edit,
+        contentDescription = stringResource(R.string.edit)+relatedWorkspace
     )
 }
 
@@ -314,6 +329,7 @@ private fun MembersActionButton(
 private fun MembersIcon() {
     Icon(
         name = R.drawable.ic_account_circle,
+        contentDescription = stringResource(R.string.members)
     )
 }
 
@@ -337,6 +353,7 @@ private fun InviteActionButton(
 private fun InviteIcon() {
     Icon(
         name = R.drawable.ic_manage_profile,
+        contentDescription = stringResource(R.string.invite)
     )
 }
 
@@ -360,6 +377,7 @@ private fun LeaveActionButton(
 private fun LeaveIcon() {
     Icon(
         name = R.drawable.ic_sign_out,
+        contentDescription = stringResource(R.string.leave)
     )
 }
 
@@ -382,6 +400,7 @@ private fun DeleteActionButton(
 private fun DeleteIcon() {
     Icon(
         name = R.drawable.ic_delete_forever,
+        contentDescription = stringResource(R.string.delete)
     )
 }
 
@@ -404,5 +423,6 @@ private fun BanActionButton(
 private fun BanIcon() {
     Icon(
         name = R.drawable.ic_delete_forever,
+        contentDescription = stringResource(R.string.ban)
     )
 }

@@ -14,7 +14,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.cpen321.usermanagement.R
 
 @Composable
 fun FilterScreen(
@@ -119,7 +121,7 @@ fun TagSelector(
                 }
             )
             Text(
-                text = "All",
+                text = stringResource(R.string.all),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(start = 8.dp)
             )

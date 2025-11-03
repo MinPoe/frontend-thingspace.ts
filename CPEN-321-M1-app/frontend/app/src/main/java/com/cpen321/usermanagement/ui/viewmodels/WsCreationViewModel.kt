@@ -1,7 +1,9 @@
 package com.cpen321.usermanagement.ui.viewmodels
 
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
@@ -59,7 +61,7 @@ class WsCreationViewModel@Inject constructor(
             else{
                 _uiState.value = _uiState.value.copy(
                     stateEnum = CreateWsUiStateE.BEFORE,
-                    errorMessage = "Failed to load profile"
+                    errorMessage = "Failed to create workspace."
                 )
             }
         }

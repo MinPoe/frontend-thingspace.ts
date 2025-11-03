@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
@@ -19,6 +20,8 @@ import com.cpen321.usermanagement.data.remote.dto.Message
 import com.cpen321.usermanagement.data.remote.dto.User
 import Icon
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.utils.IFeatureActions
 import java.text.SimpleDateFormat
@@ -146,15 +149,17 @@ private fun ChatTopBar(
     onProfileClick: () -> Unit
 ) {
     TopAppBar(
-        title = { Text("Chat") },
+        title = { Text(stringResource(R.string.chat)) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(name = R.drawable.ic_arrow_back)
+                Icon(name = R.drawable.ic_arrow_back,
+                    contentDescription = stringResource(R.string.back_icon_description))
             }
         },
         actions = {
             IconButton(onClick = onProfileClick) {
-                Icon(name = R.drawable.ic_account_circle)
+                Icon(name = R.drawable.ic_account_circle,
+                    contentDescription = stringResource(R.string.profile))
             }
         }
     )
@@ -177,11 +182,13 @@ private fun MessageInputBar(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val typeMessage = stringResource(R.string.type_message)
             OutlinedTextField(
                 value = messageText,
                 onValueChange = onMessageTextChange,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Type a message...") },
+                modifier = Modifier.weight(1f).semantics{
+                    contentDescription=typeMessage},
+                placeholder = { Text(stringResource(R.string.type_message)) },
                 maxLines = 4,
                 enabled = !isSending
             )
@@ -198,7 +205,7 @@ private fun MessageInputBar(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(name = R.drawable.chat)
+                    Icon(name = R.drawable.chat, contentDescription = stringResource(R.string.chat))
                 }
             }
         }
@@ -308,18 +315,18 @@ private fun EmptyMessagesPlaceholder(
     ) {
         Icon(
             painter = painterResource(id = R.drawable.chat),
-            contentDescription = "Chat",
+            contentDescription = stringResource(R.string.plusChat),
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "No messages yet",
+            text = stringResource(R.string.no_messages_yet),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Start the conversation!",
+            text = stringResource(R.string.start_conversation),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

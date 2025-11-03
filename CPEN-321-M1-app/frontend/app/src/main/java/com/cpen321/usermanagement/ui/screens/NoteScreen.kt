@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
@@ -65,7 +66,7 @@ fun NoteContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Note Details",
+                        text = stringResource(R.string.note_details),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -113,8 +114,8 @@ fun NoteContent(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Note") },
-            text = { Text("Are you sure you want to delete this note? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_note)) },
+            text = { Text(stringResource(R.string.delete_note_confirmation)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -125,12 +126,12 @@ fun NoteContent(
                         containerColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -170,7 +171,7 @@ private fun ErrorContent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Error loading note",
+            text = stringResource(R.string.error_loading_note),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.error
         )
@@ -182,7 +183,7 @@ private fun ErrorContent(
         )
         Spacer(modifier = Modifier.height(spacing.large))
         Button(onClick = onBackClick) {
-            Text("Go Back")
+            Text(stringResource(R.string.go_back))
         }
     }
 }
@@ -211,7 +212,7 @@ fun NoteBody(
 
         // Note ID
         InfoCard(
-            title = "Note ID",
+            title = stringResource(R.string.note_id),
             content = note._id
         )
 
@@ -219,7 +220,7 @@ fun NoteBody(
 
         // Creation Date
         InfoCard(
-            title = "Created",
+            title = stringResource(R.string.created),
             content = try {
                 java.time.Instant.parse(note.createdAt)
                     .atZone(java.time.ZoneId.systemDefault())
@@ -233,7 +234,7 @@ fun NoteBody(
 
         // Last Edit Date
         InfoCard(
-            title = "Last Edited",
+            title = stringResource(R.string.last_edited),
             content = try {
                 java.time.Instant.parse(note.updatedAt)
                     .atZone(java.time.ZoneId.systemDefault())
@@ -255,7 +256,7 @@ fun NoteBody(
         if (note.fields.isNotEmpty()) {
             Spacer(modifier = Modifier.height(spacing.medium))
             Text(
-                text = "Fields",
+                text = stringResource(R.string.fields),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -349,16 +350,16 @@ private fun TagsSection(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
-        Column(
-            modifier = Modifier.padding(spacing.medium)
-        ) {
-            Text(
-                text = "Tags",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(spacing.small))
+    Column(
+        modifier = Modifier.padding(spacing.medium)
+    ) {
+        Text(
+            text = stringResource(R.string.tags),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(spacing.small))
             androidx.compose.foundation.layout.FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(spacing.small),
@@ -467,7 +468,7 @@ private fun TextFieldInfo(
             )
         } else {
             Text(
-                text = "No content",
+                text = stringResource(R.string.no_content),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -476,7 +477,7 @@ private fun TextFieldInfo(
         Spacer(modifier = Modifier.height(spacing.small))
 
         Text(
-            text = "Type: Text Field",
+            text = stringResource(R.string.type_text_field),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -484,7 +485,7 @@ private fun TextFieldInfo(
         field.placeholder?.let { placeholder ->
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
-                text = "Placeholder: $placeholder",
+                text = stringResource(R.string.placeholder_label, placeholder),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -493,7 +494,7 @@ private fun TextFieldInfo(
         field.maxLength?.let { maxLength ->
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
-                text = "Max Length: $maxLength",
+                text = stringResource(R.string.max_length_label, maxLength),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -519,7 +520,7 @@ private fun DateTimeFieldInfo(
             )
         } ?: run {
             Text(
-                text = "No date selected",
+                text = stringResource(R.string.no_date_selected),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -528,7 +529,7 @@ private fun DateTimeFieldInfo(
         Spacer(modifier = Modifier.height(spacing.small))
 
         Text(
-            text = "Type: Date/Time Field",
+            text = stringResource(R.string.type_datetime_field),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -536,7 +537,7 @@ private fun DateTimeFieldInfo(
         field.minDate?.let { minDate ->
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
-                text = "Min Date: ${minDate.format(formatter)}",
+                text = stringResource(R.string.min_date_label, minDate.format(formatter)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -545,7 +546,7 @@ private fun DateTimeFieldInfo(
         field.maxDate?.let { maxDate ->
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
-                text = "Max Date: ${maxDate.format(formatter)}",
+                text = stringResource(R.string.max_date_label, maxDate.format(formatter)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -570,7 +571,7 @@ private fun NumberFieldInfo(
             )
         } ?: run {
             Text(
-                text = "No value",
+                text = stringResource(R.string.no_value),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -579,7 +580,7 @@ private fun NumberFieldInfo(
         Spacer(modifier = Modifier.height(spacing.small))
 
         Text(
-            text = "Type: Number Field",
+            text = stringResource(R.string.type_number_field),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -587,7 +588,7 @@ private fun NumberFieldInfo(
         field.min?.let { min ->
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
-                text = "Min: $min",
+                text = stringResource(R.string.min_optional, min),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -596,7 +597,7 @@ private fun NumberFieldInfo(
         field.max?.let { max ->
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
-                text = "Max: $max",
+                text = stringResource(R.string.max_optional, max),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
