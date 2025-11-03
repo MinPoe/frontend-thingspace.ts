@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement
 
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -116,20 +117,19 @@ class TestCollaborate {
         }
         composeRule.waitForIdle()
 
-        //Workspace Creation Tests
+        Log.d("TEST COLLABORATE","Workspace Creation Tests")
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(createWsString).performClick()
-        //sleep(5000)
         composeRule.waitForIdle()
         composeRule.onNodeWithText(text = crWsButtonString).assertIsNotEnabled()
-        //1) Duplicate name workspace creation
+        Log.d("TEST COLLABORATE","Duplicate Name Workspace Creation")
         composeRule.onNodeWithText(pickWsNameString).performTextInput(testWsName)
         composeRule.waitForIdle()
         composeRule.onNodeWithText(text = crWsButtonString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(text = failedCrWsString).assertIsDisplayed()
-        //2) Successful Workspace Creation
+        Log.d("TEST COLLABORATE","Successful Workspace Creation")
         composeRule.onNodeWithText(pickWsNameString).performTextReplacement(studyWsName)
         composeRule.waitForIdle()
         composeRule.onNodeWithText(text = crWsButtonString).performClick()
@@ -138,7 +138,7 @@ class TestCollaborate {
         waitForVm(5000)
         composeRule.onNodeWithText(text = studyWsName).assertIsDisplayed()
 
-        //Testing Update Workspace
+        Log.d("TEST COLLABORATE","Update Workspace Tests")
         composeRule.onNodeWithText(text = studyWsName).performTextReplacement(v2Name)
         composeRule.onNodeWithText(text = wsDescriptionString).performTextInput(v2Bio)
         val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -147,21 +147,21 @@ class TestCollaborate {
         waitForVm(5000)
         composeRule.onNodeWithText(text = saveConfirmString).assertIsDisplayed()
 
-        //Testing invite to workspace
+        Log.d("TEST COLLABORATE","Workspace Invite Tests")
         composeRule.onNodeWithContentDescription(wsInviteString).performClick()
         waitForVm(5000)
-        //1) Invalid email
+        Log.d("TEST COLLABORATE","1) Inviting an invalid email")
         composeRule.onNodeWithText(emailBoxString).performTextInput(invalidEmailSample)
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack() //hiding the keyboard so that the success message is unobstructed
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(invalidEmailString).assertIsDisplayed()
-        //2) Valid invitation
+        Log.d("TEST COLLABORATE","2) A valid invitation")
         composeRule.onNodeWithText(emailBoxString).performTextReplacement(MEMBER_ACCT_GMAIL)
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(addedAMemberString).assertIsDisplayed()
-        //3) Inviting already a member
+        Log.d("TEST COLLABORATE","3) Inviting already a member")
         composeRule.waitUntil(20000){
             composeRule
                 .onAllNodesWithText(addedAMemberString)
@@ -172,30 +172,28 @@ class TestCollaborate {
         waitForVm(5000)
         composeRule.onNodeWithText(alreadyAMemberString).assertIsDisplayed()
 
-        //going back to workspace profile screen to execute other tests
+        Log.d("TEST COLLABORATE","Moving to chat screen")
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(5000)
-        //going back to workspace menu to send the chat message
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(2000)
-        //selecting the chat screen
         composeRule.onNodeWithContentDescription(chatIcString+v2Name).performClick()
         waitForVm(5000)
 
-        //Chat tests
-        //1) attempting to send an empty message
+        Log.d("TEST COLLABORATE","Chat tests")
+        Log.d("TEST COLLABORATE","Sending a non-empty chat message")
         composeRule.onNodeWithContentDescription(chatTextBoxString).performTextInput(" ")
         composeRule.onNodeWithContentDescription(chatIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(noMessagesString).assertIsDisplayed()
-        //2) sending a non-empty message
+        Log.d("TEST COLLABORATE","Sending a non-empty chat message")
         composeRule.onNodeWithContentDescription(chatTextBoxString).performTextInput(chatMessage)
         composeRule.onNodeWithContentDescription(chatIcString).performClick()
         waitForVm(10000) //to give time for the message to arrive
         composeRule.onNodeWithText(noMessagesString).assertIsNotDisplayed()
         composeRule.onNodeWithText(chatMessage).assertIsDisplayed()
 
-        //Signing out and signing in with the other test user
+        Log.d("TEST COLLABORATE","Signing out and signing in as a regular Workspace Member")
         composeRule.onNodeWithContentDescription(profileIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(signOutString).performClick()
@@ -209,18 +207,18 @@ class TestCollaborate {
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(5000)
 
-        //Entering the workspace to see that the profile is blurred out
+        Log.d("TEST COLLABORATE","Enter the Workspace and see profile blurred out")
         composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(wsDescriptionString).assertIsNotEnabled()
         composeRule.onNodeWithText(v2Name).assertIsNotEnabled()
 
-        //Test Leave Workspace
+        Log.d("TEST COLLABORATE","Test Leave Workspace")
         composeRule.onNodeWithContentDescription(leaveIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(v2Name).assertIsNotDisplayed()
 
-        //Re-signing in as admin
+        Log.d("TEST COLLABORATE","Re-signing in as admin")
         composeRule.onNodeWithContentDescription(editWsIcString+MEMBER_ACCT_WS).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(signOutString).performClick()
@@ -237,7 +235,7 @@ class TestCollaborate {
         waitForVm(5000)
         composeRule.onNodeWithText(wsDescriptionString).assertIsEnabled()
 
-        //Inviting the member user again and banning them right after to test ban
+        Log.d("TEST COLLABORATE","Inviting the member again to ban them")
         composeRule.onNodeWithContentDescription(wsInviteString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(emailBoxString).performTextReplacement(MEMBER_ACCT_GMAIL)
@@ -247,17 +245,16 @@ class TestCollaborate {
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(2000)
 
-        //Testing Ban
+        Log.d("TEST COLLABORATE","Testing Ban")
         composeRule.onNodeWithContentDescription(membersIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithContentDescription(banIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(MEMBER_ACCT_NAME).assertIsNotDisplayed()
 
-        //going back to workspace profile screen to execute other tests
+        Log.d("TEST COLLABORATE","Sign In as the banned member to confirm that you are out of the workspace")
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(2000)
-        //going back to workspace menu to sign in as the (banned) regular member
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithContentDescription(editWsIcString+ACCT_WS).performClick()
@@ -272,11 +269,9 @@ class TestCollaborate {
         composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(5000)
-
-        //Checking if we the banned member is actually out of the workspace
         composeRule.onNodeWithText(v2Name).assertIsNotDisplayed()
 
-        //Re-signing in as admin
+        Log.d("TEST COLLABORATE","Final sign in as an admin - to delete the workspace")
         composeRule.onNodeWithContentDescription(editWsIcString+MEMBER_ACCT_WS).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(signOutString).performClick()
@@ -293,7 +288,7 @@ class TestCollaborate {
         waitForVm(5000)
         composeRule.onNodeWithText(wsDescriptionString).assertIsEnabled()
 
-        //Testing Delete
+        Log.d("TEST COLLABORATE","Delete Test")
         //Also makes test re-runnable as the ws to be created is removed to be re-created next time
         composeRule.onNodeWithContentDescription(trashIcString).performClick()
         waitForVm(5000)
