@@ -227,7 +227,7 @@ class NoteEditViewModel @Inject constructor(
                         required = fieldData.required,
                         content = when (fieldData.content) {
                             is LocalDateTime -> fieldData.content
-                            is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: Exception) { null }
+                            is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
                             else -> null
                         }
                     )

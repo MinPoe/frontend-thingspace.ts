@@ -10,6 +10,10 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import retrofit2.HttpException
 
 @Singleton
 class MessageRepositoryImpl @Inject constructor(
@@ -37,8 +41,17 @@ class MessageRepositoryImpl @Inject constructor(
                 Log.e(TAG, errorMsg)
                 Result.failure(Exception(errorMsg))
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching messages", e)
+        } catch (e: SocketTimeoutException) {
+            Log.e(TAG, "Timeout fetching messages", e)
+            Result.failure(e)
+        } catch (e: UnknownHostException) {
+            Log.e(TAG, "No internet fetching messages", e)
+            Result.failure(e)
+        } catch (e: IOException) {
+            Log.e(TAG, "IO error fetching messages", e)
+            Result.failure(e)
+        } catch (e: HttpException) {
+            Log.e(TAG, "HTTP error fetching messages", e)
             Result.failure(e)
         }
     }
@@ -63,8 +76,17 @@ class MessageRepositoryImpl @Inject constructor(
                 Log.e(TAG, errorMsg)
                 Result.failure(Exception(errorMsg))
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error sending message", e)
+        } catch (e: SocketTimeoutException) {
+            Log.e(TAG, "Timeout sending message", e)
+            Result.failure(e)
+        } catch (e: UnknownHostException) {
+            Log.e(TAG, "No internet sending message", e)
+            Result.failure(e)
+        } catch (e: IOException) {
+            Log.e(TAG, "IO error sending message", e)
+            Result.failure(e)
+        } catch (e: HttpException) {
+            Log.e(TAG, "HTTP error sending message", e)
             Result.failure(e)
         }
     }
@@ -80,8 +102,17 @@ class MessageRepositoryImpl @Inject constructor(
                 Log.e(TAG, errorMsg)
                 Result.failure(Exception(errorMsg))
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error deleting message", e)
+        } catch (e: SocketTimeoutException) {
+            Log.e(TAG, "Timeout deleting message", e)
+            Result.failure(e)
+        } catch (e: UnknownHostException) {
+            Log.e(TAG, "No internet deleting message", e)
+            Result.failure(e)
+        } catch (e: IOException) {
+            Log.e(TAG, "IO error deleting message", e)
+            Result.failure(e)
+        } catch (e: HttpException) {
+            Log.e(TAG, "HTTP error deleting message", e)
             Result.failure(e)
         }
     }

@@ -74,9 +74,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "getNote error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("getNote", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getNote", e) }
+        catch (e: UnknownHostException) { return handleException("getNote", e) }
+        catch (e: IOException) { return handleException("getNote", e) }
     }
 
     override suspend fun createNote(
@@ -110,9 +110,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "createNote error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("createNote", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("createNote", e) }
+        catch (e: UnknownHostException) { return handleException("createNote", e) }
+        catch (e: IOException) { return handleException("createNote", e) }
     }
 
     override suspend fun updateNote(
@@ -142,9 +142,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "updateNote error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("updateNote", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("updateNote", e) }
+        catch (e: UnknownHostException) { return handleException("updateNote", e) }
+        catch (e: IOException) { return handleException("updateNote", e) }
     }
 
     override suspend fun deleteNote(noteId: String): Result<Unit> {
@@ -162,9 +162,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "deleteNote error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("deleteNote", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("deleteNote", e) }
+        catch (e: UnknownHostException) { return handleException("deleteNote", e) }
+        catch (e: IOException) { return handleException("deleteNote", e) }
     }
 
     override suspend fun findNotes(
@@ -194,9 +194,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "findNotes error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("findNotes", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("findNotes", e) }
+        catch (e: UnknownHostException) { return handleException("findNotes", e) }
+        catch (e: IOException) { return handleException("findNotes", e) }
     }
 
     override suspend fun getAuthors(noteIds: List<String>): Result<List<User>> {
@@ -224,9 +224,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "shareNoteToWorkspace error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("shareNoteToWorkspace", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("shareNoteToWorkspace", e) }
+        catch (e: UnknownHostException) { return handleException("shareNoteToWorkspace", e) }
+        catch (e: IOException) { return handleException("shareNoteToWorkspace", e) }
     }
 
     override suspend fun copyNoteToWorkspace(noteId: String, workspaceId: String): Result<Unit> {
@@ -244,9 +244,9 @@ class NoteRepositoryImpl @Inject constructor(
                 Log.e(TAG, "copyNoteToWorkspace error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("copyNoteToWorkspace", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("copyNoteToWorkspace", e) }
+        catch (e: UnknownHostException) { return handleException("copyNoteToWorkspace", e) }
+        catch (e: IOException) { return handleException("copyNoteToWorkspace", e) }
     }
 
     private fun <T> handleException(method: String, e: Exception): Result<T> {

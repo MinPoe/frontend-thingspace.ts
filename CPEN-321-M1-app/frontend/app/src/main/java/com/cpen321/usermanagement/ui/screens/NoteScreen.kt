@@ -224,7 +224,7 @@ fun NoteBody(
                 java.time.Instant.parse(note.createdAt)
                     .atZone(java.time.ZoneId.systemDefault())
                     .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
-            } catch (e: Exception) {
+            } catch (e: java.time.format.DateTimeParseException) {
                 note.createdAt
             }
         )
@@ -238,7 +238,7 @@ fun NoteBody(
                 java.time.Instant.parse(note.updatedAt)
                     .atZone(java.time.ZoneId.systemDefault())
                     .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
-            } catch (e: Exception) {
+            } catch (e: java.time.format.DateTimeParseException) {
                 note.updatedAt
             }
         )

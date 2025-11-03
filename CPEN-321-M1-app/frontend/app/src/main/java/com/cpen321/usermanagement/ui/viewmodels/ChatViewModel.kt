@@ -70,8 +70,10 @@ class ChatViewModel @Inject constructor(
                     }
                 }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Polling error", e)
+        } catch (e: java.io.IOException) {
+            Log.e(TAG, "Polling IO error", e)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            // ignore cancellation
         }
     }
 

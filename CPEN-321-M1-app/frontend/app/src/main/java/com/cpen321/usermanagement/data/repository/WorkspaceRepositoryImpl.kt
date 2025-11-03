@@ -40,9 +40,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 Log.e(TAG, "getWorkspace error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("getWorkspace", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getWorkspace", e) }
+        catch (e: UnknownHostException) { return handleException("getWorkspace", e) }
+        catch (e: IOException) { return handleException("getWorkspace", e) }
+        catch (e: HttpException) { return handleException("getWorkspace", e) }
     }
 
     override suspend fun getPersonalWorkspace(): Result<Workspace> {
@@ -58,9 +59,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 Log.e(TAG, "getPersonalWorkspace error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("getPersonalWorkspace", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getPersonalWorkspace", e) }
+        catch (e: UnknownHostException) { return handleException("getPersonalWorkspace", e) }
+        catch (e: IOException) { return handleException("getPersonalWorkspace", e) }
+        catch (e: HttpException) { return handleException("getPersonalWorkspace", e) }
     }
 
     override suspend fun getWorkspacesForUser(): Result<List<Workspace>> {
@@ -76,9 +78,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 Log.e(TAG, "getWorkspacesForUser error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("getWorkspacesForUser", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getWorkspacesForUser", e) }
+        catch (e: UnknownHostException) { return handleException("getWorkspacesForUser", e) }
+        catch (e: IOException) { return handleException("getWorkspacesForUser", e) }
+        catch (e: HttpException) { return handleException("getWorkspacesForUser", e) }
     }
 
     override suspend fun getWorkspaceMembers(workspaceId: String): Result<List<User>> {
@@ -94,9 +97,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 Log.e(TAG, "getWorkspaceMembers error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("getWorkspaceMembers", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getWorkspaceMembers", e) }
+        catch (e: UnknownHostException) { return handleException("getWorkspaceMembers", e) }
+        catch (e: IOException) { return handleException("getWorkspaceMembers", e) }
+        catch (e: HttpException) { return handleException("getWorkspaceMembers", e) }
     }
 
     override suspend fun createWorkspace(
@@ -122,9 +126,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 Log.e(TAG, "createWorkspace error: $errorMessage")
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("createWorkspace", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("createWorkspace", e) }
+        catch (e: UnknownHostException) { return handleException("createWorkspace", e) }
+        catch (e: IOException) { return handleException("createWorkspace", e) }
+        catch (e: HttpException) { return handleException("createWorkspace", e) }
     }
 
     override suspend fun updateWorkspaceProfile(
@@ -144,9 +149,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 )
                 Result.failure(Exception(errorMessage))
             }
-        } catch (e: Exception) {
-            handleException("updateWorkspaceProfile", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("updateWorkspaceProfile", e) }
+        catch (e: UnknownHostException) { return handleException("updateWorkspaceProfile", e) }
+        catch (e: IOException) { return handleException("updateWorkspaceProfile", e) }
+        catch (e: HttpException) { return handleException("updateWorkspaceProfile", e) }
     }
 
     override suspend fun updateWorkspacePicture(workspaceId: String, workspaceProfilePicture: String): Result<Unit> {
@@ -162,9 +168,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
                 val err = parseErrorMessage(response.errorBody()?.string(), "Failed to update picture.")
                 Result.failure(Exception(err))
             }
-        } catch (e: Exception) {
-            handleException("updateWorkspacePicture", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("updateWorkspacePicture", e) }
+        catch (e: UnknownHostException) { return handleException("updateWorkspacePicture", e) }
+        catch (e: IOException) { return handleException("updateWorkspacePicture", e) }
+        catch (e: HttpException) { return handleException("updateWorkspacePicture", e) }
     }
 
     override suspend fun deleteWorkspace(workspaceId: String): Result<Unit> {
@@ -172,9 +179,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             val response = workspaceApi.deleteWorkspace(AUTH_HEADER_PLACEHOLDER, workspaceId)
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to delete workspace.")))
-        } catch (e: Exception) {
-            handleException("deleteWorkspace", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("deleteWorkspace", e) }
+        catch (e: UnknownHostException) { return handleException("deleteWorkspace", e) }
+        catch (e: IOException) { return handleException("deleteWorkspace", e) }
+        catch (e: HttpException) { return handleException("deleteWorkspace", e) }
     }
 
     override suspend fun addMember(userId: String, workspaceId: String): Result<Unit> {
@@ -184,9 +192,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             )
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to add member.")))
-        } catch (e: Exception) {
-            handleException("addMember", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("addMember", e) }
+        catch (e: UnknownHostException) { return handleException("addMember", e) }
+        catch (e: IOException) { return handleException("addMember", e) }
+        catch (e: HttpException) { return handleException("addMember", e) }
     }
 
     override suspend fun leave(userId: String, workspaceId: String): Result<Unit>{
@@ -194,9 +203,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             val response = workspaceApi.leaveWorkspace(AUTH_HEADER_PLACEHOLDER, workspaceId)
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to remove user.")))
-        } catch (e: Exception) {
-            handleException("banMember", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("banMember", e) }
+        catch (e: UnknownHostException) { return handleException("banMember", e) }
+        catch (e: IOException) { return handleException("banMember", e) }
+        catch (e: HttpException) { return handleException("banMember", e) }
     }
 
     override suspend fun banMember(userId: String, workspaceId: String): Result<Unit> {
@@ -223,9 +233,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             } else {
                 Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to fetch membership status.")))
             }
-        } catch (e: Exception) {
-            handleException("getMembershipStatus", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getMembershipStatus", e) }
+        catch (e: UnknownHostException) { return handleException("getMembershipStatus", e) }
+        catch (e: IOException) { return handleException("getMembershipStatus", e) }
+        catch (e: HttpException) { return handleException("getMembershipStatus", e) }
     }
 
     override suspend fun getAllTags(workspaceId: String): Result<List<String>> {
@@ -236,9 +247,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             } else {
                 Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to fetch tags.")))
             }
-        } catch (e: Exception) {
-            handleException("getAllTags", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("getAllTags", e) }
+        catch (e: UnknownHostException) { return handleException("getAllTags", e) }
+        catch (e: IOException) { return handleException("getAllTags", e) }
+        catch (e: HttpException) { return handleException("getAllTags", e) }
     }
 
     override suspend fun chatPoll(workspaceId: String): Result<Boolean>{
@@ -249,9 +261,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             } else {
                 Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to check for chat updates.")))
             }
-        } catch (e: Exception) {
-            handleException("chatPoll", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("chatPoll", e) }
+        catch (e: UnknownHostException) { return handleException("chatPoll", e) }
+        catch (e: IOException) { return handleException("chatPoll", e) }
+        catch (e: HttpException) { return handleException("chatPoll", e) }
     }
 
     override suspend fun pollForNewMessages(workspaceId: String): Result<Boolean> {

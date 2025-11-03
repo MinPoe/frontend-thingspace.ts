@@ -504,7 +504,7 @@ private fun FieldEditCard(
                                     try {
                                         val dateTime = java.time.LocalDateTime.parse(it)
                                         onFieldUpdated(FieldUpdate.Content(dateTime))
-                                    } catch (e: Exception) {
+                                    } catch (e: java.time.format.DateTimeParseException) {
                                         // Invalid format, don't update
                                     }
                                 },

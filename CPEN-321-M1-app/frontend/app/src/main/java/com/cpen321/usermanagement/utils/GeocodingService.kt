@@ -6,6 +6,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
 import org.json.JSONObject
+import java.io.IOException
+import org.json.JSONException
+import java.net.MalformedURLException
+import java.io.UnsupportedEncodingException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 object GeocodingService {
     private const val TAG = "GeocodingService"
@@ -48,9 +54,23 @@ object GeocodingService {
                 Log.w(TAG, "No coordinates found for $cityName, using default")
                 Pair(49.2827, -123.1207) // Default to Vancouver
                 
-            } catch (e: Exception) {
-                Log.e(TAG, "Error geocoding $cityName", e)
-                // Fallback to hardcoded coordinates
+            } catch (e: SocketTimeoutException) {
+                Log.e(TAG, "Timeout geocoding $cityName", e)
+                return@withContext CityExtractor.getCityCoordinates(cityName)
+            } catch (e: UnknownHostException) {
+                Log.e(TAG, "No internet geocoding $cityName", e)
+                return@withContext CityExtractor.getCityCoordinates(cityName)
+            } catch (e: MalformedURLException) {
+                Log.e(TAG, "Bad URL for geocoding $cityName", e)
+                return@withContext CityExtractor.getCityCoordinates(cityName)
+            } catch (e: UnsupportedEncodingException) {
+                Log.e(TAG, "Encoding error for geocoding $cityName", e)
+                return@withContext CityExtractor.getCityCoordinates(cityName)
+            } catch (e: IOException) {
+                Log.e(TAG, "IO error geocoding $cityName", e)
+                return@withContext CityExtractor.getCityCoordinates(cityName)
+            } catch (e: JSONException) {
+                Log.e(TAG, "JSON parse error geocoding $cityName", e)
                 return@withContext CityExtractor.getCityCoordinates(cityName)
             }
         }

@@ -226,9 +226,12 @@ class AuthViewModel @Inject constructor(
                         Log.e(TAG, "Failed to send FCM token to backend", error)
                         // Don't show error to user - this is a background operation
                     }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to retrieve FCM token", e)
-                // Don't show error to user - this is a background operation
+            } catch (e: java.io.IOException) {
+                Log.e(TAG, "Failed to retrieve FCM token (IO)", e)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                // ignore cancellation
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "Failed to retrieve FCM token (state)", e)
             }
         }
     }

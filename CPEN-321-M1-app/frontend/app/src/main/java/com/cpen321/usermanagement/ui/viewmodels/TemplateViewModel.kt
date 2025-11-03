@@ -14,7 +14,7 @@ class TemplateViewModel@Inject constructor(
     private val navigationStateManager: NavigationStateManager,
     private val workspaceRepository: WorkspaceRepository,
     private val profileRepository: ProfileRepository,
-    private val noteRepository: NoteRepository) : DisplayViewModel(
-    navigationStateManager, workspaceRepository, profileRepository, noteRepository) {
-
-}
+    private val noteRepository: NoteRepository
+) : DisplayViewModel(
+    navigationStateManager, workspaceRepository, profileRepository, noteRepository
+)

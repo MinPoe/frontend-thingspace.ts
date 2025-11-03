@@ -204,15 +204,10 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCurrentUserId(): String {
-        return try {
             val profileResult = getProfile()
-            if (profileResult.isSuccess) {
+        return if (profileResult.isSuccess) {
                 profileResult.getOrNull()?._id ?: ""
             } else {
-                ""
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting current user ID", e)
             ""
         }
     }
