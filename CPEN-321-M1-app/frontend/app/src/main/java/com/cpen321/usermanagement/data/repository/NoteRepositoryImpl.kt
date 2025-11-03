@@ -24,9 +24,6 @@ class NoteRepositoryImpl @Inject constructor(
         private const val AUTH_HEADER_PLACEHOLDER = "" // Handled by Interceptor
     }
 
-    /**
-     * Converts Field objects to backend format with proper fieldType serialization
-     */
     private fun convertToBackendFields(fields: List<Field>): List<Map<String, Any?>> {
         return fields.map { field ->
             when (field) {

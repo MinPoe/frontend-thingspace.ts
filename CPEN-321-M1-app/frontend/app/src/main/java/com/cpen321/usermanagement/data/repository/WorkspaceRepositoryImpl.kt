@@ -214,9 +214,10 @@ class WorkspaceRepositoryImpl @Inject constructor(
             val response = workspaceApi.banWorkspaceMember(AUTH_HEADER_PLACEHOLDER, workspaceId, userId)
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception(parseErrorMessage(response.errorBody()?.string(), "Failed to remove user.")))
-        } catch (e: Exception) {
-            handleException("banMember", e)
-        }
+        } catch (e: SocketTimeoutException) { return handleException("banMember", e) }
+        catch (e: UnknownHostException) { return handleException("banMember", e) }
+        catch (e: IOException) { return handleException("banMember", e) }
+        catch (e: HttpException) { return handleException("banMember", e) }
     }
 
     override suspend fun getMembershipStatus(userId: String, workspaceId: String): Result<WsMembershipStatus> {
