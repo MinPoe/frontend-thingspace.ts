@@ -22,17 +22,13 @@ fun ContentNoteActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        ContentIcon(relatedWorkspace)
+        Icon(
+            name = R.drawable.ic_notes,
+            contentDescription = stringResource(R.string.content)+relatedWorkspace
+        )
     }
 }
 
-@Composable
-private fun ContentIcon(relatedWorkspace:String="") {
-    Icon(
-        name = R.drawable.ic_notes,
-        contentDescription = stringResource(R.string.content)+relatedWorkspace
-    )
-}
 
 @Composable
 fun ChatActionButton(
@@ -46,16 +42,11 @@ fun ChatActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        ChatIcon(relatedWorkspace)
+        Icon(
+            name = R.drawable.chat,
+            contentDescription = stringResource(R.string.chat)+relatedWorkspace
+        )
     }
-}
-
-@Composable
-private fun ChatIcon(relatedWorkspace: String="") {
-    Icon(
-        name = R.drawable.chat,
-        contentDescription = stringResource(R.string.chat)+relatedWorkspace
-    )
 }
 
 @Composable
@@ -69,16 +60,11 @@ fun CreateNoteActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        NoteIcon()
+        Icon(
+            name = R.drawable.ic_edit,
+            contentDescription = stringResource(R.string.create)
+        )
     }
-}
-
-@Composable
-private fun NoteIcon() {
-    Icon(
-        name = R.drawable.ic_edit,
-        contentDescription = stringResource(R.string.create)
-    )
 }
 
 @Composable
@@ -93,16 +79,11 @@ fun TemplateActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        TemplateIcon(relatedWorkspace)
+        Icon(
+            name = R.drawable.ic_templates,
+            contentDescription = stringResource(R.string.templates)+relatedWorkspace
+        )
     }
-}
-
-@Composable
-private fun TemplateIcon(relatedWorkspace:String="") {
-    Icon(
-        name = R.drawable.ic_templates,
-        contentDescription = stringResource(R.string.templates)+relatedWorkspace
-    )
 }
 
 @Composable
@@ -116,16 +97,11 @@ fun WorkspaceActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        WorkspaceIcon()
+        Icon(
+            name = R.drawable.ic_workspaces,
+            contentDescription = stringResource(R.string.workspaces)
+        )
     }
-}
-
-@Composable
-private fun WorkspaceIcon() {
-    Icon(
-        name = R.drawable.ic_workspaces,
-        contentDescription = stringResource(R.string.workspaces)
-    )
 }
 
 @Composable
@@ -140,19 +116,12 @@ fun EditActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        EditIcon(relatedWorkspace)
+        Icon(
+            name = R.drawable.ic_edit,
+            contentDescription = stringResource(R.string.edit)+relatedWorkspace
+        )
     }
 }
-
-@Composable
-private fun EditIcon(relatedWorkspace: String) {
-    Icon(
-        name = R.drawable.ic_edit,
-        contentDescription = stringResource(R.string.edit)+relatedWorkspace
-    )
-    Log.d("TEST_WORKSPACES", stringResource(R.string.edit)+relatedWorkspace)
-}
-
 
 @Composable
 fun MembersActionButton(
@@ -165,16 +134,11 @@ fun MembersActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        MembersIcon()
+        Icon(
+            name = R.drawable.ic_account_circle,
+            contentDescription = stringResource(R.string.members)
+        )
     }
-}
-
-@Composable
-private fun MembersIcon() {
-    Icon(
-        name = R.drawable.ic_account_circle,
-        contentDescription = stringResource(R.string.members)
-    )
 }
 
 
@@ -189,18 +153,12 @@ fun InviteActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        InviteIcon()
+        Icon(
+            name = R.drawable.ic_manage_profile,
+            contentDescription = stringResource(R.string.invite)
+        )
     }
 }
-
-@Composable
-private fun InviteIcon() {
-    Icon(
-        name = R.drawable.ic_manage_profile,
-        contentDescription = stringResource(R.string.invite)
-    )
-}
-
 
 @Composable
 fun LeaveActionButton(
@@ -213,16 +171,11 @@ fun LeaveActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        LeaveIcon()
+        Icon(
+            name = R.drawable.ic_sign_out,
+            contentDescription = stringResource(R.string.leave)
+        )
     }
-}
-
-@Composable
-private fun LeaveIcon() {
-    Icon(
-        name = R.drawable.ic_sign_out,
-        contentDescription = stringResource(R.string.leave)
-    )
 }
 
 @Composable
@@ -236,16 +189,11 @@ fun DeleteActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        DeleteIcon()
+        Icon(
+            name = R.drawable.ic_delete_forever,
+            contentDescription = stringResource(R.string.delete)
+        )
     }
-}
-
-@Composable
-private fun DeleteIcon() {
-    Icon(
-        name = R.drawable.ic_delete_forever,
-        contentDescription = stringResource(R.string.delete)
-    )
 }
 
 @Composable
@@ -259,14 +207,10 @@ fun BanActionButton(
         onClick = onClick,
         modifier = modifier.size(spacing.extraLarge2)
     ) {
-        BanIcon()
+        Icon(
+            name = R.drawable.ic_delete_forever,
+            contentDescription = stringResource(R.string.ban)
+        )
     }
 }
 
-@Composable
-private fun BanIcon() {
-    Icon(
-        name = R.drawable.ic_delete_forever,
-        contentDescription = stringResource(R.string.ban)
-    )
-}
