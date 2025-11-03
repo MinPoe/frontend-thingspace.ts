@@ -2,7 +2,7 @@
 import os, json, sys
 import requests
 
-CODACY_API_TOKEN = look on discord, ill send it. 
+CODACY_API_TOKEN = os.environ.get("CODACY_API_TOKEN")
 PROVIDER = "gh"            # gh|ghe|gl|gle|bb|bbe
 ORG = "thingSpace-ts"              # e.g. my-org
 REPO = "ThingSpace.ts"            # e.g. my-repo
