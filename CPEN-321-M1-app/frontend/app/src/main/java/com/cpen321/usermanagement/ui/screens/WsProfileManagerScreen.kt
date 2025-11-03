@@ -266,7 +266,8 @@ private fun ProfileTopBar(
         },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(name = R.drawable.ic_arrow_back)
+                Icon(name = R.drawable.ic_arrow_back,
+                    contentDescription = stringResource(R.string.back_icon_description))
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

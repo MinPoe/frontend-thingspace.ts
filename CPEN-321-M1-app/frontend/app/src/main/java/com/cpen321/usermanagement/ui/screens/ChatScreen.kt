@@ -20,6 +20,8 @@ import com.cpen321.usermanagement.data.remote.dto.Message
 import com.cpen321.usermanagement.data.remote.dto.User
 import Icon
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
 import com.cpen321.usermanagement.utils.IFeatureActions
 import java.text.SimpleDateFormat
@@ -150,12 +152,14 @@ private fun ChatTopBar(
         title = { Text(stringResource(R.string.chat)) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(name = R.drawable.ic_arrow_back)
+                Icon(name = R.drawable.ic_arrow_back,
+                    contentDescription = stringResource(R.string.back_icon_description))
             }
         },
         actions = {
             IconButton(onClick = onProfileClick) {
-                Icon(name = R.drawable.ic_account_circle)
+                Icon(name = R.drawable.ic_account_circle,
+                    contentDescription = stringResource(R.string.profile))
             }
         }
     )
@@ -178,10 +182,12 @@ private fun MessageInputBar(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val typeMessage = stringResource(R.string.type_message)
             OutlinedTextField(
                 value = messageText,
                 onValueChange = onMessageTextChange,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).semantics{
+                    contentDescription=typeMessage},
                 placeholder = { Text(stringResource(R.string.type_message)) },
                 maxLines = 4,
                 enabled = !isSending
@@ -199,7 +205,7 @@ private fun MessageInputBar(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(name = R.drawable.chat)
+                    Icon(name = R.drawable.chat, contentDescription = stringResource(R.string.chat))
                 }
             }
         }
@@ -309,7 +315,7 @@ private fun EmptyMessagesPlaceholder(
     ) {
         Icon(
             painter = painterResource(id = R.drawable.chat),
-            contentDescription = stringResource(R.string.chat),
+            contentDescription = stringResource(R.string.plusChat),
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
