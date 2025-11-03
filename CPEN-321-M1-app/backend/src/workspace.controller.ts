@@ -4,11 +4,7 @@ import { workspaceService } from './workspace.service';
 export class WorkspaceController {
     async createWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspace = await workspaceService.createWorkspace(userId, req.body);
 
@@ -32,11 +28,7 @@ export class WorkspaceController {
 
     async getPersonalWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspace = await workspaceService.getPersonalWorkspaceForUser(userId);
 
@@ -66,11 +58,7 @@ export class WorkspaceController {
 
     async getWorkspacesForUser(req: Request, res: Response): Promise<void> {
         try {
-            const user = req.user;
-            if (!user) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const user = req.user!;
 
             const workspaces = await workspaceService.getWorkspacesForUser(user._id, user.personalWorkspaceId);
 
@@ -86,11 +74,7 @@ export class WorkspaceController {
 
     async getWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspaceId = req.params.id;
             const workspace = await workspaceService.getWorkspace(workspaceId, userId);
@@ -120,11 +104,7 @@ export class WorkspaceController {
 
     async getWorkspaceMembers(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspaceId = req.params.id;
             const members = await workspaceService.getWorkspaceMembers(workspaceId, userId);
@@ -136,9 +116,15 @@ export class WorkspaceController {
         } catch (error) {
             console.error('Error retrieving members:', error);
             
-            if (error instanceof Error && error.message.includes('Access denied')) {
-                res.status(403).json({ error: error.message });
-                return;
+            if (error instanceof Error) {
+                if (error.message.includes('Access denied')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
             }
             
             res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve members' });
@@ -147,11 +133,7 @@ export class WorkspaceController {
 
     async getAllTags(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspaceId = req.params.id;
             const tags = await workspaceService.getAllTags(workspaceId, userId);
@@ -163,9 +145,15 @@ export class WorkspaceController {
         } catch (error) {
             console.error('Error retrieving tags:', error);
             
-            if (error instanceof Error && error.message.includes('Access denied')) {
-                res.status(403).json({ error: error.message });
-                return;
+            if (error instanceof Error) {
+                if (error.message.includes('Access denied')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message === 'Workspace not found') {
+                    res.status(404).json({ error: 'Workspace not found' });
+                    return;
+                }
             }
             
             res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve tags' });
@@ -185,17 +173,19 @@ export class WorkspaceController {
             });
         } catch (error) {
             console.error('Error retrieving membership status:', error);
+            
+            if (error instanceof Error && error.message === 'Workspace not found') {
+                res.status(404).json({ error: 'Workspace not found' });
+                return;
+            }
+            
             res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve membership status' });
         }
     }
 
     async inviteMember(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user?._id;
-            if (!requestingUserId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const requestingUserId = req.user!._id;
 
             const workspaceId = req.params.id;
             const { userId } = req.body;
@@ -216,6 +206,10 @@ export class WorkspaceController {
             
             if (error instanceof Error) {
                 if (error.message.includes('Only workspace owner')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message.includes('Cannot invite members to personal workspace')) {
                     res.status(403).json({ error: error.message });
                     return;
                 }
@@ -243,11 +237,7 @@ export class WorkspaceController {
 
     async leaveWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspaceId = req.params.id;
 
@@ -281,11 +271,7 @@ export class WorkspaceController {
 
     async banMember(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user?._id;
-            if (!requestingUserId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const requestingUserId = req.user!._id;
 
             const workspaceId = req.params.id;
             const userIdToBan = req.params.userId;
@@ -324,12 +310,7 @@ export class WorkspaceController {
 
     async updateWorkspaceProfile(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user?._id;
-            if (!requestingUserId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
-
+            const requestingUserId = req.user!._id;
             const workspaceId = req.params.id;
 
             const workspace = await workspaceService.updateWorkspaceProfile(
@@ -362,11 +343,7 @@ export class WorkspaceController {
 
     async updateWorkspacePicture(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user?._id;
-            if (!requestingUserId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const requestingUserId = req.user!._id;
 
             const workspaceId = req.params.id;
 
@@ -400,11 +377,7 @@ export class WorkspaceController {
 
     async deleteWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user?._id;
-            if (!requestingUserId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const requestingUserId = req.user!._id;
 
             const workspaceId = req.params.id;
 
@@ -434,11 +407,7 @@ export class WorkspaceController {
 
     async pollForNewMessages(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
-                res.status(401).json({ error: 'User not authenticated' });
-                return;
-            }
+            const userId = req.user!._id;
 
             const workspaceId = req.params.id;
             const hasNewMessages = await workspaceService.checkForNewChatMessages(workspaceId);

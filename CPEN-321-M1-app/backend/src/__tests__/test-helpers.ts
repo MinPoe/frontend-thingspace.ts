@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import { NotesController } from '../notes.controller';
+import { WorkspaceController } from '../workspace.controller';
 import { workspaceModel } from '../workspace.model';
 
 // ---------------------------
@@ -15,15 +16,46 @@ export function createTestApp() {
   const mockAuthMiddleware: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
     const mockUserId = req.headers['x-test-user-id'] as string;
     if (mockUserId) {
-      // Attach a minimal mock user onto the request (typecast for test)
-      (req as any).user = {
-        _id: new mongoose.Types.ObjectId(mockUserId),
-        googleId: 'test-google-id',
-        email: 'test@example.com',
-        profile: { name: 'Test User', imagePath: '', description: '' },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      // Try to fetch the actual user from database to get real data (e.g. personalWorkspaceId)
+      let User = mongoose.models.User;
+      if (!User) {
+        User = mongoose.model('User', new mongoose.Schema({
+          googleId: { type: String, unique: true },
+          email: String,
+          profile: {
+            name: String,
+            imagePath: String,
+            description: String
+          },
+          personalWorkspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace' }
+        }, { timestamps: true }));
+      }
+      
+      const dbUser = await User.findById(mockUserId);
+      
+      if (dbUser) {
+        // Use real user data if it exists in DB
+        (req as any).user = {
+          _id: dbUser._id,
+          googleId: dbUser.googleId,
+          email: dbUser.email,
+          profile: dbUser.profile,
+          personalWorkspaceId: dbUser.personalWorkspaceId || null,
+          createdAt: dbUser.createdAt,
+          updatedAt: dbUser.updatedAt,
+        };
+      } else {
+        // Fallback to mock user if not in DB
+        (req as any).user = {
+          _id: new mongoose.Types.ObjectId(mockUserId),
+          googleId: 'test-google-id',
+          email: 'test@example.com',
+          profile: { name: 'Test User', imagePath: '', description: '' },
+          personalWorkspaceId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
       return next();
     }
     return res.status(401).json({ error: 'No test user ID provided' });
@@ -32,21 +64,39 @@ export function createTestApp() {
   // Pass-through validation middleware (validation tested elsewhere)
   const mockValidateBody = (_req: Request, _res: Response, next: NextFunction) => next();
 
-  // Controller
+  // Controllers
   const notesController = new NotesController();
+  const workspaceController = new WorkspaceController();
 
   // ---------------------------
   // Route mounting (ORDER MATTERS)
   // ---------------------------
-  // Put the more specific route BEFORE the generic :id route.
+  // Workspace routes FIRST - Put the more specific routes BEFORE the generic :id route.
+  // This prevents workspace routes from being matched by notes routes
+  app.get('/api/workspaces/user', mockAuthMiddleware, workspaceController.getWorkspacesForUser.bind(workspaceController));
+  app.get('/api/workspaces/personal', mockAuthMiddleware, workspaceController.getPersonalWorkspace.bind(workspaceController));
+  app.get('/api/workspaces/:id/members', mockAuthMiddleware, workspaceController.getWorkspaceMembers.bind(workspaceController));
+  app.get('/api/workspaces/:id/tags', mockAuthMiddleware, workspaceController.getAllTags.bind(workspaceController));
+  app.get('/api/workspaces/:id/membership/:userId', mockAuthMiddleware, workspaceController.getMembershipStatus.bind(workspaceController));
+  app.get('/api/workspaces/:id/poll', mockAuthMiddleware, workspaceController.pollForNewMessages.bind(workspaceController));
+  app.post('/api/workspaces', mockAuthMiddleware, mockValidateBody, workspaceController.createWorkspace.bind(workspaceController));
+  app.post('/api/workspaces/:id/members', mockAuthMiddleware, workspaceController.inviteMember.bind(workspaceController));
+  app.post('/api/workspaces/:id/leave', mockAuthMiddleware, workspaceController.leaveWorkspace.bind(workspaceController));
+  app.put('/api/workspaces/:id/picture', mockAuthMiddleware, mockValidateBody, workspaceController.updateWorkspacePicture.bind(workspaceController));
+  app.put('/api/workspaces/:id', mockAuthMiddleware, mockValidateBody, workspaceController.updateWorkspaceProfile.bind(workspaceController));
+  app.delete('/api/workspaces/:id/members/:userId', mockAuthMiddleware, workspaceController.banMember.bind(workspaceController));
+  app.delete('/api/workspaces/:id', mockAuthMiddleware, workspaceController.deleteWorkspace.bind(workspaceController));
+  app.get('/api/workspaces/:id', mockAuthMiddleware, workspaceController.getWorkspace.bind(workspaceController));
+
+  // Notes routes - Put the more specific route BEFORE the generic :id route.
   app.post('/api/notes', mockAuthMiddleware, mockValidateBody, notesController.createNote.bind(notesController));
-  app.put('/api/notes/:id', mockAuthMiddleware, mockValidateBody, notesController.updateNote.bind(notesController));
-  app.delete('/api/notes/:id', mockAuthMiddleware, notesController.deleteNote.bind(notesController));
-  app.get('/api/notes/:id/workspaces', mockAuthMiddleware, notesController.getWorkspacesForNote.bind(notesController));
-  app.get('/api/notes/:id', mockAuthMiddleware, notesController.getNote.bind(notesController));
   app.get('/api/notes', mockAuthMiddleware, notesController.findNotes.bind(notesController));
+  app.get('/api/notes/:id/workspaces', mockAuthMiddleware, notesController.getWorkspacesForNote.bind(notesController));
   app.post('/api/notes/:id/share', mockAuthMiddleware, notesController.shareNoteToWorkspace.bind(notesController));
   app.post('/api/notes/:id/copy', mockAuthMiddleware, notesController.copyNoteToWorkspace.bind(notesController));
+  app.put('/api/notes/:id', mockAuthMiddleware, mockValidateBody, notesController.updateNote.bind(notesController));
+  app.delete('/api/notes/:id', mockAuthMiddleware, notesController.deleteNote.bind(notesController));
+  app.get('/api/notes/:id', mockAuthMiddleware, notesController.getNote.bind(notesController));
 
   return app;
 }
