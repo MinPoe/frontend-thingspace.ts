@@ -128,17 +128,17 @@ class NoteCreationViewModel @Inject constructor(
                 error = null
             )
 
-            val actualWorkspaceId = resolveWorkspaceId(workspaceId) ?: return@launch
+            val actualWorkspaceId = resolveWorkspaceId(workspaceId) ?: return
             val validationError = validateFields()
             if (validationError != null) {
                 _creationState.value = _creationState.value.copy(
                     isCreating = false,
                     error = validationError
                 )
-                return@launch
+                return
             }
 
-            val userId = getCurrentUserId() ?: return@launch
+            val userId = getCurrentUserId() ?: return
             val fields = convertFieldsToDto()
 
             createNoteRequest(actualWorkspaceId, userId, fields)
