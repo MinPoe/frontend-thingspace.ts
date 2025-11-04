@@ -24,41 +24,32 @@ import com.cpen321.usermanagement.data.remote.dto.DateTimeField
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.data.remote.dto.Field
+
+@Composable
+private fun getFieldPreview(field: Field): String {
+    return when (field) {
+        is TextField -> field.content?.takeIf { it.isNotEmpty() } 
+            ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
+        is NumberField -> field.content?.toString() 
+            ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
+        is DateTimeField -> field.content?.toString() 
+            ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
+        else -> stringResource(R.string.empty_note)
+    }
+}
 
 @Composable
 fun NoteDisplayList(
-    onNoteClick: (String)->Unit, //the input is noteId
+    onNoteClick: (String)->Unit,
     notes: List<Note>,
     modifier: Modifier = Modifier
 ){
     val spacing = LocalSpacing.current
     
     for(note in notes){
-        val notePreview = note.fields.firstOrNull()?.let { field ->
-            when (field) {
-                is TextField -> {
-                    if (!field.content.isNullOrEmpty()) {
-                        field.content
-                    } else {
-                        field.label.ifEmpty { stringResource(R.string.empty_note) }
-                    }
-                }
-                is NumberField -> {
-                    if (field.content != null) {
-                        field.content.toString()
-                    } else {
-                        field.label.ifEmpty { stringResource(R.string.empty_note) }
-                    }
-                }
-                is DateTimeField -> {
-                    if (field.content != null) {
-                        field.content.toString()
-                    } else {
-                        field.label.ifEmpty { stringResource(R.string.empty_note) }
-                    }
-                }
-            }
-        } ?: stringResource(R.string.empty_note)
+        val notePreview = note.fields.firstOrNull()?.let { getFieldPreview(it) }
+            ?: stringResource(R.string.empty_note)
         
         Card(
             modifier = Modifier
