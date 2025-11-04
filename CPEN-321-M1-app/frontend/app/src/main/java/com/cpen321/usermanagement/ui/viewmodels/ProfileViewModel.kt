@@ -97,8 +97,8 @@ class ProfileViewModel @Inject constructor(
     fun uploadProfilePicture(pictureUri: Uri) {
         viewModelScope.launch {
             val result = profileRepository.updatePhoto(profilePicture = pictureUri.toString())
-            if (result.isSuccess && (_uiState.value.user != null)) {
-                val currentUser = _uiState.value.user!!
+            if (result.isSuccess) {
+                val currentUser = _uiState.value.user ?: return@launch
                 val updatedUser = currentUser.copy(profile = currentUser.profile.copy(imagePath = pictureUri.toString()))
                 _uiState.value = _uiState.value.copy(isLoadingPhoto = false, user= updatedUser, successMessage = "Profile picture updated successfully!")
             }else {
