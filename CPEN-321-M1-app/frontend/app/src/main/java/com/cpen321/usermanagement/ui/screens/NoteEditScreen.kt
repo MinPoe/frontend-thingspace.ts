@@ -24,6 +24,19 @@ import com.cpen321.usermanagement.ui.components.FieldTypeDialog
 import com.cpen321.usermanagement.ui.components.WorkspaceSelectionDialog
 import com.cpen321.usermanagement.ui.components.CopyNoteDialog
 
+data class NoteEditCallbacks(
+    val onBackClick: () -> Unit,
+    val onSaveClick: () -> Unit,
+    val onShareClick: () -> Unit,
+    val onCopyClick: () -> Unit,
+    val onTagAdded: (String) -> Unit,
+    val onTagRemoved: (String) -> Unit,
+    val onFieldAdded: (FieldType) -> Unit,
+    val onFieldRemoved: (String) -> Unit,
+    val onFieldUpdated: (String, FieldUpdate) -> Unit,
+    val onNoteTypeChanged: (NoteType) -> Unit
+)
+
 @Composable
 fun NoteEditScreen(
     noteEditViewModel: NoteEditViewModel,
@@ -121,19 +134,21 @@ private fun NoteEditScreenContent(
     val onShareClick = { dialogState.onShareDialogChange(true) }
     val onCopyClick = { dialogState.onCopyDialogChange(true) }
 
-    NoteEditContent(
-        editState = editState,
-        onBackClick = onBackClick,
-        onSaveClick = onSaveClick,
-        onShareClick = onShareClick,
-        onCopyClick = onCopyClick,
-        onTagAdded = noteEditViewModel::addTag,
-        onTagRemoved = noteEditViewModel::removeTag,
-        onFieldAdded = noteEditViewModel::addField,
-        onFieldRemoved = noteEditViewModel::removeField,
-        onFieldUpdated = noteEditViewModel::updateField,
-        onNoteTypeChanged = noteEditViewModel::updateNoteType
-    )
+            NoteEditContent(
+                editState = editState,
+                callbacks = NoteEditCallbacks(
+                    onBackClick = onBackClick,
+                    onSaveClick = onSaveClick,
+                    onShareClick = onShareClick,
+                    onCopyClick = onCopyClick,
+                    onTagAdded = noteEditViewModel::addTag,
+                    onTagRemoved = noteEditViewModel::removeTag,
+                    onFieldAdded = noteEditViewModel::addField,
+                    onFieldRemoved = noteEditViewModel::removeField,
+                    onFieldUpdated = noteEditViewModel::updateField,
+                    onNoteTypeChanged = noteEditViewModel::updateNoteType
+                )
+            )
 
     ShareNoteDialog(
         showDialog = dialogState.showShareDialog,
@@ -224,32 +239,26 @@ private fun ErrorEditContent(
 @Composable
 fun NoteEditContent(
     editState: NoteEditState,
-    onBackClick: () -> Unit,
-    onSaveClick: () -> Unit,
-    onShareClick: () -> Unit,
-    onCopyClick: () -> Unit,
-    onTagAdded: (String) -> Unit,
-    onTagRemoved: (String) -> Unit,
-    onFieldAdded: (FieldType) -> Unit,
-    onFieldRemoved: (String) -> Unit,
-    onFieldUpdated: (String, FieldUpdate) -> Unit,
-    onNoteTypeChanged: (NoteType) -> Unit,
+    callbacks: NoteEditCallbacks,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { NoteEditTopBar(onBackClick = onBackClick, onShareClick = onShareClick, onCopyClick = onCopyClick) },
-        bottomBar = { NoteEditBottomBar(onBackClick = onBackClick, onSaveClick = onSaveClick, isSaving = editState.isSaving) }
+        topBar = { NoteEditTopBar(
+            onBackClick = callbacks.onBackClick,
+            onShareClick = callbacks.onShareClick,
+            onCopyClick = callbacks.onCopyClick
+        ) },
+        bottomBar = { NoteEditBottomBar(
+            onBackClick = callbacks.onBackClick,
+            onSaveClick = callbacks.onSaveClick,
+            isSaving = editState.isSaving
+        ) }
     ) { paddingValues ->
         NoteEditBody(
             editState = editState,
             paddingValues = paddingValues,
-            onTagAdded = onTagAdded,
-            onTagRemoved = onTagRemoved,
-            onFieldAdded = onFieldAdded,
-            onFieldRemoved = onFieldRemoved,
-            onFieldUpdated = onFieldUpdated,
-            onNoteTypeChanged = onNoteTypeChanged
+            callbacks = callbacks
         )
     }
 }
@@ -295,7 +304,7 @@ private fun NoteEditBottomBar(
     isSaving: Boolean
 ) {
     val spacing = LocalSpacing.current
-    
+
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.surface
     ) {
@@ -337,12 +346,7 @@ private fun NoteEditBottomBar(
 fun NoteEditBody(
     editState: NoteEditState,
     paddingValues: PaddingValues,
-    onTagAdded: (String) -> Unit,
-    onTagRemoved: (String) -> Unit,
-    onFieldAdded: (FieldType) -> Unit,
-    onFieldRemoved: (String) -> Unit,
-    onFieldUpdated: (String, FieldUpdate) -> Unit,
-    onNoteTypeChanged: (NoteType) -> Unit,
+    callbacks: NoteEditCallbacks,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -376,7 +380,7 @@ fun NoteEditBody(
         // Note Type Selection
         NoteTypeEditSection(
             selectedType = editState.noteType,
-            onTypeChanged = onNoteTypeChanged
+            onTypeChanged = callbacks.onNoteTypeChanged
         )
 
         Spacer(modifier = Modifier.height(spacing.large))
@@ -384,8 +388,8 @@ fun NoteEditBody(
         // Tags Section
         TagsEditSection(
             tags = editState.tags,
-            onTagAdded = onTagAdded,
-            onTagRemoved = onTagRemoved
+            onTagAdded = callbacks.onTagAdded,
+            onTagRemoved = callbacks.onTagRemoved
         )
 
         Spacer(modifier = Modifier.height(spacing.large))
@@ -394,9 +398,9 @@ fun NoteEditBody(
         FieldsEditSection(
             fields = editState.fields,
             noteType = editState.noteType,
-            onFieldAdded = onFieldAdded,
-            onFieldRemoved = onFieldRemoved,
-            onFieldUpdated = onFieldUpdated
+            onFieldAdded = callbacks.onFieldAdded,
+            onFieldRemoved = callbacks.onFieldRemoved,
+            onFieldUpdated = callbacks.onFieldUpdated
         )
     }
 }
@@ -698,7 +702,7 @@ private fun FieldContentInputSection(
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(spacing.small))
-        
+
         when (field.type) {
             FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
             FieldType.NUMBER -> NumberFieldInput(field, onFieldUpdated)
@@ -730,7 +734,7 @@ private fun NumberFieldInput(
 ) {
     OutlinedTextField(
         value = (field.content as? Int)?.toString() ?: "",
-        onValueChange = { 
+        onValueChange = {
             val value = it.toIntOrNull()
             onFieldUpdated(FieldUpdate.Content(value))
         },
@@ -749,11 +753,11 @@ private fun DateTimeFieldInput(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
-    
+
     Column {
         OutlinedTextField(
             value = currentDateTime.toString(),
-            onValueChange = { 
+            onValueChange = {
                 try {
                     val dateTime = java.time.LocalDateTime.parse(it)
                     onFieldUpdated(FieldUpdate.Content(dateTime))
@@ -766,9 +770,9 @@ private fun DateTimeFieldInput(
             modifier = Modifier.fillMaxWidth(),
             readOnly = true
         )
-        
+
         Spacer(modifier = Modifier.height(spacing.small))
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(spacing.small)
@@ -803,7 +807,7 @@ private fun FieldConfigurationSection(
         color = MaterialTheme.colorScheme.primary
     )
     Spacer(modifier = Modifier.height(spacing.small))
-    
+
     when (field.type) {
         FieldType.TEXT -> {
             OutlinedTextField(
@@ -881,4 +885,3 @@ private fun FieldsList(
         }
     }
 }
-
