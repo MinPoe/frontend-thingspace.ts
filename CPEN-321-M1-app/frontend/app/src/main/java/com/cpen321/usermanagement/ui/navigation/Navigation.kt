@@ -222,67 +222,79 @@ private fun handleNavigationEvent(
     mainViewModel: MainViewModel
 ) {
     val viewModelGroups = createNavigationViewModelGroups(
-        membersManagerViewModel,
-        wsSelectViewModel,
-        wsProfileViewModel,
-        mainViewModel,
-        templateViewModel,
-        filterViewModel,
-        membersViewModel,
-        noteEditViewModel,
-        profileViewModel
+        NavigationViewModelGroupParams(
+            membersManagerViewModel = membersManagerViewModel,
+            wsSelectViewModel = wsSelectViewModel,
+            wsProfileViewModel = wsProfileViewModel,
+            mainViewModel = mainViewModel,
+            templateViewModel = templateViewModel,
+            filterViewModel = filterViewModel,
+            membersViewModel = membersViewModel,
+            noteEditViewModel = noteEditViewModel,
+            profileViewModel = profileViewModel
+        )
     )
 
     routeNavigationEvent(
         navigationEvent = navigationEvent,
         navController = navController,
         navigationStateManager = navigationStateManager,
-        authViewModel = authViewModel,
-        profileViewModel = profileViewModel,
-        mainViewModel = mainViewModel,
-        wsProfileViewModel = wsProfileViewModel,
-        wsSelectViewModel = wsSelectViewModel,
+        routingContext = NavigationRoutingContext(
+            authViewModel = authViewModel,
+            profileViewModel = profileViewModel,
+            mainViewModel = mainViewModel,
+            wsProfileViewModel = wsProfileViewModel,
+            wsSelectViewModel = wsSelectViewModel
+        ),
         viewModelGroups = viewModelGroups
     )
 }
 
+private data class NavigationViewModelGroupParams(
+    val membersManagerViewModel: MembersManagerViewModel,
+    val wsSelectViewModel: WsSelectViewModel,
+    val wsProfileViewModel: WsProfileViewModel,
+    val mainViewModel: MainViewModel,
+    val templateViewModel: TemplateViewModel,
+    val filterViewModel: FilterViewModel,
+    val membersViewModel: MembersViewModel,
+    val noteEditViewModel: NoteEditViewModel,
+    val profileViewModel: ProfileViewModel
+)
+
 private fun createNavigationViewModelGroups(
-    membersManagerViewModel: MembersManagerViewModel,
-    wsSelectViewModel: WsSelectViewModel,
-    wsProfileViewModel: WsProfileViewModel,
-    mainViewModel: MainViewModel,
-    templateViewModel: TemplateViewModel,
-    filterViewModel: FilterViewModel,
-    membersViewModel: MembersViewModel,
-    noteEditViewModel: NoteEditViewModel,
-    profileViewModel: ProfileViewModel
+    params: NavigationViewModelGroupParams
 ) = Pair(
     BasicNavigationViewModels(
-        membersManagerViewModel,
-        wsSelectViewModel,
-        wsProfileViewModel,
-        mainViewModel,
-        templateViewModel
+        params.membersManagerViewModel,
+        params.wsSelectViewModel,
+        params.wsProfileViewModel,
+        params.mainViewModel,
+        params.templateViewModel
     ),
     FeatureNavigationViewModels(
-        filterViewModel,
-        membersManagerViewModel,
-        membersViewModel,
-        noteEditViewModel,
-        profileViewModel,
-        templateViewModel
+        params.filterViewModel,
+        params.membersManagerViewModel,
+        params.membersViewModel,
+        params.noteEditViewModel,
+        params.profileViewModel,
+        params.templateViewModel
     )
+)
+
+private data class NavigationRoutingContext(
+    val authViewModel: AuthViewModel,
+    val profileViewModel: ProfileViewModel,
+    val mainViewModel: MainViewModel,
+    val wsProfileViewModel: WsProfileViewModel,
+    val wsSelectViewModel: WsSelectViewModel
 )
 
 private fun routeNavigationEvent(
     navigationEvent: NavigationEvent,
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
-    authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel,
-    mainViewModel: MainViewModel,
-    wsProfileViewModel: WsProfileViewModel,
-    wsSelectViewModel: WsSelectViewModel,
+    routingContext: NavigationRoutingContext,
     viewModelGroups: Pair<BasicNavigationViewModels, FeatureNavigationViewModels>
 ) {
     val (basicViewModels, featureViewModels) = viewModelGroups
@@ -290,19 +302,19 @@ private fun routeNavigationEvent(
     when (navigationEvent) {
         is NavigationEvent.NavigateToAuth,
         is NavigationEvent.NavigateToAuthWithMessage -> {
-            handleAuthNavigation(navigationEvent, navController, authViewModel, navigationStateManager)
+            handleAuthNavigation(navigationEvent, navController, routingContext.authViewModel, navigationStateManager)
         }
         is NavigationEvent.NavigateToMain,
         is NavigationEvent.NavigateToMainWithMessage,
         is NavigationEvent.NavigateToMainWithContext,
         is NavigationEvent.NavigateToMainTagReset -> {
-            handleMainNavigation(navigationEvent, navController, mainViewModel, navigationStateManager)
+            handleMainNavigation(navigationEvent, navController, routingContext.mainViewModel, navigationStateManager)
         }
         is NavigationEvent.NavigateToProfile,
         is NavigationEvent.NavigateToManageProfile,
         is NavigationEvent.NavigateToProfileCompletion,
         is NavigationEvent.NavigateToOtherProfile -> {
-            handleProfileNavigation(navigationEvent, navController, profileViewModel, navigationStateManager)
+            handleProfileNavigation(navigationEvent, navController, routingContext.profileViewModel, navigationStateManager)
         }
         is NavigationEvent.NavigateBack,
         is NavigationEvent.ClearBackStack,
@@ -329,7 +341,7 @@ private fun routeNavigationEvent(
         is NavigationEvent.NavigateToWsProfileManager,
         is NavigationEvent.NavigateToWsProfile,
         is NavigationEvent.NavigateToWsSelect -> {
-            handleWorkspaceNavigation(navigationEvent, navController, wsProfileViewModel, wsSelectViewModel, navigationStateManager)
+            handleWorkspaceNavigation(navigationEvent, navController, routingContext.wsProfileViewModel, routingContext.wsSelectViewModel, navigationStateManager)
         }
     }
 }
