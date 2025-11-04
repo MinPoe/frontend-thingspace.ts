@@ -547,71 +547,90 @@ private fun FieldContentInputSection(
         Spacer(modifier = Modifier.height(spacing.small))
         
         when (field.type) {
-            FieldType.TEXT -> {
-                OutlinedTextField(
-                    value = (field.content as? String) ?: "",
-                    onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
-                    label = { Text(stringResource(R.string.text_content)) },
-                    placeholder = { Text(stringResource(R.string.enter_text_content)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 2,
-                    maxLines = 4
-                )
-            }
-            FieldType.NUMBER -> {
-                OutlinedTextField(
-                    value = (field.content as? Int)?.toString() ?: "",
-                    onValueChange = { 
-                        val value = it.toIntOrNull()
-                        onFieldUpdated(FieldUpdate.Content(value))
-                    },
-                    label = { Text(stringResource(R.string.number_content)) },
-                    placeholder = { Text(stringResource(R.string.enter_number)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            FieldType.DATETIME -> {
-                var showDatePicker by remember { mutableStateOf(false) }
-                var showTimePicker by remember { mutableStateOf(false) }
-                val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
-                
-                Column {
-                    OutlinedTextField(
-                        value = currentDateTime.toString(),
-                        onValueChange = { 
-                            try {
-                                val dateTime = java.time.LocalDateTime.parse(it)
-                                onFieldUpdated(FieldUpdate.Content(dateTime))
-                            } catch (e: java.time.format.DateTimeParseException) {
-                                // Invalid format, don't update
-                            }
-                        },
-                        label = { Text(stringResource(R.string.datetime_content)) },
-                        placeholder = { Text(stringResource(R.string.datetime_format)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        readOnly = true
-                    )
-                    
-                    Spacer(modifier = Modifier.height(spacing.small))
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(spacing.small)
-                    ) {
-                        Button(
-                            onClick = { showDatePicker = true },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(stringResource(R.string.pick_date))
-                        }
-                        Button(
-                            onClick = { showTimePicker = true },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(stringResource(R.string.pick_time))
-                        }
-                    }
+            FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
+            FieldType.NUMBER -> NumberFieldInput(field, onFieldUpdated)
+            FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
+        }
+    }
+}
+
+@Composable
+private fun TextFieldInput(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit
+) {
+    OutlinedTextField(
+        value = (field.content as? String) ?: "",
+        onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
+        label = { Text(stringResource(R.string.text_content)) },
+        placeholder = { Text(stringResource(R.string.enter_text_content)) },
+        modifier = Modifier.fillMaxWidth(),
+        minLines = 2,
+        maxLines = 4
+    )
+}
+
+@Composable
+private fun NumberFieldInput(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit
+) {
+    OutlinedTextField(
+        value = (field.content as? Int)?.toString() ?: "",
+        onValueChange = { 
+            val value = it.toIntOrNull()
+            onFieldUpdated(FieldUpdate.Content(value))
+        },
+        label = { Text(stringResource(R.string.number_content)) },
+        placeholder = { Text(stringResource(R.string.enter_number)) },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun DateTimeFieldInput(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit,
+    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
+    
+    Column {
+        OutlinedTextField(
+            value = currentDateTime.toString(),
+            onValueChange = { 
+                try {
+                    val dateTime = java.time.LocalDateTime.parse(it)
+                    onFieldUpdated(FieldUpdate.Content(dateTime))
+                } catch (e: java.time.format.DateTimeParseException) {
+                    // Invalid format, don't update
                 }
+            },
+            label = { Text(stringResource(R.string.datetime_content)) },
+            placeholder = { Text(stringResource(R.string.datetime_format)) },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true
+        )
+        
+        Spacer(modifier = Modifier.height(spacing.small))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            Button(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.pick_date))
+            }
+            Button(
+                onClick = { showTimePicker = true },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.pick_time))
             }
         }
     }

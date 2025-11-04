@@ -211,7 +211,18 @@ private fun handleNavigationEvent(
         is NavigationEvent.NavigateBack,
         is NavigationEvent.ClearBackStack,
         is NavigationEvent.NoNavigation -> {
-            handleBasicNavigation(navigationEvent, navController, membersManagerViewModel, wsSelectViewModel, wsProfileViewModel, mainViewModel, templateViewModel, navigationStateManager)
+            handleBasicNavigation(
+                navigationEvent,
+                navController,
+                BasicNavigationViewModels(
+                    membersManagerViewModel,
+                    wsSelectViewModel,
+                    wsProfileViewModel,
+                    mainViewModel,
+                    templateViewModel
+                ),
+                navigationStateManager
+            )
         }
         is NavigationEvent.NavigateToChat,
         is NavigationEvent.NavigateToChatTagReset,
@@ -227,7 +238,19 @@ private fun handleNavigationEvent(
         is NavigationEvent.NavigateToSharing,
         is NavigationEvent.NavigateToTemplate,
         is NavigationEvent.NavigateToTemplateTagReset -> {
-            handleFeatureNavigation(navigationEvent, navController, filterViewModel, membersManagerViewModel, membersViewModel, noteEditViewModel, profileViewModel, templateViewModel, navigationStateManager)
+            handleFeatureNavigation(
+                navigationEvent,
+                navController,
+                FeatureNavigationViewModels(
+                    filterViewModel,
+                    membersManagerViewModel,
+                    membersViewModel,
+                    noteEditViewModel,
+                    profileViewModel,
+                    templateViewModel
+                ),
+                navigationStateManager
+            )
         }
         is NavigationEvent.NavigateToWsCreation,
         is NavigationEvent.NavigateToWsProfileManager,
@@ -307,24 +330,28 @@ private fun handleProfileNavigation(
     navigationStateManager.clearNavigationEvent()
 }
 
+private data class BasicNavigationViewModels(
+    val membersManagerViewModel: MembersManagerViewModel,
+    val wsSelectViewModel: WsSelectViewModel,
+    val wsProfileViewModel: WsProfileViewModel,
+    val mainViewModel: MainViewModel,
+    val templateViewModel: TemplateViewModel
+)
+
 private fun handleBasicNavigation(
     event: NavigationEvent,
     navController: NavHostController,
-    membersManagerViewModel: MembersManagerViewModel,
-    wsSelectViewModel: WsSelectViewModel,
-    wsProfileViewModel: WsProfileViewModel,
-    mainViewModel: MainViewModel,
-    templateViewModel: TemplateViewModel,
+    viewModels: BasicNavigationViewModels,
     navigationStateManager: NavigationStateManager
 ) {
     when (event) {
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
-            membersManagerViewModel.loadUsers()
-            wsSelectViewModel.setToUpdate()
-            wsProfileViewModel.loadProfile()
-            mainViewModel.onLoad()
-            templateViewModel.onLoad()
+            viewModels.membersManagerViewModel.loadUsers()
+            viewModels.wsSelectViewModel.setToUpdate()
+            viewModels.wsProfileViewModel.loadProfile()
+            viewModels.mainViewModel.onLoad()
+            viewModels.templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
         is NavigationEvent.ClearBackStack -> {
@@ -338,15 +365,19 @@ private fun handleBasicNavigation(
     }
 }
 
+private data class FeatureNavigationViewModels(
+    val filterViewModel: FilterViewModel,
+    val membersManagerViewModel: MembersManagerViewModel,
+    val membersViewModel: MembersViewModel,
+    val noteEditViewModel: NoteEditViewModel,
+    val profileViewModel: ProfileViewModel,
+    val templateViewModel: TemplateViewModel
+)
+
 private fun handleFeatureNavigation(
     event: NavigationEvent,
     navController: NavHostController,
-    filterViewModel: FilterViewModel,
-    membersManagerViewModel: MembersManagerViewModel,
-    membersViewModel: MembersViewModel,
-    noteEditViewModel: NoteEditViewModel,
-    profileViewModel: ProfileViewModel,
-    templateViewModel: TemplateViewModel,
+    viewModels: FeatureNavigationViewModels,
     navigationStateManager: NavigationStateManager
 ) {
     when (event) {
@@ -362,18 +393,18 @@ private fun handleFeatureNavigation(
         }
         is NavigationEvent.NavigateToFilter -> {
             navController.navigate(NavRoutes.FILTER)
-            filterViewModel.onLoad()
+            viewModels.filterViewModel.onLoad()
         }
         is NavigationEvent.NavigateToInvite -> {
             navController.navigate(NavRoutes.INVITE)
         }
         is NavigationEvent.NavigateToMembersManager -> {
             navController.navigate(NavRoutes.MEMBERS_MANAGER)
-            membersManagerViewModel.loadUsers()
+            viewModels.membersManagerViewModel.loadUsers()
         }
         is NavigationEvent.NavigateToMembers -> {
             navController.navigate(NavRoutes.MEMBERS)
-            membersViewModel.loadUsers()
+            viewModels.membersViewModel.loadUsers()
         }
         is NavigationEvent.NavigateToNote -> {
             navController.navigate(NavRoutes.NOTE)
@@ -383,7 +414,7 @@ private fun handleFeatureNavigation(
         }
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)
-            noteEditViewModel.loadWorkspaces()
+            viewModels.noteEditViewModel.loadWorkspaces()
         }
         is NavigationEvent.NavigateToSharing -> {
             navController.navigate(NavRoutes.SHARING)
@@ -392,13 +423,13 @@ private fun handleFeatureNavigation(
             navController.navigate(NavRoutes.TEMPLATE) {
                 popUpTo(0) { inclusive = true }
             }
-            templateViewModel.onLoad()
+            viewModels.templateViewModel.onLoad()
         }
         is NavigationEvent.NavigateToTemplateTagReset -> {
             navController.navigate(NavRoutes.TEMPLATE) {
                 popUpTo(0) { inclusive = true }
             }
-            templateViewModel.onLoadTagReset()
+            viewModels.templateViewModel.onLoadTagReset()
         }
         else -> {}
     }
@@ -637,8 +668,16 @@ private fun AppNavHost(
             noteEditViewModel, navigationStateManager, featureActions
         )
         addWorkspaceManagementRoutes(
-            wsProfileViewModel, inviteViewModel, membersViewModel, membersManagerViewModel,
-            wsProfileManagerViewModel, wsCreationViewModel, navigationStateManager, featureActions
+            WorkspaceManagementViewModels(
+                wsProfileViewModel,
+                inviteViewModel,
+                membersViewModel,
+                membersManagerViewModel,
+                wsProfileManagerViewModel,
+                wsCreationViewModel
+            ),
+            navigationStateManager,
+            featureActions
         )
     }
 }
@@ -816,19 +855,23 @@ private fun NavGraphBuilder.addFeatureRoutes(
     }
 }
 
+private data class WorkspaceManagementViewModels(
+    val wsProfileViewModel: WsProfileViewModel,
+    val inviteViewModel: InviteViewModel,
+    val membersViewModel: MembersViewModel,
+    val membersManagerViewModel: MembersManagerViewModel,
+    val wsProfileManagerViewModel: WsProfileManagerViewModel,
+    val wsCreationViewModel: WsCreationViewModel
+)
+
 private fun NavGraphBuilder.addWorkspaceManagementRoutes(
-    wsProfileViewModel: WsProfileViewModel,
-    inviteViewModel: InviteViewModel,
-    membersViewModel: MembersViewModel,
-    membersManagerViewModel: MembersManagerViewModel,
-    wsProfileManagerViewModel: WsProfileManagerViewModel,
-    wsCreationViewModel: WsCreationViewModel,
+    viewModels: WorkspaceManagementViewModels,
     navigationStateManager: NavigationStateManager,
     featureActions: FeatureActions
 ) {
     composable(NavRoutes.WS_PROFILE) {
         WsProfileScreen(
-            wsProfileViewModel,
+            viewModels.wsProfileViewModel,
             onBackClick = { navigationStateManager.navigateBack() },
             featureActions = featureActions
         )
@@ -836,7 +879,7 @@ private fun NavGraphBuilder.addWorkspaceManagementRoutes(
 
     composable(NavRoutes.INVITE) {
         WsInviteScreen(
-            wsInviteViewModel = inviteViewModel,
+            wsInviteViewModel = viewModels.inviteViewModel,
             featureActions = featureActions,
             onBackClick = { navigationStateManager.navigateBack() }
         )
@@ -844,7 +887,7 @@ private fun NavGraphBuilder.addWorkspaceManagementRoutes(
 
     composable(NavRoutes.MEMBERS) {
         WsMembersScreen(
-            membersViewModel = membersViewModel,
+            membersViewModel = viewModels.membersViewModel,
             featureActions = featureActions,
             onBackClick = { navigationStateManager.navigateBack() },
             onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
@@ -853,14 +896,14 @@ private fun NavGraphBuilder.addWorkspaceManagementRoutes(
 
     composable(NavRoutes.WS_PROFILE_MANAGER) {
         WsProfileManagerScreen(
-            wsProfileManagerViewModel = wsProfileManagerViewModel,
+            wsProfileManagerViewModel = viewModels.wsProfileManagerViewModel,
             featureActions = featureActions
         )
     }
 
     composable(NavRoutes.MEMBERS_MANAGER) {
         WsMembersManagerScreen(
-            membersManagerViewModel = membersManagerViewModel,
+            membersManagerViewModel = viewModels.membersManagerViewModel,
             onBackClick = { navigationStateManager.navigateBack() },
             onPersonalProfileClick = { navigationStateManager.navigateToProfile() },
             featureActions = featureActions
@@ -869,7 +912,7 @@ private fun NavGraphBuilder.addWorkspaceManagementRoutes(
 
     composable(NavRoutes.WS_CREATION) {
         CreateWorkspaceScreen(
-            wsCreationViewModel = wsCreationViewModel,
+            wsCreationViewModel = viewModels.wsCreationViewModel,
             onBackClick = { navigationStateManager.navigateBack() },
             featureActions = featureActions
         )
