@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.room.util.query
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
@@ -84,18 +85,28 @@ fun MainScreen(
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)}
     )
 
+    val searchState = SearchState(
+        query = featureActions.state.getSearchQuery(),
+        workspaceName = wsname, fetching = fetching,
+        notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
+    )
+
     MainContent(
         uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
         actions = actions,
-        workspaceName = wsname,
-        query = featureActions.state.getSearchQuery(),
+        searchState = searchState,
         onSuccessMessageShown = mainViewModel::clearSuccessMessage,
-        fetching = fetching,
-        notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )
 }
+
+data class SearchState(
+    val query: String,
+    val workspaceName: String,
+    val notes: List<Note>,
+    val fetching: Boolean
+)
 
 @Composable
 private fun MainContent(
@@ -103,11 +114,8 @@ private fun MainContent(
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
     actions: MainActions,
-    query: String,
+    searchState: SearchState,
     onSuccessMessageShown: () -> Unit,
-    workspaceName: String,
-    notes:List<Note>,
-    fetching: Boolean,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -132,13 +140,13 @@ private fun MainContent(
                 modifier = modifier)
         }
     ) { paddingValues ->
-        if(!fetching) {
+        if(!searchState.fetching) {
             MainBody(
                 paddingValues = paddingValues,
-                workspaceName = workspaceName,
+                workspaceName = searchState.workspaceName,
                 actions = actions,
-                notes = notes,
-                query = query
+                notes = searchState.notes,
+                query = searchState.query
             )
         }
         else{
