@@ -21,7 +21,8 @@ import com.cpen321.usermanagement.ui.viewmodels.NoteEditViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NoteEditState
 import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.components.FieldTypeDialog
-import com.cpen321.usermanagement.ui.components.WorkspaceSelectionDialog
+import com.cpen321.usermanagement.ui.components.LoadingEditContent
+import com.cpen321.usermanagement.ui.components.ErrorEditContent
 import com.cpen321.usermanagement.ui.components.CopyNoteDialog
 import com.cpen321.usermanagement.ui.components.ShareNoteDialog
 
@@ -164,49 +165,6 @@ private fun NoteEditScreenContent(
             noteEditViewModel.copyNote(featureActions.state.getNoteId(), workspaceId)
         }
     )
-}
-
-@Composable
-private fun LoadingEditContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
-private fun ErrorEditContent(
-    error: String,
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(spacing.medium),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(R.string.error_loading_note),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.error
-        )
-        Spacer(modifier = Modifier.height(spacing.small))
-        Text(
-            text = error,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(spacing.large))
-        Button(onClick = onBackClick) {
-            Text(stringResource(R.string.go_back))
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
