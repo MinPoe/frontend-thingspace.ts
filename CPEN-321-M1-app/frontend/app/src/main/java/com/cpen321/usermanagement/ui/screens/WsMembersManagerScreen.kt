@@ -23,7 +23,7 @@ import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.viewmodels.MembersManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MembersViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 
 
 @Composable
@@ -31,7 +31,7 @@ fun WsMembersManagerScreen(
     membersManagerViewModel: MembersManagerViewModel,
     onBackClick: () -> Unit,
     onPersonalProfileClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ){
     val uiState by membersManagerViewModel.uiState.collectAsState()
     val isLoading = uiState.isLoading
@@ -47,7 +47,7 @@ fun WsMembersManagerScreen(
             val user = userAndOthers.first
 
             val onPersonalProfileClick = onPersonalProfileClick
-            val onOtherProfileClick = {index:Int -> featureActions.navigateToOtherProfile(
+            val onOtherProfileClick = {index:Int -> featureActions.navs.navigateToOtherProfile(
                 otherUsers[index]._id) }
             val onBanClick = {index:Int -> membersManagerViewModel.ban(
                 otherUsers[index]._id)}

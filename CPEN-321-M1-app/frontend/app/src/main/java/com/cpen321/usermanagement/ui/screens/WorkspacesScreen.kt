@@ -23,7 +23,7 @@ import com.cpen321.usermanagement.ui.components.WorkspaceRow
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectUIStateE
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 
 
 @Composable
@@ -31,7 +31,7 @@ fun WorkspacesScreen(
     workspacesViewModel: WsSelectViewModel,
     onBackClick: () -> Unit,
     onPersonalProfileClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ){
     val uiState by workspacesViewModel.uiState.collectAsState()
     when (uiState.state){
@@ -48,30 +48,30 @@ fun WorkspacesScreen(
             val personalWs = uiState.personalWs!!
 
             val onWsMainClick = {index:Int ->
-                featureActions.navigateToMainTagReset(availableWs[index]._id)}
+                featureActions.navs.navigateToMainTagReset(availableWs[index]._id)}
             val onWsChatClick = {index:Int ->
-                featureActions.navigateToChatTagReset(availableWs[index]._id)}
+                featureActions.navs.navigateToMainTagReset(availableWs[index]._id)}
             val onWsTemplateClick = {index:Int ->
-                featureActions.navigateToTemplateTagReset(availableWs[index]._id)}
+                featureActions.navs.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
-            val onPersonalChatClick={ featureActions.navigateToChatTagReset(
+            val onPersonalChatClick={ featureActions.navs.navigateToMainTagReset(
                 personalWs._id) }
-            val onPersonalContentClick={ featureActions.navigateToMainTagReset(
+            val onPersonalContentClick={ featureActions.navs.navigateToMainTagReset(
                 personalWs._id) }
-            val onPersonalTemplateClick={ featureActions.navigateToTemplateTagReset(
+            val onPersonalTemplateClick={ featureActions.navs.navigateToTemplateTagReset(
                 personalWs._id) }
             val onWsProfileClick = {index:Int ->
                 if (uiState.workspaceManager != null){
                     val wsMan = uiState.workspaceManager!!
                     if (wsMan[index]){
-                        featureActions.navigateToWsProfileManager(availableWs[index]._id)
+                        featureActions.ws.navigateToWsProfileManager(availableWs[index]._id)
                     }
                     else{
-                        featureActions.navigateToWsProfile(availableWs[index]._id)
+                        featureActions.ws.navigateToWsProfile(availableWs[index]._id)
                     }
                 }
-                else featureActions.navigateToWsProfile(availableWs[index]._id) }
-            val onCreateClick = {featureActions.navigateToWsCreation()}
+                else featureActions.ws.navigateToWsProfile(availableWs[index]._id) }
+            val onCreateClick = {featureActions.ws.navigateToWsCreation()}
 
 
             WsContent(onWsMainClick = onWsMainClick,

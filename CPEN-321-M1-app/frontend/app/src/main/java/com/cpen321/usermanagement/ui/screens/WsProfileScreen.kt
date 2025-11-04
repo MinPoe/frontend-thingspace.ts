@@ -47,7 +47,7 @@ import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.components.WsProfileBar
-import com.cpen321.usermanagement.ui.navigation.FeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileUiState
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
@@ -71,8 +71,8 @@ fun WsProfileScreen(
 //    }
 
     //events - 4 now leave empty
-    val onMembersClick = {featureActions.navigateToMembers()}
-    val onInviteClick = {featureActions.navigateToInvite()}
+    val onMembersClick = {featureActions.ws.navigateToMembers()}
+    val onInviteClick = {featureActions.ws.navigateToInvite()}
     val onLeaveClick = {val result:Boolean = wsProfileViewModel.leaveWorkspace()
     }
 

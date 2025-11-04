@@ -37,14 +37,14 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import kotlinx.coroutines.flow.compose
 
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
     onProfileClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val fetching by mainViewModel.fetching.collectAsState()
@@ -55,28 +55,28 @@ fun MainScreen(
         uiState = uiState,
         snackBarHostState = snackBarHostState,
         onProfileClick = onProfileClick,
-        onTemplateClick = {  featureActions.navigateToTemplateTagReset(
-            featureActions.getWorkspaceId())},
-        onWorkspaceClick = { featureActions.navigateToWsSelect()},
-        onFilterClick = { featureActions.navigateToFilter(
-            workspaceId = featureActions.getWorkspaceId(),
-            selectedTags = featureActions.getSelectedTags(),
-            allTagsSelected = featureActions.getAllTagsSelected()
+        onTemplateClick = {  featureActions.navs.navigateToTemplateTagReset(
+            featureActions.state.getWorkspaceId())},
+        onWorkspaceClick = { featureActions.ws.navigateToWsSelect()},
+        onFilterClick = { featureActions.navs.navigateToFilter(
+            workspaceId = featureActions.state.getWorkspaceId(),
+            selectedTags = featureActions.state.getSelectedTags(),
+            allTagsSelected = featureActions.state.getAllTagsSelected()
         ) },
-        onSearchClick = {featureActions.navigateToMainWithContext(
-            workspaceId = featureActions.getWorkspaceId(),
-            selectedTags = featureActions.getSelectedTags(),
-            allTagsSelected = featureActions.getAllTagsSelected(),
-            searchQuery = featureActions.getSearchQuery()
+        onSearchClick = {featureActions.navs.navigateToMainWithContext(
+            workspaceId = featureActions.state.getWorkspaceId(),
+            selectedTags = featureActions.state.getSelectedTags(),
+            allTagsSelected = featureActions.state.getAllTagsSelected(),
+            searchQuery = featureActions.state.getSearchQuery()
         )},
-        onChatClick = { featureActions.navigateToChatTagReset(
-            featureActions.getWorkspaceId()) },
-        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
+        onChatClick = { featureActions.navs.navigateToMainTagReset(
+            featureActions.state.getWorkspaceId()) },
+        onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
         workspaceName = wsname,
-        query = featureActions.getSearchQuery(),
+        query = featureActions.state.getSearchQuery(),
         onSuccessMessageShown = mainViewModel::clearSuccessMessage,
-        onCreateNoteClick = { featureActions.navigateToNoteCreation() },
-        onNoteClick = {noteId:String -> featureActions.navigateToNote(noteId)},
+        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
+        onNoteClick = {noteId:String -> featureActions.navs.navigateToNote(noteId)},
         fetching = fetching,
         notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )

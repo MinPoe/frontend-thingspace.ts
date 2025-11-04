@@ -40,45 +40,44 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
-import com.cpen321.usermanagement.ui.navigation.FeatureActions
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 
 @Composable
 fun TemplateScreen(
     templateViewModel: TemplateViewModel,
     onProfileClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ) {
     val fetching by templateViewModel.fetching.collectAsState()
 
     TemplateContent(
         onProfileClick = onProfileClick,
-        onNoteClick = { noteId:String -> featureActions.navigateToNote(noteId) },
-        onContentClick = {  featureActions.navigateToMainTagReset(
-            featureActions.getWorkspaceId()) },
-        onWorkspaceClick = { featureActions.navigateToWsSelect() },
-        onFilterClick = { featureActions.navigateToFilter(
-            workspaceId = featureActions.getWorkspaceId(),
-            selectedTags = featureActions.getSelectedTags(),
-            allTagsSelected = featureActions.getAllTagsSelected()
+        onNoteClick = { noteId:String -> featureActions.navs.navigateToNote(noteId) },
+        onContentClick = {  featureActions.navs.navigateToMainTagReset(
+            featureActions.state.getWorkspaceId()) },
+        onWorkspaceClick = { featureActions.ws.navigateToWsSelect() },
+        onFilterClick = { featureActions.navs.navigateToFilter(
+            workspaceId = featureActions.state.getWorkspaceId(),
+            selectedTags = featureActions.state.getSelectedTags(),
+            allTagsSelected = featureActions.state.getAllTagsSelected()
         )},
         onChatClick={
-            featureActions.navigateToChatTagReset(
-                featureActions.getWorkspaceId()
+            featureActions.navs.navigateToMainTagReset(
+                featureActions.state.getWorkspaceId()
             )
         },
-        onSearchClick = { featureActions.navigateToTemplate(
-            workspaceId = featureActions.getWorkspaceId(),
-            selectedTags = featureActions.getSelectedTags(),
-            allTagsSelected = featureActions.getAllTagsSelected(),
-            searchQuery = featureActions.getSearchQuery()
+        onSearchClick = { featureActions.navs.navigateToTemplate(
+            workspaceId = featureActions.state.getWorkspaceId(),
+            selectedTags = featureActions.state.getSelectedTags(),
+            allTagsSelected = featureActions.state.getAllTagsSelected(),
+            searchQuery = featureActions.state.getSearchQuery()
         ) },
-        onQueryChange = {query:String -> featureActions.setSearchQuery(query)},
-        onCreateNoteClick = { featureActions.navigateToNoteCreation() },
+        onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
+        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
         notes = templateViewModel.getNotesTitlesFound(0),
         fetching = fetching,
         wsname = templateViewModel.getWorkspaceName(),
-        query = featureActions.getSearchQuery()
+        query = featureActions.state.getSearchQuery()
     )
 }
 

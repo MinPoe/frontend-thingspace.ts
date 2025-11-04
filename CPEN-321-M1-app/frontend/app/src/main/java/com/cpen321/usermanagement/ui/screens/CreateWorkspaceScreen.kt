@@ -9,7 +9,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.BackActionButton
-import com.cpen321.usermanagement.ui.navigation.FeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.viewmodels.CreateWsUiStateE
 import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
 
@@ -26,7 +26,7 @@ fun CreateWorkspaceScreen(
 
     LaunchedEffect(uiState.stateEnum) {
         if (uiState.stateEnum == CreateWsUiStateE.AFTER){
-            featureActions.navigateToWsProfileManager(uiState.newWsId)
+            featureActions.ws.navigateToWsProfileManager(uiState.newWsId)
             wsCreationViewModel.resetUIStateEnum()
         }
     }

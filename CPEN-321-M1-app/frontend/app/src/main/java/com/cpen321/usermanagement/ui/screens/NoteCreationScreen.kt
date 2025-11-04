@@ -20,13 +20,13 @@ import com.cpen321.usermanagement.ui.viewmodels.FieldType
 import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
 import com.cpen321.usermanagement.ui.viewmodels.NoteCreationState
 import com.cpen321.usermanagement.ui.viewmodels.NoteCreationViewModel
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 
 @Composable
 fun NoteCreationScreen(
     noteCreationViewModel: NoteCreationViewModel,
     onBackClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ) {
     val creationState by noteCreationViewModel.creationState.collectAsState()
 
@@ -46,7 +46,7 @@ fun NoteCreationScreen(
         onFieldRemoved = noteCreationViewModel::removeField,
         onFieldUpdated = noteCreationViewModel::updateField,
         onNoteTypeChanged = noteCreationViewModel::setNoteType,
-        onCreateNote = { noteCreationViewModel.createNote(featureActions.getWorkspaceId()) }
+        onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
     )
 }
 
