@@ -103,7 +103,7 @@ class WsProfileManagerViewModel@Inject constructor(
                 workspaceId = navigationStateManager.state.getWorkspaceId()
             )
             if (result.isSuccess) {
-                val currentWorkspace = _uiState.value.workspace ?: return@launch
+                val currentWorkspace = _uiState.value.workspace ?: return
                 val updatedWorkspace = currentWorkspace.copy(
                     profile = currentWorkspace.profile.copy(imagePath = pictureUri.toString())
                 )
