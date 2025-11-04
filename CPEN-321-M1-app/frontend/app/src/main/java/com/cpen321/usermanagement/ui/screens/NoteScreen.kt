@@ -110,18 +110,47 @@ fun NoteContent(
         }
     }
 
-    // Delete Confirmation Dialog
-    if (showDeleteDialog) {
+    DeleteNoteDialog(
+        showDialog = showDeleteDialog,
+        onDismiss = { showDeleteDialog = false },
+        onConfirm = {
+            showDeleteDialog = false
+            onDeleteClick()
+        }
+    )
+}
+
+@Composable
+private fun DateInfoCard(
+    title: String,
+    dateString: String
+) {
+    InfoCard(
+        title = title,
+        content = try {
+            java.time.Instant.parse(dateString)
+                .atZone(java.time.ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
+        } catch (e: java.time.format.DateTimeParseException) {
+            dateString
+        }
+    )
+}
+
+@Composable
+private fun DeleteNoteDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    if (showDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = onDismiss,
             title = { Text(stringResource(R.string.delete_note)) },
             text = { Text(stringResource(R.string.delete_note_confirmation)) },
             confirmButton = {
                 Button(
-                    onClick = {
-                        showDeleteDialog = false
-                        onDeleteClick()
-                    },
+                    onClick = onConfirm,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )
@@ -130,7 +159,7 @@ fun NoteContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -219,29 +248,17 @@ fun NoteBody(
         Spacer(modifier = Modifier.height(spacing.small))
 
         // Creation Date
-        InfoCard(
+        DateInfoCard(
             title = stringResource(R.string.created),
-            content = try {
-                java.time.Instant.parse(note.createdAt)
-                    .atZone(java.time.ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
-            } catch (e: java.time.format.DateTimeParseException) {
-                note.createdAt
-            }
+            dateString = note.createdAt
         )
 
         Spacer(modifier = Modifier.height(spacing.small))
 
         // Last Edit Date
-        InfoCard(
+        DateInfoCard(
             title = stringResource(R.string.last_edited),
-            content = try {
-                java.time.Instant.parse(note.updatedAt)
-                    .atZone(java.time.ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a"))
-            } catch (e: java.time.format.DateTimeParseException) {
-                note.updatedAt
-            }
+            dateString = note.updatedAt
         )
 
         Spacer(modifier = Modifier.height(spacing.small))

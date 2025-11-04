@@ -128,116 +128,127 @@ class NoteCreationViewModel @Inject constructor(
                 error = null
             )
 
-            var actualWorkspaceId = workspaceId
-            if (workspaceId.isBlank()) {
-                val personalWorkspace = workspaceRepository.getPersonalWorkspace()
-                if (personalWorkspace.isSuccess) {
-                    actualWorkspaceId = personalWorkspace.getOrNull()!!._id
-                } else {
-                    _creationState.value = _creationState.value.copy(
-                        isCreating = false,
-                        error = "Failed to get personal workspace"
-                    )
-                    return@launch
-                }
-            }
-
-            // Validate
-            if (_creationState.value.fields.isEmpty()) {
+            val actualWorkspaceId = resolveWorkspaceId(workspaceId) ?: return@launch
+            val validationError = validateFields()
+            if (validationError != null) {
                 _creationState.value = _creationState.value.copy(
                     isCreating = false,
-                    error = "Please add at least one field"
+                    error = validationError
                 )
                 return@launch
             }
 
-            // Check if all fields have labels
-            val hasEmptyLabel = _creationState.value.fields.any { it.label.isBlank() }
-            if (hasEmptyLabel) {
-                _creationState.value = _creationState.value.copy(
-                    isCreating = false,
-                    error = "All fields must have a label"
-                )
-                return@launch
-            }
+            val userId = getCurrentUserId() ?: return@launch
+            val fields = convertFieldsToDto()
 
-            // Convert FieldCreationData to Field
-            val fields = _creationState.value.fields.map { fieldData ->
-                when (fieldData.type) {
-                    FieldType.TEXT -> TextField(
-                        _id = fieldData.id,
-                        label = fieldData.label,
-                        required = fieldData.required,
-                        placeholder = fieldData.placeholder,
-                        maxLength = fieldData.maxLength,
-                        content = when (fieldData.content) {
-                            is String -> fieldData.content
-                            else -> fieldData.content?.toString()
-                        }
-                    )
-                    FieldType.NUMBER -> NumberField(
-                        _id = fieldData.id,
-                        label = fieldData.label,
-                        required = fieldData.required,
-                        min = fieldData.min,
-                        max = fieldData.max,
-                        content = when (fieldData.content) {
-                            is Int -> fieldData.content
-                            is String -> fieldData.content.toIntOrNull()
-                            else -> null
-                        }
-                    )
-                    FieldType.DATETIME -> DateTimeField(
-                        _id = fieldData.id,
-                        label = fieldData.label,
-                        required = fieldData.required,
-                        minDate = null,
-                        maxDate = null,
-                        content = when (fieldData.content) {
-                            is LocalDateTime -> fieldData.content
-                            is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
-                            else -> null
-                        }
-                    )
-                }
-                
-            }
-
-            // Get current user ID
-            val user = authRepository.getCurrentUser()
-            val userId = user?._id ?: run {
-                _creationState.value = _creationState.value.copy(
-                    isCreating = false,
-                    error = "User not authenticated"
-                )
-                return@launch
-            }
-
-            // Create note
-            val result = noteRepository.createNote(
-                workspaceId = actualWorkspaceId,
-                authorId = userId,
-                tags = _creationState.value.tags,
-                fields = fields,
-                noteType = _creationState.value.noteType
-            )
-
-            result.fold(
-                onSuccess = {
-                    _creationState.value = _creationState.value.copy(
-                        isCreating = false,
-                        isSuccess = true,
-                        error = null
-                    )
-                },
-                onFailure = { exception ->
-                    _creationState.value = _creationState.value.copy(
-                        isCreating = false,
-                        error = exception.message ?: "Failed to create note"
-                    )
-                }
-            )
+            createNoteRequest(actualWorkspaceId, userId, fields)
         }
+    }
+
+    private suspend fun resolveWorkspaceId(workspaceId: String): String? {
+        if (workspaceId.isNotBlank()) {
+            return workspaceId
+        }
+        val personalWorkspace = workspaceRepository.getPersonalWorkspace()
+        return if (personalWorkspace.isSuccess) {
+            personalWorkspace.getOrNull()?._id
+        } else {
+            _creationState.value = _creationState.value.copy(
+                isCreating = false,
+                error = "Failed to get personal workspace"
+            )
+            null
+        }
+    }
+
+    private fun validateFields(): String? {
+        if (_creationState.value.fields.isEmpty()) {
+            return "Please add at least one field"
+        }
+        val hasEmptyLabel = _creationState.value.fields.any { it.label.isBlank() }
+        if (hasEmptyLabel) {
+            return "All fields must have a label"
+        }
+        return null
+    }
+
+    private suspend fun getCurrentUserId(): String? {
+        val user = authRepository.getCurrentUser()
+        return user?._id ?: run {
+            _creationState.value = _creationState.value.copy(
+                isCreating = false,
+                error = "User not authenticated"
+            )
+            null
+        }
+    }
+
+    private fun convertFieldsToDto(): List<Field> {
+        return _creationState.value.fields.map { fieldData ->
+            when (fieldData.type) {
+                FieldType.TEXT -> TextField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    placeholder = fieldData.placeholder,
+                    maxLength = fieldData.maxLength,
+                    content = when (fieldData.content) {
+                        is String -> fieldData.content
+                        else -> fieldData.content?.toString()
+                    }
+                )
+                FieldType.NUMBER -> NumberField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    min = fieldData.min,
+                    max = fieldData.max,
+                    content = when (fieldData.content) {
+                        is Int -> fieldData.content
+                        is String -> fieldData.content.toIntOrNull()
+                        else -> null
+                    }
+                )
+                FieldType.DATETIME -> DateTimeField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    minDate = null,
+                    maxDate = null,
+                    content = when (fieldData.content) {
+                        is LocalDateTime -> fieldData.content
+                        is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
+                        else -> null
+                    }
+                )
+            }
+        }
+    }
+
+    private suspend fun createNoteRequest(workspaceId: String, userId: String, fields: List<Field>) {
+        val result = noteRepository.createNote(
+            workspaceId = workspaceId,
+            authorId = userId,
+            tags = _creationState.value.tags,
+            fields = fields,
+            noteType = _creationState.value.noteType
+        )
+
+        result.fold(
+            onSuccess = {
+                _creationState.value = _creationState.value.copy(
+                    isCreating = false,
+                    isSuccess = true,
+                    error = null
+                )
+            },
+            onFailure = { exception ->
+                _creationState.value = _creationState.value.copy(
+                    isCreating = false,
+                    error = exception.message ?: "Failed to create note"
+                )
+            }
+        )
     }
 
     fun reset() {

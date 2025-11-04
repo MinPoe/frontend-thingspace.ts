@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -191,201 +192,244 @@ private fun handleNavigationEvent(
     mainViewModel: MainViewModel
 ) {
     when (navigationEvent) {
-        is NavigationEvent.NavigateToAuth -> {
-            navController.navigate(NavRoutes.AUTH) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
-        }
-
+        is NavigationEvent.NavigateToAuth,
         is NavigationEvent.NavigateToAuthWithMessage -> {
-            authViewModel.setSuccessMessage(navigationEvent.message)
-            navController.navigate(NavRoutes.AUTH) {
-                popUpTo(0) { inclusive = true }
-            }
-            navigationStateManager.clearNavigationEvent()
+            handleAuthNavigation(navigationEvent, navController, authViewModel, navigationStateManager)
         }
-
-        is NavigationEvent.NavigateToMain -> {
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            mainViewModel.onLoadTagReset()
-            navigationStateManager.clearNavigationEvent()
+        is NavigationEvent.NavigateToMain,
+        is NavigationEvent.NavigateToMainWithMessage,
+        is NavigationEvent.NavigateToMainWithContext,
+        is NavigationEvent.NavigateToMainTagReset -> {
+            handleMainNavigation(navigationEvent, navController, mainViewModel, navigationStateManager)
         }
+        is NavigationEvent.NavigateToProfile,
+        is NavigationEvent.NavigateToManageProfile,
+        is NavigationEvent.NavigateToProfileCompletion,
+        is NavigationEvent.NavigateToOtherProfile -> {
+            handleProfileNavigation(navigationEvent, navController, profileViewModel, navigationStateManager)
+        }
+        is NavigationEvent.NavigateBack,
+        is NavigationEvent.ClearBackStack,
+        is NavigationEvent.NoNavigation -> {
+            handleBasicNavigation(navigationEvent, navController, membersManagerViewModel, wsSelectViewModel, wsProfileViewModel, mainViewModel, templateViewModel, navigationStateManager)
+        }
+        is NavigationEvent.NavigateToChat,
+        is NavigationEvent.NavigateToChatTagReset,
+        is NavigationEvent.NavigateToCopy,
+        is NavigationEvent.NavigateToFields,
+        is NavigationEvent.NavigateToFilter,
+        is NavigationEvent.NavigateToInvite,
+        is NavigationEvent.NavigateToMembersManager,
+        is NavigationEvent.NavigateToMembers,
+        is NavigationEvent.NavigateToNote,
+        is NavigationEvent.NavigateToNoteCreation,
+        is NavigationEvent.NavigateToNoteEdit,
+        is NavigationEvent.NavigateToSharing,
+        is NavigationEvent.NavigateToTemplate,
+        is NavigationEvent.NavigateToTemplateTagReset -> {
+            handleFeatureNavigation(navigationEvent, navController, filterViewModel, membersManagerViewModel, membersViewModel, noteEditViewModel, profileViewModel, templateViewModel, navigationStateManager)
+        }
+        is NavigationEvent.NavigateToWsCreation,
+        is NavigationEvent.NavigateToWsProfileManager,
+        is NavigationEvent.NavigateToWsProfile,
+        is NavigationEvent.NavigateToWsSelect -> {
+            handleWorkspaceNavigation(navigationEvent, navController, wsProfileViewModel, wsSelectViewModel, navigationStateManager)
+        }
+    }
+}
 
+private fun handleAuthNavigation(
+    event: NavigationEvent,
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    if (event is NavigationEvent.NavigateToAuthWithMessage) {
+        authViewModel.setSuccessMessage(event.message)
+    }
+    navController.navigate(NavRoutes.AUTH) {
+        popUpTo(0) { inclusive = true }
+    }
+    navigationStateManager.clearNavigationEvent()
+}
+
+private fun handleMainNavigation(
+    event: NavigationEvent,
+    navController: NavHostController,
+    mainViewModel: MainViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    when (event) {
         is NavigationEvent.NavigateToMainWithMessage -> {
-            mainViewModel.setSuccessMessage(navigationEvent.message) //NOTE: this is how to access context
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            mainViewModel.onLoadTagReset()
-            navigationStateManager.clearNavigationEvent()
+            mainViewModel.setSuccessMessage(event.message)
         }
+        else -> {}
+    }
+    
+    navController.navigate(NavRoutes.MAIN) {
+        popUpTo(0) { inclusive = true }
+    }
+    
+    when (event) {
+        is NavigationEvent.NavigateToMainWithContext -> mainViewModel.onLoad()
+        is NavigationEvent.NavigateToMainTagReset -> mainViewModel.onLoadTagReset()
+        else -> mainViewModel.onLoadTagReset()
+    }
+    
+    navigationStateManager.clearNavigationEvent()
+}
 
+private fun handleProfileNavigation(
+    event: NavigationEvent,
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    when (event) {
+        is NavigationEvent.NavigateToProfile -> {
+            Log.d("navigation", "navigationToProfileRegistered")
+            navController.navigate(NavRoutes.PROFILE)
+        }
+        is NavigationEvent.NavigateToManageProfile -> {
+            navController.navigate(NavRoutes.MANAGE_PROFILE)
+        }
         is NavigationEvent.NavigateToProfileCompletion -> {
             navController.navigate(NavRoutes.PROFILE_COMPLETION) {
                 popUpTo(0) { inclusive = true }
             }
-            navigationStateManager.clearNavigationEvent()
         }
-
-        is NavigationEvent.NavigateToProfile -> {
-            Log.d("navigation", "navigationToProfileRegistered")
-            navController.navigate(NavRoutes.PROFILE)
-            navigationStateManager.clearNavigationEvent()
+        is NavigationEvent.NavigateToOtherProfile -> {
+            navController.navigate(NavRoutes.OTHER_PROFILE)
+            profileViewModel.loadProfile(navigationStateManager.getOtherUserId())
         }
+        else -> {}
+    }
+    navigationStateManager.clearNavigationEvent()
+}
 
-        is NavigationEvent.NavigateToManageProfile -> {
-            navController.navigate(NavRoutes.MANAGE_PROFILE)
-            navigationStateManager.clearNavigationEvent()
-        }
-
+private fun handleBasicNavigation(
+    event: NavigationEvent,
+    navController: NavHostController,
+    membersManagerViewModel: MembersManagerViewModel,
+    wsSelectViewModel: WsSelectViewModel,
+    wsProfileViewModel: WsProfileViewModel,
+    mainViewModel: MainViewModel,
+    templateViewModel: TemplateViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    when (event) {
         is NavigationEvent.NavigateBack -> {
             navController.popBackStack()
             membersManagerViewModel.loadUsers()
-            wsSelectViewModel.setToUpdate() //TODO: for now here later on make a full updatemethod
+            wsSelectViewModel.setToUpdate()
             wsProfileViewModel.loadProfile()
             mainViewModel.onLoad()
             templateViewModel.onLoad()
             navigationStateManager.clearNavigationEvent()
         }
-
-        //feature screens navigation starts here
         is NavigationEvent.ClearBackStack -> {
             navController.popBackStack(navController.graph.startDestinationId, false)
             navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NoNavigation -> {
             // Do nothing
         }
+        else -> {}
+    }
+}
 
-        //when cases for the feature events
-        is NavigationEvent.NavigateToChat -> {
+private fun handleFeatureNavigation(
+    event: NavigationEvent,
+    navController: NavHostController,
+    filterViewModel: FilterViewModel,
+    membersManagerViewModel: MembersManagerViewModel,
+    membersViewModel: MembersViewModel,
+    noteEditViewModel: NoteEditViewModel,
+    profileViewModel: ProfileViewModel,
+    templateViewModel: TemplateViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    when (event) {
+        is NavigationEvent.NavigateToChat,
+        is NavigationEvent.NavigateToChatTagReset -> {
             navController.navigate(NavRoutes.CHAT)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToCopy -> {
             navController.navigate(NavRoutes.COPY)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToFields -> {
             navController.navigate(NavRoutes.FIELDS)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToFilter -> {
             navController.navigate(NavRoutes.FILTER)
             filterViewModel.onLoad()
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToInvite -> {
             navController.navigate(NavRoutes.INVITE)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToMembersManager -> {
             navController.navigate(NavRoutes.MEMBERS_MANAGER)
             membersManagerViewModel.loadUsers()
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToMembers -> {
             navController.navigate(NavRoutes.MEMBERS)
             membersViewModel.loadUsers()
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToNote -> {
             navController.navigate(NavRoutes.NOTE)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToNoteCreation -> {
             navController.navigate(NavRoutes.NOTE_CREATION)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)
             noteEditViewModel.loadWorkspaces()
-            navigationStateManager.clearNavigationEvent()
         }
-
-        is NavigationEvent.NavigateToOtherProfile -> {
-            navController.navigate(NavRoutes.OTHER_PROFILE)
-            profileViewModel.loadProfile(navigationStateManager.getOtherUserId())
-            navigationStateManager.clearNavigationEvent()
-        }
-
         is NavigationEvent.NavigateToSharing -> {
             navController.navigate(NavRoutes.SHARING)
-            navigationStateManager.clearNavigationEvent()
         }
-
         is NavigationEvent.NavigateToTemplate -> {
             navController.navigate(NavRoutes.TEMPLATE) {
                 popUpTo(0) { inclusive = true }
             }
             templateViewModel.onLoad()
-            navigationStateManager.clearNavigationEvent()
         }
-
-        is NavigationEvent.NavigateToWsCreation -> {
-            navController.navigate(NavRoutes.WS_CREATION)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWsProfileManager -> {
-            navController.navigate(NavRoutes.WS_PROFILE_MANAGER)
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWsProfile -> {
-            navController.navigate(NavRoutes.WS_PROFILE)
-            wsProfileViewModel.loadProfile()
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToWsSelect -> {
-            navController.navigate(NavRoutes.WS_SELECT)
-            wsSelectViewModel.setToUpdate()
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToMainWithContext -> {
-            navController.navigate(NavRoutes.MAIN) {
-                popUpTo(0) { inclusive = true }
-            }
-            mainViewModel.onLoad()
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToMainTagReset -> {
-            navController.navigate(NavRoutes.MAIN){
-                popUpTo(0) { inclusive = true }
-            }
-            mainViewModel.onLoadTagReset()
-            navigationStateManager.clearNavigationEvent()
-        }
-
-        is NavigationEvent.NavigateToChatTagReset -> {
-            navController.navigate(NavRoutes.CHAT)
-            navigationStateManager.clearNavigationEvent()
-        }
-
         is NavigationEvent.NavigateToTemplateTagReset -> {
-            navController.navigate(NavRoutes.TEMPLATE){
+            navController.navigate(NavRoutes.TEMPLATE) {
                 popUpTo(0) { inclusive = true }
             }
             templateViewModel.onLoadTagReset()
-            navigationStateManager.clearNavigationEvent()
         }
+        else -> {}
     }
+    navigationStateManager.clearNavigationEvent()
+}
+
+private fun handleWorkspaceNavigation(
+    event: NavigationEvent,
+    navController: NavHostController,
+    wsProfileViewModel: WsProfileViewModel,
+    wsSelectViewModel: WsSelectViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    when (event) {
+        is NavigationEvent.NavigateToWsCreation -> {
+            navController.navigate(NavRoutes.WS_CREATION)
+        }
+        is NavigationEvent.NavigateToWsProfileManager -> {
+            navController.navigate(NavRoutes.WS_PROFILE_MANAGER)
+        }
+        is NavigationEvent.NavigateToWsProfile -> {
+            navController.navigate(NavRoutes.WS_PROFILE)
+            wsProfileViewModel.loadProfile()
+        }
+        is NavigationEvent.NavigateToWsSelect -> {
+            navController.navigate(NavRoutes.WS_SELECT)
+            wsSelectViewModel.setToUpdate()
+        }
+        else -> {}
+    }
+    navigationStateManager.clearNavigationEvent()
 }
 
 
@@ -584,190 +628,250 @@ private fun AppNavHost(
         navController = navController,
         startDestination = NavRoutes.LOADING
     ) {
-        composable(NavRoutes.LOADING) {
-            LoadingScreen(message = stringResource(R.string.checking_authentication))
-        }
+        addAuthRoutes(authViewModel, profileViewModel, navigationStateManager)
+        addMainRoutes(mainViewModel, templateViewModel, navigationStateManager, featureActions)
+        addProfileRoutes(authViewModel, profileViewModel, navigationStateManager)
+        addWorkspaceRoutes(wsSelectViewModel, navigationStateManager, featureActions)
+        addFeatureRoutes(
+            chatViewModel, filterViewModel, noteViewModel, noteCreationViewModel,
+            noteEditViewModel, navigationStateManager, featureActions
+        )
+        addWorkspaceManagementRoutes(
+            wsProfileViewModel, inviteViewModel, membersViewModel, membersManagerViewModel,
+            wsProfileManagerViewModel, wsCreationViewModel, navigationStateManager, featureActions
+        )
+    }
+}
 
-        composable(NavRoutes.AUTH) {
-            AuthScreen(authViewModel = authViewModel, profileViewModel = profileViewModel)
-        }
+private fun NavGraphBuilder.addAuthRoutes(
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    composable(NavRoutes.LOADING) {
+        LoadingScreen(message = stringResource(R.string.checking_authentication))
+    }
 
-        composable(NavRoutes.PROFILE_COMPLETION) {
-            ProfileCompletionScreen(
-                profileViewModel = profileViewModel,
-                onProfileCompleted = { navigationStateManager.handleProfileCompletion() },
-                onProfileCompletedWithMessage = { message ->
-                    Log.d("AppNavigation", "Profile completed with message: $message")
-                    navigationStateManager.handleProfileCompletionWithMessage(message)
-                }
+    composable(NavRoutes.AUTH) {
+        AuthScreen(authViewModel = authViewModel, profileViewModel = profileViewModel)
+    }
+
+    composable(NavRoutes.PROFILE_COMPLETION) {
+        ProfileCompletionScreen(
+            profileViewModel = profileViewModel,
+            onProfileCompleted = { navigationStateManager.handleProfileCompletion() },
+            onProfileCompletedWithMessage = { message ->
+                Log.d("AppNavigation", "Profile completed with message: $message")
+                navigationStateManager.handleProfileCompletionWithMessage(message)
+            }
+        )
+    }
+}
+
+private fun NavGraphBuilder.addMainRoutes(
+    mainViewModel: MainViewModel,
+    templateViewModel: TemplateViewModel,
+    navigationStateManager: NavigationStateManager,
+    featureActions: FeatureActions
+) {
+    composable(NavRoutes.MAIN) {
+        MainScreen(
+            mainViewModel = mainViewModel,
+            onProfileClick = { navigationStateManager.navigateToProfile() },
+            featureActions = featureActions
+        )
+    }
+
+    composable(NavRoutes.TEMPLATE) {
+        TemplateScreen(
+            templateViewModel = templateViewModel,
+            onProfileClick = { navigationStateManager.navigateToProfile() },
+            featureActions = featureActions
+        )
+    }
+}
+
+private fun NavGraphBuilder.addProfileRoutes(
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
+    navigationStateManager: NavigationStateManager
+) {
+    composable(NavRoutes.PROFILE) {
+        Log.d("navigation", "Navigating to profile")
+        ProfileScreen(
+            authViewModel = authViewModel,
+            profileViewModel = profileViewModel,
+            actions = ProfileScreenActions(
+                onBackClick = { navigationStateManager.navigateBack() },
+                onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
+                onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
+                onSignOut = { navigationStateManager.handleSignOut() }
             )
-        }
+        )
+    }
 
-        composable(NavRoutes.MAIN) {
-            MainScreen(
-                mainViewModel = mainViewModel,
-                onProfileClick = { navigationStateManager.navigateToProfile() },
-                //TODO: change 'personal' to user id once we have access to
-                featureActions = featureActions
-            )
-        }
+    composable(NavRoutes.MANAGE_PROFILE) {
+        ManageProfileScreen(
+            profileViewModel = profileViewModel,
+            onBackClick = { navigationStateManager.navigateBack() }
+        )
+    }
 
-        composable(NavRoutes.TEMPLATE){
-            TemplateScreen(
-                templateViewModel = templateViewModel,
-                onProfileClick = { navigationStateManager.navigateToProfile() },
-                //TODO: change 'personal' to user id once we have access to
-                featureActions = featureActions
-            )
-        }
+    composable(NavRoutes.OTHER_PROFILE) {
+        Log.d("navigation", "navigating to other profile instead")
+        OtherProfileScreen(
+            profileViewModel = profileViewModel,
+            onBackClick = { navigationStateManager.navigateBack() }
+        )
+    }
+}
 
-        composable(NavRoutes.PROFILE) {
-            Log.d("navigation", "Navigating to profile")
-            ProfileScreen(
-                authViewModel = authViewModel,
-                profileViewModel = profileViewModel,
-                actions = ProfileScreenActions(
-                    onBackClick = { navigationStateManager.navigateBack() },
-                    onManageProfileClick = { navigationStateManager.navigateToManageProfile() },
-                    onAccountDeleted = { navigationStateManager.handleAccountDeletion() },
-                    onSignOut = { navigationStateManager.handleSignOut() }
-                )
-            )
-        }
-
-        composable(NavRoutes.MANAGE_PROFILE) {
-            ManageProfileScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
-
-        composable(NavRoutes.WS_SELECT) {
-            WorkspacesScreen(
-                workspacesViewModel = wsSelectViewModel,
-                onBackClick = {
-                    //faking the "on back click" into always going back to the last selected workspace
-                    when (navigationStateManager.getNoteType()){
-                        NoteType.CHAT -> {
-                            navigationStateManager.navigateToChatTagReset(
-                                navigationStateManager.getWorkspaceId()
-                            )
-                        }
-                        NoteType.CONTENT -> {
-                            navigationStateManager.navigateToMainTagReset(
-                                navigationStateManager.getWorkspaceId()
-                            )
-                        }
-                        NoteType.TEMPLATE -> {
-                            navigationStateManager.navigateToTemplateTagReset(
-                                navigationStateManager.getWorkspaceId()
-                            )
-                        }
+private fun NavGraphBuilder.addWorkspaceRoutes(
+    wsSelectViewModel: WsSelectViewModel,
+    navigationStateManager: NavigationStateManager,
+    featureActions: FeatureActions
+) {
+    composable(NavRoutes.WS_SELECT) {
+        WorkspacesScreen(
+            workspacesViewModel = wsSelectViewModel,
+            onBackClick = {
+                when (navigationStateManager.getNoteType()) {
+                    NoteType.CHAT -> {
+                        navigationStateManager.navigateToChatTagReset(
+                            navigationStateManager.getWorkspaceId()
+                        )
                     }
-                              },
-                featureActions = featureActions,
-                onPersonalProfileClick = { navigationStateManager.navigateToProfile() })
-        }
+                    NoteType.CONTENT -> {
+                        navigationStateManager.navigateToMainTagReset(
+                            navigationStateManager.getWorkspaceId()
+                        )
+                    }
+                    NoteType.TEMPLATE -> {
+                        navigationStateManager.navigateToTemplateTagReset(
+                            navigationStateManager.getWorkspaceId()
+                        )
+                    }
+                }
+            },
+            featureActions = featureActions,
+            onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
+        )
+    }
+}
 
-        composable(NavRoutes.CHAT){
-            ChatScreen(
-                chatViewModel = chatViewModel,
-                onProfileClick = { navigationStateManager.navigateToProfile() },
-                onBackClick = { navigationStateManager.navigateBack() },
-                featureActions = featureActions
-            )
-        }
+private fun NavGraphBuilder.addFeatureRoutes(
+    chatViewModel: ChatViewModel,
+    filterViewModel: FilterViewModel,
+    noteViewModel: NoteViewModel,
+    noteCreationViewModel: NoteCreationViewModel,
+    noteEditViewModel: NoteEditViewModel,
+    navigationStateManager: NavigationStateManager,
+    featureActions: FeatureActions
+) {
+    composable(NavRoutes.CHAT) {
+        ChatScreen(
+            chatViewModel = chatViewModel,
+            onProfileClick = { navigationStateManager.navigateToProfile() },
+            onBackClick = { navigationStateManager.navigateBack() },
+            featureActions = featureActions
+        )
+    }
 
-        composable(NavRoutes.FILTER){
-            FilterScreen(
-                filterViewModel = filterViewModel,
-                //TODO: change 'personal' to user id once we have access to
-                featureActions = featureActions,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
+    composable(NavRoutes.FILTER) {
+        FilterScreen(
+            filterViewModel = filterViewModel,
+            featureActions = featureActions,
+            onBackClick = { navigationStateManager.navigateBack() }
+        )
+    }
 
-        composable (NavRoutes.NOTE){
-            NoteScreen(
-                noteViewModel = noteViewModel,
-                featureActions = featureActions,
-                onBackClick = { navigationStateManager.navigateBack() }
-            )
-        }
+    composable(NavRoutes.NOTE) {
+        NoteScreen(
+            noteViewModel = noteViewModel,
+            featureActions = featureActions,
+            onBackClick = { navigationStateManager.navigateBack() }
+        )
+    }
 
-        composable(NavRoutes.NOTE_CREATION) {
-            LaunchedEffect(Unit) {
-                noteCreationViewModel.reset()
-            }
-            NoteCreationScreen(
-                noteCreationViewModel = noteCreationViewModel,
-                onBackClick = { navigationStateManager.navigateBack() },
-                featureActions = featureActions
-            )
+    composable(NavRoutes.NOTE_CREATION) {
+        LaunchedEffect(Unit) {
+            noteCreationViewModel.reset()
         }
+        NoteCreationScreen(
+            noteCreationViewModel = noteCreationViewModel,
+            onBackClick = { navigationStateManager.navigateBack() },
+            featureActions = featureActions
+        )
+    }
 
-        composable(NavRoutes.NOTE_EDIT) {
-            LaunchedEffect(Unit) {
-                noteEditViewModel.reset()
-            }
-            NoteEditScreen(
-                noteEditViewModel = noteEditViewModel,
-                onBackClick = { navigationStateManager.navigateBack() },
-                featureActions = featureActions
-            )
+    composable(NavRoutes.NOTE_EDIT) {
+        LaunchedEffect(Unit) {
+            noteEditViewModel.reset()
         }
+        NoteEditScreen(
+            noteEditViewModel = noteEditViewModel,
+            onBackClick = { navigationStateManager.navigateBack() },
+            featureActions = featureActions
+        )
+    }
+}
 
-        composable ( NavRoutes.OTHER_PROFILE ){
-            Log.d("navigation", "navigating to other profile instead")
-            OtherProfileScreen(
-                profileViewModel = profileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() },
-            )
-        }
+private fun NavGraphBuilder.addWorkspaceManagementRoutes(
+    wsProfileViewModel: WsProfileViewModel,
+    inviteViewModel: InviteViewModel,
+    membersViewModel: MembersViewModel,
+    membersManagerViewModel: MembersManagerViewModel,
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    wsCreationViewModel: WsCreationViewModel,
+    navigationStateManager: NavigationStateManager,
+    featureActions: FeatureActions
+) {
+    composable(NavRoutes.WS_PROFILE) {
+        WsProfileScreen(
+            wsProfileViewModel,
+            onBackClick = { navigationStateManager.navigateBack() },
+            featureActions = featureActions
+        )
+    }
 
-        composable (route = NavRoutes.WS_PROFILE ){
-            WsProfileScreen(wsProfileViewModel,
-                onBackClick = { navigationStateManager.navigateBack() },
-                featureActions = featureActions)
-        }
+    composable(NavRoutes.INVITE) {
+        WsInviteScreen(
+            wsInviteViewModel = inviteViewModel,
+            featureActions = featureActions,
+            onBackClick = { navigationStateManager.navigateBack() }
+        )
+    }
 
-        composable(route = NavRoutes.INVITE) {
-            WsInviteScreen(
-                wsInviteViewModel = inviteViewModel,
-                featureActions = featureActions,
-                onBackClick = { navigationStateManager.navigateBack() })
-        }
+    composable(NavRoutes.MEMBERS) {
+        WsMembersScreen(
+            membersViewModel = membersViewModel,
+            featureActions = featureActions,
+            onBackClick = { navigationStateManager.navigateBack() },
+            onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
+        )
+    }
 
-        composable(route = NavRoutes.MEMBERS){
-            WsMembersScreen(
-                membersViewModel = membersViewModel,
-                featureActions = featureActions,
-                onBackClick = { navigationStateManager.navigateBack() },
-                onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
-            )
-        }
+    composable(NavRoutes.WS_PROFILE_MANAGER) {
+        WsProfileManagerScreen(
+            wsProfileManagerViewModel = wsProfileManagerViewModel,
+            featureActions = featureActions
+        )
+    }
 
-        composable(route = NavRoutes.WS_PROFILE_MANAGER){
-            WsProfileManagerScreen(
-                wsProfileManagerViewModel = wsProfileManagerViewModel,
-                featureActions = featureActions
-            )
-        }
+    composable(NavRoutes.MEMBERS_MANAGER) {
+        WsMembersManagerScreen(
+            membersManagerViewModel = membersManagerViewModel,
+            onBackClick = { navigationStateManager.navigateBack() },
+            onPersonalProfileClick = { navigationStateManager.navigateToProfile() },
+            featureActions = featureActions
+        )
+    }
 
-        composable (route = NavRoutes.MEMBERS_MANAGER){
-            WsMembersManagerScreen(
-                membersManagerViewModel = membersManagerViewModel,
-                onBackClick = { navigationStateManager.navigateBack() },
-                onPersonalProfileClick = { navigationStateManager.navigateToProfile() },
-                featureActions = featureActions
-            )
-        }
-        composable(NavRoutes.WS_CREATION){
-            CreateWorkspaceScreen(
-                wsCreationViewModel = wsCreationViewModel,
-                onBackClick = { navigationStateManager.navigateBack() },
-                featureActions = featureActions
-            )
-        }
+    composable(NavRoutes.WS_CREATION) {
+        CreateWorkspaceScreen(
+            wsCreationViewModel = wsCreationViewModel,
+            onBackClick = { navigationStateManager.navigateBack() },
+            featureActions = featureActions
+        )
     }
 }
