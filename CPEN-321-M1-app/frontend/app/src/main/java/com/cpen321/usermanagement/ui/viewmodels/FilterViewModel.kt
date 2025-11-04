@@ -38,7 +38,7 @@ class FilterViewModel@Inject constructor(
 
     private suspend fun updateAvailableTags(){
         val result:Result<List<String>> = workspaceRepository.getAllTags(
-            navigationStateManager.getWorkspaceId())
+            navigationStateManager.state.getWorkspaceId())
         if(result.isSuccess){
             _allTags = result.getOrNull()!!
         }

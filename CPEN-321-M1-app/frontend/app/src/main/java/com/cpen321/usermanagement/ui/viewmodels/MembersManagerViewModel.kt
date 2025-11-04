@@ -20,7 +20,7 @@ class MembersManagerViewModel@Inject constructor(
        viewModelScope.launch {
            _uiState.value = _uiState.value.copy(isLoading = true)
            val banRequest = workspaceRepository.banMember(userId,
-               navigationStateManager.getWorkspaceId())
+               navigationStateManager.state.getWorkspaceId())
            if (banRequest.isSuccess){
                val newMemberList = _uiState.value.members.toMutableList()
                newMemberList.removeIf { it._id == userId }

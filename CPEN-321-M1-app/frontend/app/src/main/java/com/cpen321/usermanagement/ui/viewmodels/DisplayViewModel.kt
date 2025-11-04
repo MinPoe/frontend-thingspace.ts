@@ -48,14 +48,14 @@ open class DisplayViewModel @Inject constructor(
     fun onLoad(){
         _fetching.value = true
         viewModelScope.launch{
-            cacheUpdateWorkspaceOrUser(navigationStateManager.getWorkspaceId())
+            cacheUpdateWorkspaceOrUser(navigationStateManager.state.getWorkspaceId())
             searchResults()
             _fetching.value=false
         }
     }
 
     fun getWorkspaceName():String{
-        val workspaceId = navigationStateManager.getWorkspaceId()
+        val workspaceId = navigationStateManager.state.getWorkspaceId()
         viewModelScope.launch{cacheUpdateWorkspaceOrUser(workspaceId)}
         return _wsname //TODO: if "" should move to userId
     }
@@ -82,7 +82,7 @@ open class DisplayViewModel @Inject constructor(
                     _wspic = ws.profile.imagePath ?: ""
                     _wsdescr = ws.profile.description ?: ""
                     _wsname = ws.profile.name
-                    navigationStateManager.setWorkspaceId(ws._id)
+                    navigationStateManager.state.setWorkspaceId(ws._id)
                 }
                 else
                 {
@@ -94,12 +94,12 @@ open class DisplayViewModel @Inject constructor(
     }
 
     protected open suspend fun searchResults(){
-        val tags = navigationStateManager.getSelectedTags()
+        val tags = navigationStateManager.state.getSelectedTags()
 
         val noteSearchResult = noteRepository.findNotes( //TODO: Pagination later
-            workspaceId = navigationStateManager.getWorkspaceId(),
-            noteType = navigationStateManager.getNoteType(),
-            searchQuery = navigationStateManager.getSearchQuery(),
+            workspaceId = navigationStateManager.state.getWorkspaceId(),
+            noteType = navigationStateManager.state.getNoteType(),
+            searchQuery = navigationStateManager.state.getSearchQuery(),
             tagsToInclude = tags,
             notesPerPage = _notesPerPage
             )
@@ -114,13 +114,13 @@ open class DisplayViewModel @Inject constructor(
 
     suspend fun loadAllUserTags(){
         val tagsRequest = workspaceRepository.getAllTags(
-            navigationStateManager.getWorkspaceId())
+            navigationStateManager.state.getWorkspaceId())
         if (tagsRequest.isSuccess){
             val allTags = tagsRequest.getOrNull()!!
-            navigationStateManager.updateTagSelection(allTags, true)
+            navigationStateManager.state.updateTagSelection(allTags, true)
         }
         else{
-            navigationStateManager.updateTagSelection(emptyList(),
+            navigationStateManager.state.updateTagSelection(emptyList(),
                 false)
         }
     }
@@ -128,7 +128,7 @@ open class DisplayViewModel @Inject constructor(
     fun onLoadTagReset(){
         _fetching.value = true
         viewModelScope.launch{
-            cacheUpdateWorkspaceOrUser(navigationStateManager.getWorkspaceId())
+            cacheUpdateWorkspaceOrUser(navigationStateManager.state.getWorkspaceId())
             loadAllUserTags()
             searchResults()
             _fetching.value=false

@@ -59,7 +59,7 @@ class ChatViewModel @Inject constructor(
 
     private suspend fun checkForNewMessages() {
         try {
-            val workspaceId = navigationStateManager.getWorkspaceId()
+            val workspaceId = navigationStateManager.state.getWorkspaceId()
             if (workspaceId.isEmpty()) return
 
             withContext(Dispatchers.IO) {
@@ -83,7 +83,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun loadMessages(showLoading: Boolean = true) {
-        val workspaceId = navigationStateManager.getWorkspaceId()
+        val workspaceId = navigationStateManager.state.getWorkspaceId()
         if (workspaceId.isEmpty()) {
             Log.e(TAG, "No workspace ID available")
             return
@@ -136,7 +136,7 @@ class ChatViewModel @Inject constructor(
     fun sendMessage(content: String) {
         if (content.isBlank()) return
 
-        val workspaceId = navigationStateManager.getWorkspaceId()
+        val workspaceId = navigationStateManager.state.getWorkspaceId()
         if (workspaceId.isEmpty()) {
             Log.e(TAG, "No workspace ID available")
             return

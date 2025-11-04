@@ -1,6 +1,7 @@
 package com.cpen321.usermanagement.ui.navigation
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -100,16 +101,9 @@ data class NavigationState(
     val searchQuery: String = "",
 )
 
-@Singleton
-class NavigationStateManager @Inject constructor() {
-
-    private val _navigationEvent = MutableStateFlow<NavigationEvent>(NavigationEvent.NoNavigation)
-    val navigationEvent: StateFlow<NavigationEvent> = _navigationEvent.asStateFlow()
-
-    private val _navigationState = MutableStateFlow(NavigationState())
-
+class NavigationStateWrapper(private val _navigationState: MutableStateFlow<NavigationState>){
     /** Auto-generated getters for feature state
-    **/
+     **/
     fun getWorkspaceId(): String {
         return _navigationState.value.workspaceId
     }
@@ -144,97 +138,17 @@ class NavigationStateManager @Inject constructor() {
 
     fun updateTagSelection(selectedTags: List<String>, allTagsSelected: Boolean){
         _navigationState.value = _navigationState.value.copy(selectedTags = selectedTags,
-           allTagsSelected = allTagsSelected)
+            allTagsSelected = allTagsSelected)
     }
 
     fun setWorkspaceId(workspaceId: String){
         _navigationState.value = _navigationState.value.copy(workspaceId = workspaceId)
     }
 
-    /**
-     * Updates the authentication state and triggers appropriate navigation
-     */
-    fun updateAuthenticationState(
-        isAuthenticated: Boolean,
-        needsProfileCompletion: Boolean,
-        isLoading: Boolean = false,
-        currentRoute: String = _navigationState.value.currentRoute
-    ) {
-        val newState = _navigationState.value.copy(
-            isAuthenticated = isAuthenticated,
-            needsProfileCompletion = needsProfileCompletion,
-            isLoading = isLoading,
-            currentRoute = currentRoute
-        )
-        _navigationState.value = newState
+}
 
-        // Trigger navigation based on state
-        if (!isLoading) {
-            handleAuthenticationNavigation(currentRoute, isAuthenticated, needsProfileCompletion)
-        }
-    }
-
-    private fun handleAuthenticationNavigation(
-        currentRoute: String,
-        isAuthenticated: Boolean,
-        needsProfileCompletion: Boolean
-    ) {
-        when {
-            // From loading screen after auth check
-            currentRoute == NavRoutes.LOADING -> {
-                if (isAuthenticated) {
-                    if (needsProfileCompletion) {
-                        navigateToProfileCompletion()
-                    } else {
-                        navigateToMain()
-                    }
-                } else {
-                    navigateToAuth()
-                }
-            }
-            // From auth screen after successful login
-            currentRoute.startsWith(NavRoutes.AUTH) && isAuthenticated -> {
-                if (needsProfileCompletion) {
-                    navigateToProfileCompletion()
-                } else {
-                    navigateToMain()
-                }
-            }
-        }
-    }
-
-    /**
-     * Navigate to auth screen
-     */
-    fun navigateToAuth() {
-        _navigationEvent.value = NavigationEvent.NavigateToAuth
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.AUTH)
-    }
-
-    /**
-     * Navigate to auth screen with success message
-     */
-    fun navigateToAuthWithMessage(message: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToAuthWithMessage(message)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.AUTH)
-    }
-
-    /**
-     * Navigate to main screen
-     */
-    fun navigateToMain() {
-        _navigationEvent.value = NavigationEvent.NavigateToMain
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_SELECT)
-    }
-
-    /**
-     * Navigate to main screen with success message
-     */
-    fun navigateToMainWithMessage(message: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToMainWithMessage(message)
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN)
-    }
-
+class DisplayNavRoutesWrapper(private val _navigationState: MutableStateFlow<NavigationState>,
+                       private val _navigationEvent: MutableStateFlow<NavigationEvent>){
     /**
      * Navigate to chat screen with standard context
      */
@@ -262,116 +176,19 @@ class NavigationStateManager @Inject constructor() {
     }
 
     /**
-     * Navigate to copy screen with standard context
+     * Navigate to main screen
      */
-    fun navigateToCopy() {
-        _navigationEvent.value = NavigationEvent.NavigateToCopy
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.COPY)
+    fun navigateToMain() {
+        _navigationEvent.value = NavigationEvent.NavigateToMain
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_SELECT)
     }
 
     /**
-     * Navigate to fields screen with standard context
+     * Navigate to main screen with success message
      */
-    fun navigateToFields() {
-        _navigationEvent.value = NavigationEvent.NavigateToFields
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FIELDS)
-    }
-
-    /**
-     * Navigate to filter screen with standard context
-     */
-    fun navigateToFilter(
-        workspaceId: String,
-        selectedTags: List<String>,
-        allTagsSelected: Boolean
-    ) {
-        _navigationEvent.value = NavigationEvent.NavigateToFilter(
-            workspaceId = workspaceId,
-            selectedTags = selectedTags,
-            allTagsSelected = allTagsSelected
-        )
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.FILTER,
-            workspaceId = workspaceId,
-            selectedTags = selectedTags,
-            allTagsSelected = allTagsSelected
-        )
-    }
-
-    /**
-     * Navigate to invite screen with standard context
-     */
-    fun navigateToInvite() {
-        _navigationEvent.value = NavigationEvent.NavigateToInvite
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.INVITE)
-    }
-
-    /**
-     * Navigate to members manager screen with standard context
-     */
-    fun navigateToMembersManager() {
-        _navigationEvent.value = NavigationEvent.NavigateToMembersManager
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS_MANAGER)
-    }
-
-    /**
-     * Navigate to members screen with standard context
-     */
-    fun navigateToMembers() {
-        _navigationEvent.value = NavigationEvent.NavigateToMembers
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS)
-    }
-
-    /**
-     * Navigate to note screen with standard context
-     */
-    fun navigateToNote(noteId: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToNote(noteId)
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.NOTE,
-            noteId = noteId
-        )
-    }
-
-    /**
-     * Navigate to note creation screen
-     */
-    fun navigateToNoteCreation() {
-        _navigationEvent.value = NavigationEvent.NavigateToNoteCreation
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.NOTE_CREATION
-            // workspaceId is preserved from current state
-        )
-    }
-
-    /**
-     * Navigate to note edit screen
-     */
-    fun navigateToNoteEdit(noteId: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToNoteEdit
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.NOTE_EDIT,
-            noteId = noteId
-        )
-    }
-
-    /**
-     * Navigate to other profile screen with standard context
-     */
-    fun navigateToOtherProfile(otherUserId: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToOtherProfile(otherUserId)
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.OTHER_PROFILE,
-            otherUserId = otherUserId
-        )
-    }
-
-    /**
-     * Navigate to sharing screen with standard context
-     */
-    fun navigateToSharing() {
-        _navigationEvent.value = NavigationEvent.NavigateToSharing
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.SHARING)
+    fun navigateToMainWithMessage(message: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToMainWithMessage(message)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MAIN)
     }
 
     /**
@@ -396,36 +213,6 @@ class NavigationStateManager @Inject constructor() {
             allTagsSelected = allTagsSelected,
             searchQuery = searchQuery,
             noteType = NoteType.TEMPLATE
-        )
-    }
-
-    /**
-     * Navigate to workspace creation screen with standard context
-     */
-    fun navigateToWsCreation() {
-        _navigationEvent.value = NavigationEvent.NavigateToWsCreation
-        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_CREATION)
-    }
-
-    /**
-     * Navigate to workspace profile manager screen with standard context
-     */
-    fun navigateToWsProfileManager(workspaceId: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToWsProfileManager(workspaceId)
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.WS_PROFILE_MANAGER,
-            workspaceId = workspaceId
-        )
-    }
-
-    /**
-     * Navigate to workspace profile screen with standard context
-     */
-    fun navigateToWsProfile(workspaceId: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToWsProfile(workspaceId)
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.WS_PROFILE,
-            workspaceId = workspaceId
         )
     }
 
@@ -499,11 +286,248 @@ class NavigationStateManager @Inject constructor() {
     }
 
     /**
+     * Navigate to filter screen with standard context
+     */
+    fun navigateToFilter(
+        workspaceId: String,
+        selectedTags: List<String>,
+        allTagsSelected: Boolean
+    ) {
+        _navigationEvent.value = NavigationEvent.NavigateToFilter(
+            workspaceId = workspaceId,
+            selectedTags = selectedTags,
+            allTagsSelected = allTagsSelected
+        )
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.FILTER,
+            workspaceId = workspaceId,
+            selectedTags = selectedTags,
+            allTagsSelected = allTagsSelected
+        )
+    }
+}
+
+class WorkspaceRoutesWrapper(private val _navigationState: MutableStateFlow<NavigationState>,
+                             private val _navigationEvent: MutableStateFlow<NavigationEvent>){
+    /**
+     * Navigate to invite screen with standard context
+     */
+    fun navigateToInvite() {
+        _navigationEvent.value = NavigationEvent.NavigateToInvite
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.INVITE)
+    }
+
+    /**
+     * Navigate to members manager screen with standard context
+     */
+    fun navigateToMembersManager() {
+        _navigationEvent.value = NavigationEvent.NavigateToMembersManager
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS_MANAGER)
+    }
+
+    /**
+     * Navigate to members screen with standard context
+     */
+    fun navigateToMembers() {
+        _navigationEvent.value = NavigationEvent.NavigateToMembers
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.MEMBERS)
+    }
+
+    /**
+     * Navigate to workspace creation screen with standard context
+     */
+    fun navigateToWsCreation() {
+        _navigationEvent.value = NavigationEvent.NavigateToWsCreation
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_CREATION)
+    }
+
+    /**
+     * Navigate to workspace profile manager screen with standard context
+     */
+    fun navigateToWsProfileManager(workspaceId: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToWsProfileManager(workspaceId)
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.WS_PROFILE_MANAGER,
+            workspaceId = workspaceId
+        )
+    }
+
+    /**
+     * Navigate to workspace profile screen with standard context
+     */
+    fun navigateToWsProfile(workspaceId: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToWsProfile(workspaceId)
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.WS_PROFILE,
+            workspaceId = workspaceId
+        )
+    }
+
+    /**
      * Navigate to workspace select screen with standard context
      */
     fun navigateToWsSelect() {
         _navigationEvent.value = NavigationEvent.NavigateToWsSelect
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.WS_SELECT)
+    }
+}
+
+class NoteRoutesWrapper(private val _navigationState: MutableStateFlow<NavigationState>,
+                        private val _navigationEvent: MutableStateFlow<NavigationEvent>){
+    /**
+     * Navigate to copy screen with standard context
+     */
+    fun navigateToCopy() {
+        _navigationEvent.value = NavigationEvent.NavigateToCopy
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.COPY)
+    }
+
+    /**
+     * Navigate to fields screen with standard context
+     */
+    fun navigateToFields() {
+        _navigationEvent.value = NavigationEvent.NavigateToFields
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FIELDS)
+    }
+
+
+    /**
+     * Navigate to note screen with standard context
+     */
+    fun navigateToNote(noteId: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToNote(noteId)
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.NOTE,
+            noteId = noteId
+        )
+    }
+
+    /**
+     * Navigate to note creation screen
+     */
+    fun navigateToNoteCreation() {
+        _navigationEvent.value = NavigationEvent.NavigateToNoteCreation
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.NOTE_CREATION
+            // workspaceId is preserved from current state
+        )
+    }
+
+    /**
+     * Navigate to note edit screen
+     */
+    fun navigateToNoteEdit(noteId: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToNoteEdit
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.NOTE_EDIT,
+            noteId = noteId
+        )
+    }
+
+    /**
+     * Navigate to sharing screen with standard context
+     */
+    fun navigateToSharing() {
+        _navigationEvent.value = NavigationEvent.NavigateToSharing
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.SHARING)
+    }
+}
+
+@Singleton
+class NavigationStateManager @Inject constructor() {
+
+    private val _navigationEvent = MutableStateFlow<NavigationEvent>(NavigationEvent.NoNavigation)
+    val navigationEvent: StateFlow<NavigationEvent> = _navigationEvent.asStateFlow()
+
+    private val _navigationState = MutableStateFlow(NavigationState())
+
+    //large groups of navigation functionality and routes:
+    val state = NavigationStateWrapper(_navigationState)
+    val display = DisplayNavRoutesWrapper(_navigationState, _navigationEvent)
+    val ws = WorkspaceRoutesWrapper(_navigationState, _navigationEvent)
+    val note = NoteRoutesWrapper(_navigationState, _navigationEvent)
+
+    //authentication helpers:
+    /**
+     * Updates the authentication state and triggers appropriate navigation
+     */
+    fun updateAuthenticationState(
+        isAuthenticated: Boolean,
+        needsProfileCompletion: Boolean,
+        isLoading: Boolean = false,
+        currentRoute: String = _navigationState.value.currentRoute
+    ) {
+        val newState = _navigationState.value.copy(
+            isAuthenticated = isAuthenticated,
+            needsProfileCompletion = needsProfileCompletion,
+            isLoading = isLoading,
+            currentRoute = currentRoute
+        )
+        _navigationState.value = newState
+
+        // Trigger navigation based on state
+        if (!isLoading) {
+            handleAuthenticationNavigation(currentRoute, isAuthenticated, needsProfileCompletion)
+        }
+    }
+
+    private fun handleAuthenticationNavigation(
+        currentRoute: String,
+        isAuthenticated: Boolean,
+        needsProfileCompletion: Boolean
+    ) {
+        when {
+            // From loading screen after auth check
+            currentRoute == NavRoutes.LOADING -> {
+                if (isAuthenticated) {
+                    if (needsProfileCompletion) {
+                        navigateToProfileCompletion()
+                    } else {
+                        display.navigateToMain()
+                    }
+                } else {
+                    navigateToAuth()
+                }
+            }
+            // From auth screen after successful login
+            currentRoute.startsWith(NavRoutes.AUTH) && isAuthenticated -> {
+                if (needsProfileCompletion) {
+                    navigateToProfileCompletion()
+                } else {
+                    display.navigateToMain()
+                }
+            }
+        }
+    }
+
+    //Remaining navigation routes:
+    /**
+     * Navigate to auth screen
+     */
+    fun navigateToAuth() {
+        _navigationEvent.value = NavigationEvent.NavigateToAuth
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.AUTH)
+    }
+
+    /**
+     * Navigate to auth screen with success message
+     */
+    fun navigateToAuthWithMessage(message: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToAuthWithMessage(message)
+        _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.AUTH)
+    }
+
+
+
+    /**
+     * Navigate to other profile screen with standard context
+     */
+    fun navigateToOtherProfile(otherUserId: String) {
+        _navigationEvent.value = NavigationEvent.NavigateToOtherProfile(otherUserId)
+        _navigationState.value = _navigationState.value.copy(
+            currentRoute = NavRoutes.OTHER_PROFILE,
+            otherUserId = otherUserId
+        )
     }
 
 
@@ -542,6 +566,8 @@ class NavigationStateManager @Inject constructor() {
         _navigationEvent.value = NavigationEvent.NavigateBack
     }
 
+    //Other helpers:
+
 /**
  * Handle account deletion
             currentRoute = NavRoutes.MAIN,
@@ -573,7 +599,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun handleProfileCompletion() {
         _navigationState.value = _navigationState.value.copy(needsProfileCompletion = false)
-        navigateToMain()
+        display.navigateToMain()
     }
 
     /**
@@ -581,7 +607,7 @@ class NavigationStateManager @Inject constructor() {
      */
     fun handleProfileCompletionWithMessage(message: String) {
         _navigationState.value = _navigationState.value.copy(needsProfileCompletion = false)
-        navigateToMainWithMessage(message)
+        display.navigateToMainWithMessage(message)
     }
 
     /**
