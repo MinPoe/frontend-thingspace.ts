@@ -25,6 +25,16 @@ import com.cpen321.usermanagement.ui.viewmodels.WsSelectUIStateE
 import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.utils.FeatureActions
 
+data class WsMenuActions(
+    val onWsMainClick: (Int) -> Unit,
+    val onWsTemplateClick: (Int) -> Unit,
+    val onWsChatClick: (Int) -> Unit,
+    val onWsProfileClick: (Int) -> Unit,
+    val onPersonalContentClick: () -> Unit,
+    val onPersonalTemplateClick: () -> Unit,
+    val onPersonalChatClick: () -> Unit,
+    val onPersonalProfileClick:()-> Unit,
+)
 
 @Composable
 fun WorkspacesScreen(
@@ -50,13 +60,13 @@ fun WorkspacesScreen(
             val onWsMainClick = {index:Int ->
                 featureActions.navs.navigateToMainTagReset(availableWs[index]._id)}
             val onWsChatClick = {index:Int ->
-                featureActions.navs.navigateToMainTagReset(availableWs[index]._id)}
+                featureActions.navs.navigateToChatTagReset(availableWs[index]._id)}
             val onWsTemplateClick = {index:Int ->
                 featureActions.navs.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
             val onPersonalChatClick={ featureActions.navs.navigateToMainTagReset(
                 personalWs._id) }
-            val onPersonalContentClick={ featureActions.navs.navigateToMainTagReset(
+            val onPersonalContentClick={ featureActions.navs.navigateToChatTagReset(
                 personalWs._id) }
             val onPersonalTemplateClick={ featureActions.navs.navigateToTemplateTagReset(
                 personalWs._id) }
@@ -73,18 +83,23 @@ fun WorkspacesScreen(
                 else featureActions.ws.navigateToWsProfile(availableWs[index]._id) }
             val onCreateClick = {featureActions.ws.navigateToWsCreation()}
 
+            val wsMenuActions = WsMenuActions(
+                onWsMainClick = onWsMainClick,
+                onWsTemplateClick = onWsTemplateClick,
+                onWsChatClick = onWsChatClick,
+                onWsProfileClick = onWsProfileClick,
+                onPersonalContentClick = onPersonalContentClick,
+                onPersonalTemplateClick = onPersonalTemplateClick,
+                onPersonalChatClick = onPersonalChatClick,
+                onPersonalProfileClick = onPersonalProfileClick
+            )
 
-            WsContent(onWsMainClick = onWsMainClick,
+
+            WsContent(
                 onBackClick = onBackClick,
                 availableWs = availableWsNames,
                 username = personalWs.profile.name,
-                onWsChatClick= onWsChatClick,
-                onWsTemplateClick = onWsTemplateClick,
-                onWsProfileClick = onWsProfileClick,
-                onPersonalProfileClick = onPersonalProfileClick,
-                onPersonalContentClick = onPersonalContentClick,
-                onPersonalChatClick = onPersonalChatClick,
-                onPersonalTemplateClick = onPersonalTemplateClick,
+                wsMenuActions = wsMenuActions,
                 onCreateClick = onCreateClick
             )
         }
@@ -92,17 +107,10 @@ fun WorkspacesScreen(
 }
 @Composable
 private fun WsContent(
-    onWsMainClick: (Int)-> Unit,
+    wsMenuActions: WsMenuActions,
     onBackClick: ()->Unit,
     availableWs: List<String>,
     username:String,
-    onWsTemplateClick: (Int)->Unit,
-    onWsChatClick: (Int)->Unit,
-    onWsProfileClick: (Int)->Unit,
-    onPersonalProfileClick: ()->Unit,
-    onPersonalContentClick: ()->Unit,
-    onPersonalChatClick: ()->Unit,
-    onPersonalTemplateClick: ()->Unit,
     onCreateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
@@ -118,14 +126,7 @@ private fun WsContent(
             username = username,
             availableWs = availableWs,
             paddingValues = paddingValues,
-            onWsMainClick = onWsMainClick,
-            onWsChatClick = onWsChatClick,
-            onWsTemplateClick = onWsTemplateClick,
-            onWsProfileClick = onWsProfileClick,
-            onPersonalProfileClick = onPersonalProfileClick,
-            onPersonalContentClick = onPersonalContentClick,
-            onPersonalChatClick = onPersonalChatClick,
-            onPersonalTemplateClick = onPersonalTemplateClick,
+            wsMenuActions = wsMenuActions,
             onCreateClick = onCreateClick
             )
     }
@@ -136,14 +137,7 @@ private fun WsBody(
     availableWs: List<String>,
     username: String,
     paddingValues: PaddingValues,
-    onWsMainClick: (Int) -> Unit,
-    onWsChatClick: (Int) -> Unit,
-    onWsTemplateClick: (Int) -> Unit,
-    onWsProfileClick: (Int) -> Unit,
-    onPersonalProfileClick: ()->Unit,
-    onPersonalContentClick: ()->Unit,
-    onPersonalChatClick: ()->Unit,
-    onPersonalTemplateClick: ()->Unit,
+    wsMenuActions: WsMenuActions,
     onCreateClick: ()->Unit,
     modifier: Modifier = Modifier
 ) {
@@ -158,21 +152,21 @@ private fun WsBody(
         ) {
             WorkspaceRow(
                 workspaceName = username, //TODO: for now
-                onContentClick = onPersonalContentClick,
-                onTemplatesClick = onPersonalTemplateClick,
-                onProfileClick = onPersonalProfileClick,
-                onChatClick = onPersonalChatClick
+                onContentClick = wsMenuActions.onPersonalContentClick,
+                onTemplatesClick = wsMenuActions.onPersonalTemplateClick,
+                onProfileClick = wsMenuActions.onPersonalProfileClick,
+                onChatClick = wsMenuActions.onPersonalChatClick
             )
             for (i in 0..(availableWs.size-1))
                 WorkspaceRow(
                     workspaceName = availableWs[i],
-                    onContentClick = {onWsMainClick(i)},
-                    onProfileClick = {onWsProfileClick(i)},//TODO: for Now,
-                    onChatClick = {onWsChatClick(i)},
-                    onTemplatesClick = {onWsTemplateClick(i)}
+                    onContentClick = {wsMenuActions.onWsMainClick(i)},
+                    onProfileClick = {wsMenuActions.onWsProfileClick(i)},//TODO: for Now,
+                    onChatClick = {wsMenuActions.onWsChatClick(i)},
+                    onTemplatesClick = {wsMenuActions.onWsTemplateClick(i)}
                 )
         }
-        
+
         // Create button at bottom with proper padding
         Box(
             modifier = Modifier

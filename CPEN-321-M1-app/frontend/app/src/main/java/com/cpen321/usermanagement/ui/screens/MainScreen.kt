@@ -69,7 +69,7 @@ fun MainScreen(
             allTagsSelected = featureActions.state.getAllTagsSelected(),
             searchQuery = featureActions.state.getSearchQuery()
         )},
-        onChatClick = { featureActions.navs.navigateToMainTagReset(
+        onChatClick = { featureActions.navs.navigateToChatTagReset(
             featureActions.state.getWorkspaceId()) },
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
         workspaceName = wsname,

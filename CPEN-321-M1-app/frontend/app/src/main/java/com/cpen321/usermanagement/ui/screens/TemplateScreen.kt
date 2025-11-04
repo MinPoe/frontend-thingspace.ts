@@ -40,7 +40,19 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
+import com.cpen321.usermanagement.ui.viewmodels.CreateWsUiStateE
 import com.cpen321.usermanagement.utils.FeatureActions
+
+data class TemplateActions(
+    val onNoteClick: (String) -> Unit,
+    val onContentClick: ()-> Unit,
+    val onWorkspaceClick: () -> Unit,
+    val onFilterClick: () -> Unit,
+    val onChatClick: () -> Unit,
+    val onSearchClick: () -> Unit,
+    val onQueryChange: (String) -> Unit,
+    val onCreateNoteClick: () -> Unit
+)
 
 @Composable
 fun TemplateScreen(
@@ -50,8 +62,7 @@ fun TemplateScreen(
 ) {
     val fetching by templateViewModel.fetching.collectAsState()
 
-    TemplateContent(
-        onProfileClick = onProfileClick,
+    val actions = TemplateActions(
         onNoteClick = { noteId:String -> featureActions.navs.navigateToNote(noteId) },
         onContentClick = {  featureActions.navs.navigateToMainTagReset(
             featureActions.state.getWorkspaceId()) },
@@ -62,7 +73,7 @@ fun TemplateScreen(
             allTagsSelected = featureActions.state.getAllTagsSelected()
         )},
         onChatClick={
-            featureActions.navs.navigateToMainTagReset(
+            featureActions.navs.navigateToChatTagReset(
                 featureActions.state.getWorkspaceId()
             )
         },
@@ -74,6 +85,11 @@ fun TemplateScreen(
         ) },
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
         onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
+    )
+
+    TemplateContent(
+        onProfileClick = onProfileClick,
+        actions = actions,
         notes = templateViewModel.getNotesTitlesFound(0),
         fetching = fetching,
         wsname = templateViewModel.getWorkspaceName(),
@@ -84,18 +100,11 @@ fun TemplateScreen(
 @Composable
 private fun TemplateContent(
     onProfileClick: () -> Unit,
-    onNoteClick: (String)-> Unit,
-    onCreateNoteClick: ()-> Unit,
+    actions: TemplateActions,
     notes:List<Note>,
-    onContentClick: ()->Unit,
-    onChatClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit,
-    onFilterClick: () -> Unit,
     query:String,
     fetching: Boolean,
-    onSearchClick: ()->Unit,
     wsname:String,
-    onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -105,11 +114,11 @@ private fun TemplateContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = onCreateNoteClick,
-                onWorkspacesClick = onWorkspaceClick,
+                onCreateNoteClick = actions.onCreateNoteClick,
+                onWorkspacesClick = actions.onWorkspaceClick,
                 onTemplatesClick = {  },
-                onContentClick = onContentClick,
-                onChatClick = onChatClick,
+                onContentClick = actions.onContentClick,
+                onChatClick = actions.onChatClick,
                 modifier = modifier)
         }
     ) { paddingValues ->
@@ -123,10 +132,7 @@ private fun TemplateContent(
         else{
             TemplateBody(
             paddingValues = paddingValues,
-            onFilterClick = onFilterClick,
-            onSearchClick = onSearchClick,
-            onQueryChange = onQueryChange,
-            onNoteClick = onNoteClick,
+                actions = actions,
             notes = notes,
             wsname = wsname,
             query = query)
@@ -192,11 +198,8 @@ private fun ProfileIcon() {
 @Composable
 private fun TemplateBody(
     paddingValues: PaddingValues,
-    onFilterClick: () -> Unit,
     query: String,
-    onSearchClick: ()->Unit,
-    onQueryChange: (String)->Unit,
-    onNoteClick: (String)-> Unit,
+    actions: TemplateActions,
     notes:List<Note>,
     wsname:String,
     modifier: Modifier = Modifier
@@ -209,13 +212,13 @@ private fun TemplateBody(
     ) {
         WelcomeMessage(wsname = wsname)
         SearchBar(
-            onSearchClick = onSearchClick,//TODO: for now
-            onFilterClick = onFilterClick,
-            onQueryChange = onQueryChange,
+            onSearchClick = actions.onSearchClick,//TODO: for now
+            onFilterClick = actions.onFilterClick,
+            onQueryChange = actions.onQueryChange,
             query = query
         )
         NoteDisplayList(
-            onNoteClick = onNoteClick,
+            onNoteClick = actions.onNoteClick,
             notes = notes
         )
     }
