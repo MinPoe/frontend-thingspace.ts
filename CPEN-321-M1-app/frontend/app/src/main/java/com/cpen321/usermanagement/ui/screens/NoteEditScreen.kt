@@ -23,6 +23,7 @@ import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.components.FieldTypeDialog
 import com.cpen321.usermanagement.ui.components.WorkspaceSelectionDialog
 import com.cpen321.usermanagement.ui.components.CopyNoteDialog
+import com.cpen321.usermanagement.ui.components.ShareNoteDialog
 
 data class NoteEditCallbacks(
     val onBackClick: () -> Unit,
@@ -120,27 +121,6 @@ fun NoteEditScreen(
                 }
             )
         }
-    }
-}
-
-@Composable
-private fun ShareNoteDialog(
-    showDialog: Boolean,
-    editState: NoteEditState,
-    noteId: String,
-    onDismiss: () -> Unit,
-    onShare: (String) -> Unit
-) {
-    if (showDialog) {
-        WorkspaceSelectionDialog(
-            title = stringResource(R.string.share_note),
-            confirmText = stringResource(R.string.share),
-            isProcessing = editState.isSharing,
-            workspaces = editState.workspaces,
-            isLoadingWorkspaces = editState.isLoadingWorkspaces,
-            onDismiss = onDismiss,
-            onConfirm = onShare
-        )
     }
 }
 

@@ -207,3 +207,24 @@ fun CopyNoteDialog(
         )
     }
 }
+
+@Composable
+fun ShareNoteDialog(
+    showDialog: Boolean,
+    editState: NoteEditState,
+    noteId: String,
+    onDismiss: () -> Unit,
+    onShare: (String) -> Unit
+) {
+    if (showDialog) {
+        WorkspaceSelectionDialog(
+            title = stringResource(R.string.share_note),
+            confirmText = stringResource(R.string.share),
+            isProcessing = editState.isSharing,
+            workspaces = editState.workspaces,
+            isLoadingWorkspaces = editState.isLoadingWorkspaces,
+            onDismiss = onDismiss,
+            onConfirm = onShare
+        )
+    }
+}
