@@ -22,6 +22,17 @@ import com.cpen321.usermanagement.ui.viewmodels.NoteCreationState
 import com.cpen321.usermanagement.ui.viewmodels.NoteCreationViewModel
 import com.cpen321.usermanagement.utils.FeatureActions
 
+data class NoteCreationCallbacks(
+    val onBackClick: () -> Unit,
+    val onTagAdded: (String) -> Unit,
+    val onTagRemoved: (String) -> Unit,
+    val onFieldAdded: (FieldType) -> Unit,
+    val onFieldRemoved: (String) -> Unit,
+    val onFieldUpdated: (String, FieldUpdate) -> Unit,
+    val onNoteTypeChanged: (NoteType) -> Unit,
+    val onCreateNote: () -> Unit
+)
+
 @Composable
 fun NoteCreationScreen(
     noteCreationViewModel: NoteCreationViewModel,
@@ -39,14 +50,16 @@ fun NoteCreationScreen(
 
     NoteCreationContent(
         creationState = creationState,
-        onBackClick = onBackClick,
-        onTagAdded = noteCreationViewModel::addTag,
-        onTagRemoved = noteCreationViewModel::removeTag,
-        onFieldAdded = noteCreationViewModel::addField,
-        onFieldRemoved = noteCreationViewModel::removeField,
-        onFieldUpdated = noteCreationViewModel::updateField,
-        onNoteTypeChanged = noteCreationViewModel::setNoteType,
-        onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
+        callbacks = NoteCreationCallbacks(
+            onBackClick = onBackClick,
+            onTagAdded = noteCreationViewModel::addTag,
+            onTagRemoved = noteCreationViewModel::removeTag,
+            onFieldAdded = noteCreationViewModel::addField,
+            onFieldRemoved = noteCreationViewModel::removeField,
+            onFieldUpdated = noteCreationViewModel::updateField,
+            onNoteTypeChanged = noteCreationViewModel::setNoteType,
+            onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
+        )
     )
 }
 
@@ -54,34 +67,22 @@ fun NoteCreationScreen(
 @Composable
 fun NoteCreationContent(
     creationState: NoteCreationState,
-    onBackClick: () -> Unit,
-    onTagAdded: (String) -> Unit,
-    onTagRemoved: (String) -> Unit,
-    onFieldAdded: (FieldType) -> Unit,
-    onFieldRemoved: (String) -> Unit,
-    onFieldUpdated: (String, FieldUpdate) -> Unit,
-    onNoteTypeChanged: (NoteType) -> Unit,
-    onCreateNote: () -> Unit,
+    callbacks: NoteCreationCallbacks,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { NoteCreationTopBar(onBackClick = onBackClick) },
+        topBar = { NoteCreationTopBar(onBackClick = callbacks.onBackClick) },
         bottomBar = { NoteCreationBottomBar(
-            onBackClick = onBackClick,
-            onCreateNote = onCreateNote,
+            onBackClick = callbacks.onBackClick,
+            onCreateNote = callbacks.onCreateNote,
             isCreating = creationState.isCreating
         ) }
     ) { paddingValues ->
         NoteCreationBody(
             creationState = creationState,
             paddingValues = paddingValues,
-            onTagAdded = onTagAdded,
-            onTagRemoved = onTagRemoved,
-            onFieldAdded = onFieldAdded,
-            onFieldRemoved = onFieldRemoved,
-            onFieldUpdated = onFieldUpdated,
-            onNoteTypeChanged = onNoteTypeChanged
+            callbacks = callbacks
         )
     }
 }
@@ -157,12 +158,7 @@ private fun NoteCreationBottomBar(
 fun NoteCreationBody(
     creationState: NoteCreationState,
     paddingValues: PaddingValues,
-    onTagAdded: (String) -> Unit,
-    onTagRemoved: (String) -> Unit,
-    onFieldAdded: (FieldType) -> Unit,
-    onFieldRemoved: (String) -> Unit,
-    onFieldUpdated: (String, FieldUpdate) -> Unit,
-    onNoteTypeChanged: (NoteType) -> Unit,
+    callbacks: NoteCreationCallbacks,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -196,16 +192,15 @@ fun NoteCreationBody(
         // Note Type Selection
         NoteTypeSection(
             selectedType = creationState.noteType,
-            onTypeChanged = onNoteTypeChanged
+            onTypeChanged = callbacks.onNoteTypeChanged
         )
 
         Spacer(modifier = Modifier.height(spacing.large))
 
-        // Tags Section
         TagsInputSection(
             tags = creationState.tags,
-            onTagAdded = onTagAdded,
-            onTagRemoved = onTagRemoved
+            onTagAdded = callbacks.onTagAdded,
+            onTagRemoved = callbacks.onTagRemoved
         )
 
         Spacer(modifier = Modifier.height(spacing.large))
@@ -214,9 +209,9 @@ fun NoteCreationBody(
         FieldsSection(
             fields = creationState.fields,
             noteType = creationState.noteType,
-            onFieldAdded = onFieldAdded,
-            onFieldRemoved = onFieldRemoved,
-            onFieldUpdated = onFieldUpdated
+            onFieldAdded = callbacks.onFieldAdded,
+            onFieldRemoved = callbacks.onFieldRemoved,
+            onFieldUpdated = callbacks.onFieldUpdated
         )
     }
 }
