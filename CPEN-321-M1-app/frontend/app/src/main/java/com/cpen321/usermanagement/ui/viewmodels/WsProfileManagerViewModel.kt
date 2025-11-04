@@ -52,7 +52,7 @@ class WsProfileManagerViewModel@Inject constructor(
             _uiState.value = _uiState.value.copy(isLoadingProfile = true, errorMessage = null)
 
             val profileResult: Result<Workspace> = workspaceRepository.getWorkspace(
-                navigationStateManager.getWorkspaceId())
+                navigationStateManager.state.getWorkspaceId())
 
             if (profileResult.isSuccess) {
                 val workspace = profileResult.getOrNull()!!
@@ -100,7 +100,7 @@ class WsProfileManagerViewModel@Inject constructor(
         viewModelScope.launch {
             val result = workspaceRepository.updateWorkspacePicture(
                 workspaceProfilePicture = pictureUri.toString(),
-                workspaceId = navigationStateManager.getWorkspaceId()
+                workspaceId = navigationStateManager.state.getWorkspaceId()
             )
             if (result.isSuccess) {
                 val currentWorkspace = _uiState.value.workspace ?: return@launch
@@ -131,14 +131,14 @@ class WsProfileManagerViewModel@Inject constructor(
                 )
 
             val result = workspaceRepository.updateWorkspaceProfile(
-                navigationStateManager.getWorkspaceId(),
+                navigationStateManager.state.getWorkspaceId(),
                 name,
                 description)
             if (result.isSuccess) {
                 _uiState.value = _uiState.value.copy(
                     isSavingProfile = false,
                     workspace = Workspace(
-                        _id = navigationStateManager.getWorkspaceId(),
+                        _id = navigationStateManager.state.getWorkspaceId(),
                         profile = Profile(
                             imagePath = _uiState.value.workspace?.profile?.imagePath,
                             name = name,
@@ -165,7 +165,7 @@ class WsProfileManagerViewModel@Inject constructor(
         var deleteSuccessful = false
         viewModelScope.launch {
             val delRequest = workspaceRepository.deleteWorkspace(
-                navigationStateManager.getWorkspaceId())
+                navigationStateManager.state.getWorkspaceId())
             if (delRequest.isSuccess){
                 deleteSuccessful = true
             }

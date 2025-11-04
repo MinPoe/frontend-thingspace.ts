@@ -35,10 +35,10 @@ open class MembersViewModel@Inject constructor(
     val uiState: StateFlow<MembersUiState> = _uiState.asStateFlow()
 
     fun getUsers(): Pair<User, List<User>> {
-//        if (uiState.value.workspaceId != navigationStateManager.getWorkspaceId()) {
+//        if (uiState.value.workspaceId != navigationStateManager.state.getWorkspaceId()) {
 //            viewModelScope.launch { loadUsers() }
 //            _uiState.value = _uiState.value.copy(
-//                workspaceId = navigationStateManager.getWorkspaceId())
+//                workspaceId = navigationStateManager.state.getWorkspaceId())
 //        }
         //TODO: think abt the default user
         return Pair(uiState.value.user ?: User(_id = "", googleId = "",
@@ -47,7 +47,7 @@ open class MembersViewModel@Inject constructor(
     }
 
     fun loadUsers() {
-        _uiState.value = _uiState.value.copy(isLoading = true, workspaceId = navigationStateManager.getWorkspaceId())
+        _uiState.value = _uiState.value.copy(isLoading = true, workspaceId = navigationStateManager.state.getWorkspaceId())
 
         viewModelScope.launch{
             val profileResult = profileRepository.getProfile()
@@ -58,7 +58,7 @@ open class MembersViewModel@Inject constructor(
             }
 
             val profilesResult = workspaceRepository.getWorkspaceMembers(
-                navigationStateManager.getWorkspaceId()
+                navigationStateManager.state.getWorkspaceId()
             )
             if (profilesResult.isSuccess) {
                 val members = profilesResult.getOrNull()!!.toMutableList()

@@ -46,13 +46,13 @@ class InviteViewModel@Inject constructor(
             if (profileRequest.isSuccess){
                 val user = profileRequest.getOrNull()!!
                 val membershipStatusRequest = workspaceRepository.getMembershipStatus(
-                    user._id, workspaceId = navigationStateManager.getWorkspaceId())
+                    user._id, workspaceId = navigationStateManager.state.getWorkspaceId())
                 if (membershipStatusRequest.isSuccess){
                     val membershipStatus = membershipStatusRequest.getOrNull()!!
                     when (membershipStatus) {
                         WsMembershipStatus.NONMEMBER ->{
                             val inviteRequest = workspaceRepository.addMember(user._id,
-                                navigationStateManager.getWorkspaceId())
+                                navigationStateManager.state.getWorkspaceId())
                             if (inviteRequest.isSuccess){
                                 _uiState.value = _uiState.value.copy(successMessage = "The user got added to the workspace.",
                                     errorMessage = null)

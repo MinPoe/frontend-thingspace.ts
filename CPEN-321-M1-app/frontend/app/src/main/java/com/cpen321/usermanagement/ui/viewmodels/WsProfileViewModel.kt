@@ -55,7 +55,7 @@ open class WsProfileViewModel@Inject constructor(
 
             val profileResult: Result<Workspace>
             profileResult = workspaceRepository.getWorkspace(
-                navigationStateManager.getWorkspaceId()
+                navigationStateManager.state.getWorkspaceId()
             )
 
 
@@ -103,7 +103,7 @@ open class WsProfileViewModel@Inject constructor(
             val profileRequest = profileRepository.getProfile()
             if (profileRequest.isSuccess){
               leaveSuccessful = workspaceRepository.leave(profileRequest.getOrNull()!!._id,
-                   navigationStateManager.getWorkspaceId(),).isSuccess
+                   navigationStateManager.state.getWorkspaceId(),).isSuccess
             }
         } //TODO: handle errors and messaging later
         _uiState.value = _uiState.value.copy(leaveState = WsLeaveState.DONE)
