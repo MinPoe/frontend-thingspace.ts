@@ -3,6 +3,7 @@ package com.cpen321.usermanagement.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -92,52 +93,92 @@ private fun ChatScreenContent(
             )
         }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (uiState.isLoading) {
+        ChatMessagesContent(
+            uiState = uiState,
+            listState = listState,
+            paddingValues = paddingValues,
+            onOtherProfileClick = onOtherProfileClick
+        )
+    }
+}
+
+@Composable
+private fun ChatMessagesContent(
+    uiState: com.cpen321.usermanagement.ui.viewmodels.ChatUiState,
+    listState: LazyListState,
+    paddingValues: PaddingValues,
+    onOtherProfileClick: (String) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        when {
+            uiState.isLoading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
-            } else if (uiState.messages.isEmpty()) {
+            }
+            uiState.messages.isEmpty() -> {
                 EmptyMessagesPlaceholder(
                     modifier = Modifier.align(Alignment.Center)
                 )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(uiState.messages) { message ->
-                        val author = uiState.authors[message.authorId]
-                        val isCurrentUser = message.authorId == uiState.currentUserId
-
-                        MessageItem(
-                            message = message,
-                            author = author,
-                            isCurrentUser = isCurrentUser,
-                            onProfileClick = {
-                                if (!isCurrentUser) onOtherProfileClick(message.authorId)
-                            }
-                        )
-                    }
-                }
             }
-
-            // Error snackbar
-            uiState.error?.let { error ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                ) {
-                    Text(error)
-                }
+            else -> {
+                MessagesList(
+                    uiState = uiState,
+                    listState = listState,
+                    onOtherProfileClick = onOtherProfileClick
+                )
             }
+        }
+
+        ErrorSnackbar(
+            error = uiState.error,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}
+
+@Composable
+private fun MessagesList(
+    uiState: com.cpen321.usermanagement.ui.viewmodels.ChatUiState,
+    listState: LazyListState,
+    onOtherProfileClick: (String) -> Unit
+) {
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(uiState.messages) { message ->
+            val author = uiState.authors[message.authorId]
+            val isCurrentUser = message.authorId == uiState.currentUserId
+
+            MessageItem(
+                message = message,
+                author = author,
+                isCurrentUser = isCurrentUser,
+                onProfileClick = {
+                    if (!isCurrentUser) onOtherProfileClick(message.authorId)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ErrorSnackbar(
+    error: String?,
+    modifier: Modifier = Modifier
+) {
+    error?.let {
+        Snackbar(
+            modifier = modifier.padding(16.dp)
+        ) {
+            Text(it)
         }
     }
 }

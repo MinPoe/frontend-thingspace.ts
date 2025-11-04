@@ -34,8 +34,49 @@ fun NoteEditScreen(
     var showShareDialog by remember { mutableStateOf(false) }
     var showCopyDialog by remember { mutableStateOf(false) }
 
+    NoteEditScreenLaunchedEffects(
+        noteEditViewModel = noteEditViewModel,
+        editState = editState,
+        featureActions = featureActions,
+        onBackClick = onBackClick,
+        onShareDialogDismiss = { showShareDialog = false },
+        onCopyDialogDismiss = { showCopyDialog = false }
+    )
+
+    when {
+        editState.isLoading -> LoadingEditContent()
+        editState.loadError != null -> ErrorEditContent(
+            error = editState.loadError!!,
+            onBackClick = onBackClick
+        )
+        else -> {
+            NoteEditScreenContent(
+                editState = editState,
+                noteEditViewModel = noteEditViewModel,
+                featureActions = featureActions,
+                onBackClick = onBackClick,
+                dialogState = DialogState(
+                    showShareDialog = showShareDialog,
+                    showCopyDialog = showCopyDialog,
+                    onShareDialogChange = { showShareDialog = it },
+                    onCopyDialogChange = { showCopyDialog = it }
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun NoteEditScreenLaunchedEffects(
+    noteEditViewModel: NoteEditViewModel,
+    editState: NoteEditState,
+    featureActions: IFeatureActions,
+    onBackClick: () -> Unit,
+    onShareDialogDismiss: () -> Unit,
+    onCopyDialogDismiss: () -> Unit
+) {
     LaunchedEffect(Unit) {
-        noteEditViewModel.loadNote(featureActions.state.getNoteId())
+        noteEditViewModel.loadNote(featureActions.getNoteId())
     }
 
     LaunchedEffect(editState.isSuccess) {
@@ -46,7 +87,7 @@ fun NoteEditScreen(
 
     LaunchedEffect(editState.shareSuccess) {
         if (editState.shareSuccess) {
-            showShareDialog = false
+            onShareDialogDismiss()
             noteEditViewModel.resetActionStates()
             onBackClick()
         }
@@ -54,58 +95,65 @@ fun NoteEditScreen(
 
     LaunchedEffect(editState.copySuccess) {
         if (editState.copySuccess) {
-            showCopyDialog = false
+            onCopyDialogDismiss()
             noteEditViewModel.resetActionStates()
             onBackClick()
         }
     }
+}
 
-    when {
-        editState.isLoading -> LoadingEditContent()
-        editState.loadError != null -> ErrorEditContent(
-            error = editState.loadError!!,
-            onBackClick = onBackClick
-        )
-        else -> {
-            val onSaveClick = { noteEditViewModel.saveNote(featureActions.state.getNoteId()) }
-            val onShareClick = { showShareDialog = true }
-            val onCopyClick = { showCopyDialog = true }
+private data class DialogState(
+    val showShareDialog: Boolean,
+    val showCopyDialog: Boolean,
+    val onShareDialogChange: (Boolean) -> Unit,
+    val onCopyDialogChange: (Boolean) -> Unit
+)
 
-            NoteEditContent(
-                editState = editState,
-                onBackClick = onBackClick,
-                onSaveClick = onSaveClick,
-                onShareClick = onShareClick,
-                onCopyClick = onCopyClick,
-                onTagAdded = noteEditViewModel::addTag,
-                onTagRemoved = noteEditViewModel::removeTag,
-                onFieldAdded = noteEditViewModel::addField,
-                onFieldRemoved = noteEditViewModel::removeField,
-                onFieldUpdated = noteEditViewModel::updateField,
-                onNoteTypeChanged = noteEditViewModel::updateNoteType
-            )
+@Composable
+private fun NoteEditScreenContent(
+    editState: NoteEditState,
+    noteEditViewModel: NoteEditViewModel,
+    featureActions: IFeatureActions,
+    onBackClick: () -> Unit,
+    dialogState: DialogState
+) {
+    val onSaveClick = { noteEditViewModel.saveNote(featureActions.getNoteId()) }
+    val onShareClick = { dialogState.onShareDialogChange(true) }
+    val onCopyClick = { dialogState.onCopyDialogChange(true) }
 
-            ShareNoteDialog(
-                showDialog = showShareDialog,
-                editState = editState,
-                noteId = featureActions.state.getNoteId(),
-                onDismiss = { showShareDialog = false },
-                onShare = { workspaceId ->
-                    noteEditViewModel.shareNote(featureActions.state.getNoteId(), workspaceId)
-                }
-            )
+    NoteEditContent(
+        editState = editState,
+        onBackClick = onBackClick,
+        onSaveClick = onSaveClick,
+        onShareClick = onShareClick,
+        onCopyClick = onCopyClick,
+        onTagAdded = noteEditViewModel::addTag,
+        onTagRemoved = noteEditViewModel::removeTag,
+        onFieldAdded = noteEditViewModel::addField,
+        onFieldRemoved = noteEditViewModel::removeField,
+        onFieldUpdated = noteEditViewModel::updateField,
+        onNoteTypeChanged = noteEditViewModel::updateNoteType
+    )
 
-            CopyNoteDialog(
-                showDialog = showCopyDialog,
-                editState = editState,
-                noteId = featureActions.state.getNoteId(),
-                onDismiss = { showCopyDialog = false },
-                onCopy = { workspaceId ->
-                    noteEditViewModel.copyNote(featureActions.state.getNoteId(), workspaceId)
-                }
-            )
+    ShareNoteDialog(
+        showDialog = dialogState.showShareDialog,
+        editState = editState,
+        noteId = featureActions.getNoteId(),
+        onDismiss = { dialogState.onShareDialogChange(false) },
+        onShare = { workspaceId ->
+            noteEditViewModel.shareNote(featureActions.getNoteId(), workspaceId)
         }
-    }
+    )
+
+    CopyNoteDialog(
+        showDialog = dialogState.showCopyDialog,
+        editState = editState,
+        noteId = featureActions.getNoteId(),
+        onDismiss = { dialogState.onCopyDialogChange(false) },
+        onCopy = { workspaceId ->
+            noteEditViewModel.copyNote(featureActions.getNoteId(), workspaceId)
+        }
+    )
 }
 
 @Composable

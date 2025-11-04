@@ -63,30 +63,10 @@ fun NoteContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.note_details),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(name = R.drawable.ic_arrow_back)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onEditClick) {
-                        Icon(name = R.drawable.ic_edit)
-                    }
-                    IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(name = R.drawable.ic_delete_forever)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+            NoteTopBar(
+                onBackClick = onBackClick,
+                onEditClick = onEditClick,
+                onDeleteClick = { showDeleteDialog = true }
             )
         }
     ) { paddingValues ->
@@ -117,6 +97,40 @@ fun NoteContent(
             showDeleteDialog = false
             onDeleteClick()
         }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NoteTopBar(
+    onBackClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.note_details),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(name = R.drawable.ic_arrow_back)
+            }
+        },
+        actions = {
+            IconButton(onClick = onEditClick) {
+                Icon(name = R.drawable.ic_edit)
+            }
+            IconButton(onClick = onDeleteClick) {
+                Icon(name = R.drawable.ic_delete_forever)
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     )
 }
 

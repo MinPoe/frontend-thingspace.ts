@@ -42,50 +42,64 @@ fun CreateWorkspaceScreen(
                 BackActionButton(onBackClick)
             }
         ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-            ) {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { 
-                        text = it
-                        wsCreationViewModel.clearError()
-                    },
-                    label = { Text(stringResource(R.string.pick_workspace_name)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f, false),
-                    isError = uiState.errorMessage != null
-                )
-
-                // Display error message if it exists
-                uiState.errorMessage?.let { errorMessage ->
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-
-                Button(
-                    onClick = { wsCreationViewModel.createWorkspace(text) },
-                    enabled = text.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.create_workspace))
-                }
-            }
-
+            CreateWorkspaceFormContent(
+                text = text,
+                onTextChange = { 
+                    text = it
+                    wsCreationViewModel.clearError()
+                },
+                uiState = uiState,
+                onCreateWorkspace = { wsCreationViewModel.createWorkspace(text) },
+                paddingValues = paddingValues
+            )
         }
     else
         Box(modifier = Modifier, contentAlignment = Alignment.Center){
             CircularProgressIndicator()}
 
+}
+
+@Composable
+private fun CreateWorkspaceFormContent(
+    text: String,
+    onTextChange: (String) -> Unit,
+    uiState: com.cpen321.usermanagement.ui.viewmodels.CreateWsUiState,
+    onCreateWorkspace: () -> Unit,
+    paddingValues: androidx.compose.foundation.layout.PaddingValues
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(16.dp)
+    ) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = onTextChange,
+            label = { Text(stringResource(R.string.pick_workspace_name)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, false),
+            isError = uiState.errorMessage != null
+        )
+
+        uiState.errorMessage?.let { errorMessage ->
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onCreateWorkspace,
+            enabled = text.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.create_workspace))
+        }
+    }
 }

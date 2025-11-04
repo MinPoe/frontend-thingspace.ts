@@ -98,26 +98,7 @@ fun AppNavigation(
         WorkspaceActions(navigationStateManager),
         NavigationActions(navigationStateManager))
 
-    // Initialize view models required for navigation-level scope
-    val authViewModel: AuthViewModel = hiltViewModel()
-    val profileViewModel: ProfileViewModel = hiltViewModel()
-    val mainViewModel: MainViewModel = hiltViewModel()
-    val chatViewModel: ChatViewModel = hiltViewModel()
-    val copyViewModel: CopyViewModel = hiltViewModel()
-    val fieldsViewModel: FieldsViewModel = hiltViewModel()
-    val filterViewModel: FilterViewModel = hiltViewModel()
-    val inviteViewModel: InviteViewModel = hiltViewModel()
-    val membersManagerViewModel: MembersManagerViewModel = hiltViewModel()
-    val membersViewModel: MembersViewModel = hiltViewModel()
-    val noteViewModel: NoteViewModel = hiltViewModel()
-    val noteCreationViewModel: NoteCreationViewModel = hiltViewModel()
-    val noteEditViewModel: NoteEditViewModel = hiltViewModel()
-    val sharingViewModel: SharingViewModel = hiltViewModel()
-    val templateViewModel: TemplateViewModel = hiltViewModel()
-    val wsCreationViewModel: WsCreationViewModel = hiltViewModel()
-    val wsProfileManagerViewModel: WsProfileManagerViewModel = hiltViewModel()
-    val wsProfileViewModel: WsProfileViewModel = hiltViewModel()
-    val wsSelectViewModel: WsSelectViewModel = hiltViewModel()
+    val viewModels = initializeNavigationViewModels()
 
     // Handle navigation events from NavigationStateManager
     LaunchedEffect(navigationEvent) {
@@ -125,53 +106,100 @@ fun AppNavigation(
             navigationEvent,
             navController,
             navigationStateManager,
-            authViewModel,
-            chatViewModel = chatViewModel,
-            copyViewModel = copyViewModel,
-            fieldsViewModel = fieldsViewModel,
-            filterViewModel = filterViewModel,
-            inviteViewModel = inviteViewModel,
-            membersManagerViewModel = membersManagerViewModel,
-            membersViewModel = membersViewModel,
-            noteViewModel = noteViewModel,
-            noteCreationViewModel = noteCreationViewModel,
-            noteEditViewModel = noteEditViewModel,
-            sharingViewModel = sharingViewModel,
-            templateViewModel = templateViewModel,
-            wsCreationViewModel = wsCreationViewModel,
-            wsProfileManagerViewModel = wsProfileManagerViewModel,
-            wsProfileViewModel = wsProfileViewModel,
-            wsSelectViewModel = wsSelectViewModel,
-            mainViewModel = mainViewModel,
-            profileViewModel = profileViewModel
+            viewModels.authViewModel,
+            chatViewModel = viewModels.chatViewModel,
+            copyViewModel = viewModels.copyViewModel,
+            fieldsViewModel = viewModels.fieldsViewModel,
+            filterViewModel = viewModels.filterViewModel,
+            inviteViewModel = viewModels.inviteViewModel,
+            membersManagerViewModel = viewModels.membersManagerViewModel,
+            membersViewModel = viewModels.membersViewModel,
+            noteViewModel = viewModels.noteViewModel,
+            noteCreationViewModel = viewModels.noteCreationViewModel,
+            noteEditViewModel = viewModels.noteEditViewModel,
+            sharingViewModel = viewModels.sharingViewModel,
+            templateViewModel = viewModels.templateViewModel,
+            wsCreationViewModel = viewModels.wsCreationViewModel,
+            wsProfileManagerViewModel = viewModels.wsProfileManagerViewModel,
+            wsProfileViewModel = viewModels.wsProfileViewModel,
+            wsSelectViewModel = viewModels.wsSelectViewModel,
+            mainViewModel = viewModels.mainViewModel,
+            profileViewModel = viewModels.profileViewModel
         )
     }
 
     AppNavHost(
         navController = navController,
-        authViewModel = authViewModel,
-        profileViewModel = profileViewModel,
-        mainViewModel = mainViewModel,
-        chatViewModel = chatViewModel,
-        copyViewModel = copyViewModel,
-        fieldsViewModel = fieldsViewModel,
-        filterViewModel = filterViewModel,
-        inviteViewModel = inviteViewModel,
-        membersManagerViewModel = membersManagerViewModel,
-        membersViewModel = membersViewModel,
-        noteViewModel = noteViewModel,
-        noteCreationViewModel = noteCreationViewModel,
-        noteEditViewModel = noteEditViewModel,
-        sharingViewModel = sharingViewModel,
-        templateViewModel = templateViewModel,
-        wsCreationViewModel = wsCreationViewModel,
-        wsProfileManagerViewModel = wsProfileManagerViewModel,
-        wsProfileViewModel = wsProfileViewModel,
-        wsSelectViewModel = wsSelectViewModel,
+        authViewModel = viewModels.authViewModel,
+        profileViewModel = viewModels.profileViewModel,
+        mainViewModel = viewModels.mainViewModel,
+        chatViewModel = viewModels.chatViewModel,
+        copyViewModel = viewModels.copyViewModel,
+        fieldsViewModel = viewModels.fieldsViewModel,
+        filterViewModel = viewModels.filterViewModel,
+        inviteViewModel = viewModels.inviteViewModel,
+        membersManagerViewModel = viewModels.membersManagerViewModel,
+        membersViewModel = viewModels.membersViewModel,
+        noteViewModel = viewModels.noteViewModel,
+        noteCreationViewModel = viewModels.noteCreationViewModel,
+        noteEditViewModel = viewModels.noteEditViewModel,
+        sharingViewModel = viewModels.sharingViewModel,
+        templateViewModel = viewModels.templateViewModel,
+        wsCreationViewModel = viewModels.wsCreationViewModel,
+        wsProfileManagerViewModel = viewModels.wsProfileManagerViewModel,
+        wsProfileViewModel = viewModels.wsProfileViewModel,
+        wsSelectViewModel = viewModels.wsSelectViewModel,
         navigationStateManager = navigationStateManager,
         featureActions = featureActions
     )
 }
+
+@Composable
+private fun initializeNavigationViewModels(): NavigationViewModels {
+    return NavigationViewModels(
+        authViewModel = hiltViewModel(),
+        profileViewModel = hiltViewModel(),
+        mainViewModel = hiltViewModel(),
+        chatViewModel = hiltViewModel(),
+        copyViewModel = hiltViewModel(),
+        fieldsViewModel = hiltViewModel(),
+        filterViewModel = hiltViewModel(),
+        inviteViewModel = hiltViewModel(),
+        membersManagerViewModel = hiltViewModel(),
+        membersViewModel = hiltViewModel(),
+        noteViewModel = hiltViewModel(),
+        noteCreationViewModel = hiltViewModel(),
+        noteEditViewModel = hiltViewModel(),
+        sharingViewModel = hiltViewModel(),
+        templateViewModel = hiltViewModel(),
+        wsCreationViewModel = hiltViewModel(),
+        wsProfileManagerViewModel = hiltViewModel(),
+        wsProfileViewModel = hiltViewModel(),
+        wsSelectViewModel = hiltViewModel()
+    )
+}
+
+private data class NavigationViewModels(
+    val authViewModel: AuthViewModel,
+    val profileViewModel: ProfileViewModel,
+    val mainViewModel: MainViewModel,
+    val chatViewModel: ChatViewModel,
+    val copyViewModel: CopyViewModel,
+    val fieldsViewModel: FieldsViewModel,
+    val filterViewModel: FilterViewModel,
+    val inviteViewModel: InviteViewModel,
+    val membersManagerViewModel: MembersManagerViewModel,
+    val membersViewModel: MembersViewModel,
+    val noteViewModel: NoteViewModel,
+    val noteCreationViewModel: NoteCreationViewModel,
+    val noteEditViewModel: NoteEditViewModel,
+    val sharingViewModel: SharingViewModel,
+    val templateViewModel: TemplateViewModel,
+    val wsCreationViewModel: WsCreationViewModel,
+    val wsProfileManagerViewModel: WsProfileManagerViewModel,
+    val wsProfileViewModel: WsProfileViewModel,
+    val wsSelectViewModel: WsSelectViewModel
+)
 
 private fun handleNavigationEvent(
     navigationEvent: NavigationEvent,
@@ -197,6 +225,23 @@ private fun handleNavigationEvent(
     wsSelectViewModel: WsSelectViewModel,
     mainViewModel: MainViewModel
 ) {
+    val basicViewModels = BasicNavigationViewModels(
+        membersManagerViewModel,
+        wsSelectViewModel,
+        wsProfileViewModel,
+        mainViewModel,
+        templateViewModel
+    )
+    
+    val featureViewModels = FeatureNavigationViewModels(
+        filterViewModel,
+        membersManagerViewModel,
+        membersViewModel,
+        noteEditViewModel,
+        profileViewModel,
+        templateViewModel
+    )
+
     when (navigationEvent) {
         is NavigationEvent.NavigateToAuth,
         is NavigationEvent.NavigateToAuthWithMessage -> {
@@ -217,18 +262,7 @@ private fun handleNavigationEvent(
         is NavigationEvent.NavigateBack,
         is NavigationEvent.ClearBackStack,
         is NavigationEvent.NoNavigation -> {
-            handleBasicNavigation(
-                navigationEvent,
-                navController,
-                BasicNavigationViewModels(
-                    membersManagerViewModel,
-                    wsSelectViewModel,
-                    wsProfileViewModel,
-                    mainViewModel,
-                    templateViewModel
-                ),
-                navigationStateManager
-            )
+            handleBasicNavigation(navigationEvent, navController, basicViewModels, navigationStateManager)
         }
         is NavigationEvent.NavigateToChat,
         is NavigationEvent.NavigateToChatTagReset,
@@ -244,19 +278,7 @@ private fun handleNavigationEvent(
         is NavigationEvent.NavigateToSharing,
         is NavigationEvent.NavigateToTemplate,
         is NavigationEvent.NavigateToTemplateTagReset -> {
-            handleFeatureNavigation(
-                navigationEvent,
-                navController,
-                FeatureNavigationViewModels(
-                    filterViewModel,
-                    membersManagerViewModel,
-                    membersViewModel,
-                    noteEditViewModel,
-                    profileViewModel,
-                    templateViewModel
-                ),
-                navigationStateManager
-            )
+            handleFeatureNavigation(navigationEvent, navController, featureViewModels, navigationStateManager)
         }
         is NavigationEvent.NavigateToWsCreation,
         is NavigationEvent.NavigateToWsProfileManager,
