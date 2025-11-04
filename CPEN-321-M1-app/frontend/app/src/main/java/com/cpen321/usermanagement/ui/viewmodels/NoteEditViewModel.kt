@@ -195,67 +195,73 @@ class NoteEditViewModel @Inject constructor(
     fun saveNote(noteId: String) {
         viewModelScope.launch {
             _editState.value = _editState.value.copy(isSaving = true, error = null)
-
-            val fields = _editState.value.fields.map { fieldData ->
-                when (fieldData.type) {
-                    FieldType.TEXT -> TextField(
-                        _id = fieldData.id,
-                        label = fieldData.label,
-                        required = fieldData.required,
-                        placeholder = fieldData.placeholder,
-                        maxLength = fieldData.maxLength,
-                        content = when (fieldData.content) {
-                            is String -> fieldData.content
-                            else -> fieldData.content?.toString()
-                        }
-                    )
-                    FieldType.NUMBER -> NumberField(
-                        _id = fieldData.id,
-                        label = fieldData.label,
-                        required = fieldData.required,
-                        min = fieldData.min,
-                        max = fieldData.max,
-                        content = when (fieldData.content) {
-                            is Int -> fieldData.content
-                            is String -> fieldData.content.toIntOrNull()
-                            else -> null
-                        }
-                    )
-                    FieldType.DATETIME -> DateTimeField(
-                        _id = fieldData.id,
-                        label = fieldData.label,
-                        required = fieldData.required,
-                        content = when (fieldData.content) {
-                            is LocalDateTime -> fieldData.content
-                            is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
-                            else -> null
-                        }
-                    )
-                }
-            }
-
-            val result = noteRepository.updateNote(
-                noteId = noteId,
-                tags = _editState.value.tags,
-                fields = fields
-            )
-
-            result.fold(
-                onSuccess = {
-                    _editState.value = _editState.value.copy(
-                        isSaving = false,
-                        isSuccess = true,
-                        error = null
-                    )
-                },
-                onFailure = { exception ->
-                    _editState.value = _editState.value.copy(
-                        isSaving = false,
-                        error = exception.message ?: "Failed to save note"
-                    )
-                }
-            )
+            val fields = convertFieldsToDto()
+            updateNoteRequest(noteId, fields)
         }
+    }
+
+    private fun convertFieldsToDto(): List<Field> {
+        return _editState.value.fields.map { fieldData ->
+            when (fieldData.type) {
+                FieldType.TEXT -> TextField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    placeholder = fieldData.placeholder,
+                    maxLength = fieldData.maxLength,
+                    content = when (fieldData.content) {
+                        is String -> fieldData.content
+                        else -> fieldData.content?.toString()
+                    }
+                )
+                FieldType.NUMBER -> NumberField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    min = fieldData.min,
+                    max = fieldData.max,
+                    content = when (fieldData.content) {
+                        is Int -> fieldData.content
+                        is String -> fieldData.content.toIntOrNull()
+                        else -> null
+                    }
+                )
+                FieldType.DATETIME -> DateTimeField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    content = when (fieldData.content) {
+                        is LocalDateTime -> fieldData.content
+                        is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
+                        else -> null
+                    }
+                )
+            }
+        }
+    }
+
+    private suspend fun updateNoteRequest(noteId: String, fields: List<Field>) {
+        val result = noteRepository.updateNote(
+            noteId = noteId,
+            tags = _editState.value.tags,
+            fields = fields
+        )
+
+        result.fold(
+            onSuccess = {
+                _editState.value = _editState.value.copy(
+                    isSaving = false,
+                    isSuccess = true,
+                    error = null
+                )
+            },
+            onFailure = { exception ->
+                _editState.value = _editState.value.copy(
+                    isSaving = false,
+                    error = exception.message ?: "Failed to save note"
+                )
+            }
+        )
     }
 
     fun shareNote(noteId: String, workspaceId: String) {

@@ -84,34 +84,68 @@ fun NoteEditScreen(
                 onNoteTypeChanged = noteEditViewModel::updateNoteType
             )
 
-            if (showShareDialog) {
-                WorkspaceSelectionDialog(
-                    title = stringResource(R.string.share_note),
-                    confirmText = stringResource(R.string.share),
-                    isProcessing = editState.isSharing,
-                    workspaces = editState.workspaces,
-                    isLoadingWorkspaces = editState.isLoadingWorkspaces,
-                    onDismiss = { showShareDialog = false },
-                    onConfirm = { workspaceId ->
-                        noteEditViewModel.shareNote(featureActions.getNoteId(), workspaceId)
-                    }
-                )
-            }
+            ShareNoteDialog(
+                showDialog = showShareDialog,
+                editState = editState,
+                noteId = featureActions.getNoteId(),
+                onDismiss = { showShareDialog = false },
+                onShare = { workspaceId ->
+                    noteEditViewModel.shareNote(featureActions.getNoteId(), workspaceId)
+                }
+            )
 
-            if (showCopyDialog) {
-                WorkspaceSelectionDialog(
-                    title = stringResource(R.string.copy_note),
-                    confirmText = stringResource(R.string.copy),
-                    isProcessing = editState.isCopying,
-                    workspaces = editState.workspaces,
-                    isLoadingWorkspaces = editState.isLoadingWorkspaces,
-                    onDismiss = { showCopyDialog = false },
-                    onConfirm = { workspaceId ->
-                        noteEditViewModel.copyNote(featureActions.getNoteId(), workspaceId)
-                    }
-                )
-            }
+            CopyNoteDialog(
+                showDialog = showCopyDialog,
+                editState = editState,
+                noteId = featureActions.getNoteId(),
+                onDismiss = { showCopyDialog = false },
+                onCopy = { workspaceId ->
+                    noteEditViewModel.copyNote(featureActions.getNoteId(), workspaceId)
+                }
+            )
         }
+    }
+}
+
+@Composable
+private fun ShareNoteDialog(
+    showDialog: Boolean,
+    editState: NoteEditState,
+    noteId: String,
+    onDismiss: () -> Unit,
+    onShare: (String) -> Unit
+) {
+    if (showDialog) {
+        WorkspaceSelectionDialog(
+            title = stringResource(R.string.share_note),
+            confirmText = stringResource(R.string.share),
+            isProcessing = editState.isSharing,
+            workspaces = editState.workspaces,
+            isLoadingWorkspaces = editState.isLoadingWorkspaces,
+            onDismiss = onDismiss,
+            onConfirm = onShare
+        )
+    }
+}
+
+@Composable
+private fun CopyNoteDialog(
+    showDialog: Boolean,
+    editState: NoteEditState,
+    noteId: String,
+    onDismiss: () -> Unit,
+    onCopy: (String) -> Unit
+) {
+    if (showDialog) {
+        WorkspaceSelectionDialog(
+            title = stringResource(R.string.copy_note),
+            confirmText = stringResource(R.string.copy),
+            isProcessing = editState.isCopying,
+            workspaces = editState.workspaces,
+            isLoadingWorkspaces = editState.isLoadingWorkspaces,
+            onDismiss = onDismiss,
+            onConfirm = onCopy
+        )
     }
 }
 
@@ -174,74 +208,10 @@ fun NoteEditContent(
     onNoteTypeChanged: (NoteType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
-
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.edit_note),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(name = R.drawable.ic_arrow_back)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onShareClick) {
-                        Icon(name = R.drawable.ic_share_note)
-                    }
-                    IconButton(onClick = onCopyClick) {
-                        Icon(name = R.drawable.ic_copy)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.medium),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(
-                        onClick = onBackClick,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(spacing.medium))
-                    Button(
-                        onClick = onSaveClick,
-                        modifier = Modifier.weight(1f),
-                        enabled = !editState.isSaving
-                    ) {
-                        if (editState.isSaving) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(spacing.medium),
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text(stringResource(R.string.save))
-                        }
-                    }
-                }
-            }
-        }
+        topBar = { NoteEditTopBar(onBackClick = onBackClick, onShareClick = onShareClick, onCopyClick = onCopyClick) },
+        bottomBar = { NoteEditBottomBar(onBackClick = onBackClick, onSaveClick = onSaveClick, isSaving = editState.isSaving) }
     ) { paddingValues ->
         NoteEditBody(
             editState = editState,
@@ -253,6 +223,84 @@ fun NoteEditContent(
             onFieldUpdated = onFieldUpdated,
             onNoteTypeChanged = onNoteTypeChanged
         )
+    }
+}
+
+@Composable
+private fun NoteEditTopBar(
+    onBackClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onCopyClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.edit_note),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(name = R.drawable.ic_arrow_back)
+            }
+        },
+        actions = {
+            IconButton(onClick = onShareClick) {
+                Icon(name = R.drawable.ic_share_note)
+            }
+            IconButton(onClick = onCopyClick) {
+                Icon(name = R.drawable.ic_copy)
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    )
+}
+
+@Composable
+private fun NoteEditBottomBar(
+    onBackClick: () -> Unit,
+    onSaveClick: () -> Unit,
+    isSaving: Boolean
+) {
+    val spacing = LocalSpacing.current
+    
+    BottomAppBar(
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing.medium),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onBackClick,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+            Spacer(modifier = Modifier.width(spacing.medium))
+            Button(
+                onClick = onSaveClick,
+                modifier = Modifier.weight(1f),
+                enabled = !isSaving
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(spacing.medium),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(stringResource(R.string.save))
+                }
+            }
+        }
     }
 }
 
@@ -397,49 +445,73 @@ private fun TagsEditSection(
             )
             Spacer(modifier = Modifier.height(spacing.small))
 
-            OutlinedTextField(
-                value = tagInput,
-                onValueChange = { tagInput = it },
-                label = { Text(stringResource(R.string.add_tag)) },
-                placeholder = { Text(stringResource(R.string.enter_tag_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                trailingIcon = {
-                    IconButton(
-                        onClick = {
-                            if (tagInput.isNotBlank()) {
-                                onTagAdded(tagInput.trim())
-                                tagInput = ""
-                            }
-                        },
-                        enabled = tagInput.isNotBlank()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.add),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (tagInput.isNotBlank())
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+            TagInputField(
+                tagInput = tagInput,
+                onTagInputChange = { tagInput = it },
+                onTagAdded = { tag ->
+                    onTagAdded(tag)
+                    tagInput = ""
                 }
             )
 
-            if (tags.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(spacing.small))
-                androidx.compose.foundation.layout.FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(spacing.small),
-                    verticalArrangement = Arrangement.spacedBy(spacing.small)
-                ) {
-                    tags.forEach { tag ->
-                        AssistChip(
-                            onClick = { onTagRemoved(tag) },
-                            label = { Text(tag) }
-                        )
+            TagsList(tags = tags, onTagRemoved = onTagRemoved, spacing = spacing)
+        }
+    }
+}
+
+@Composable
+private fun TagInputField(
+    tagInput: String,
+    onTagInputChange: (String) -> Unit,
+    onTagAdded: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = tagInput,
+        onValueChange = onTagInputChange,
+        label = { Text(stringResource(R.string.add_tag)) },
+        placeholder = { Text(stringResource(R.string.enter_tag_name)) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        trailingIcon = {
+            IconButton(
+                onClick = {
+                    if (tagInput.isNotBlank()) {
+                        onTagAdded(tagInput.trim())
                     }
-                }
+                },
+                enabled = tagInput.isNotBlank()
+            ) {
+                Text(
+                    text = stringResource(R.string.add),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (tagInput.isNotBlank())
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun TagsList(
+    tags: List<String>,
+    onTagRemoved: (String) -> Unit,
+    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+) {
+    if (tags.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(spacing.small))
+        androidx.compose.foundation.layout.FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.small),
+            verticalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            tags.forEach { tag ->
+                AssistChip(
+                    onClick = { onTagRemoved(tag) },
+                    label = { Text(tag) }
+                )
             }
         }
     }
@@ -489,24 +561,13 @@ private fun FieldsEditSection(
 
             Spacer(modifier = Modifier.height(spacing.medium))
 
-            if (fields.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.no_fields_added),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = spacing.medium)
-                )
-            } else {
-                fields.forEach { field ->
-                    FieldEditCard(
-                        field = field,
-                        noteType = noteType,
-                        onFieldRemoved = { onFieldRemoved(field.id) },
-                        onFieldUpdated = { update -> onFieldUpdated(field.id, update) }
-                    )
-                    Spacer(modifier = Modifier.height(spacing.small))
-                }
-            }
+            FieldsList(
+                fields = fields,
+                noteType = noteType,
+                onFieldRemoved = onFieldRemoved,
+                onFieldUpdated = onFieldUpdated,
+                spacing = spacing
+            )
         }
     }
 
@@ -576,145 +637,218 @@ private fun FieldEditCard(
                 Text(stringResource(R.string.required))
             }
 
-            // Content input section - only show for CONTENT and CHAT note types
-            if (noteType != NoteType.TEMPLATE) {
-                Spacer(modifier = Modifier.height(spacing.medium))
-                Text(
-                    text = stringResource(R.string.field_content),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(spacing.small))
-                
-                when (field.type) {
-                    FieldType.TEXT -> {
-                        OutlinedTextField(
-                            value = (field.content as? String) ?: "",
-                            onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
-                            label = { Text(stringResource(R.string.text_content)) },
-                            placeholder = { Text(stringResource(R.string.enter_text_content)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            minLines = 2,
-                            maxLines = 4
-                        )
-                    }
-                    FieldType.NUMBER -> {
-                        OutlinedTextField(
-                            value = (field.content as? Int)?.toString() ?: "",
-                            onValueChange = { 
-                                val value = it.toIntOrNull()
-                                onFieldUpdated(FieldUpdate.Content(value))
-                            },
-                            label = { Text(stringResource(R.string.number_content)) },
-                            placeholder = { Text(stringResource(R.string.enter_number)) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    FieldType.DATETIME -> {
-                        var showDatePicker by remember { mutableStateOf(false) }
-                        var showTimePicker by remember { mutableStateOf(false) }
-                        val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
-                        
-                        Column {
-                            OutlinedTextField(
-                                value = currentDateTime.toString(),
-                                onValueChange = { 
-                                    try {
-                                        val dateTime = java.time.LocalDateTime.parse(it)
-                                        onFieldUpdated(FieldUpdate.Content(dateTime))
-                                    } catch (e: java.time.format.DateTimeParseException) {
-                                        // Invalid format, don't update
-                                    }
-                                },
-                                label = { Text(stringResource(R.string.datetime_content)) },
-                                placeholder = { Text(stringResource(R.string.datetime_format)) },
-                                modifier = Modifier.fillMaxWidth(),
-                                readOnly = true
-                            )
-                            
-                            Spacer(modifier = Modifier.height(spacing.small))
-                            
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(spacing.small)
-                            ) {
-                                Button(
-                                    onClick = { showDatePicker = true },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(stringResource(R.string.pick_date))
-                                }
-                                Button(
-                                    onClick = { showTimePicker = true },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(stringResource(R.string.pick_time))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            FieldContentInputSection(
+                field = field,
+                noteType = noteType,
+                onFieldUpdated = onFieldUpdated,
+                spacing = spacing
+            )
 
-            // Type-specific configuration fields
-            Spacer(modifier = Modifier.height(spacing.medium))
-            Text(
-                text = stringResource(R.string.field_configuration),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+            FieldConfigurationSection(
+                field = field,
+                onFieldUpdated = onFieldUpdated,
+                spacing = spacing
+            )
+        }
+    }
+}
+
+@Composable
+private fun FieldContentInputSection(
+    field: FieldCreationData,
+    noteType: NoteType,
+    onFieldUpdated: (FieldUpdate) -> Unit,
+    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+) {
+    if (noteType != NoteType.TEMPLATE) {
+        Spacer(modifier = Modifier.height(spacing.medium))
+        Text(
+            text = stringResource(R.string.field_content),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(spacing.small))
+        
+        when (field.type) {
+            FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
+            FieldType.NUMBER -> NumberFieldInput(field, onFieldUpdated)
+            FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
+        }
+    }
+}
+
+@Composable
+private fun TextFieldInput(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit
+) {
+    OutlinedTextField(
+        value = (field.content as? String) ?: "",
+        onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
+        label = { Text(stringResource(R.string.text_content)) },
+        placeholder = { Text(stringResource(R.string.enter_text_content)) },
+        modifier = Modifier.fillMaxWidth(),
+        minLines = 2,
+        maxLines = 4
+    )
+}
+
+@Composable
+private fun NumberFieldInput(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit
+) {
+    OutlinedTextField(
+        value = (field.content as? Int)?.toString() ?: "",
+        onValueChange = { 
+            val value = it.toIntOrNull()
+            onFieldUpdated(FieldUpdate.Content(value))
+        },
+        label = { Text(stringResource(R.string.number_content)) },
+        placeholder = { Text(stringResource(R.string.enter_number)) },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun DateTimeFieldInput(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit,
+    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
+    
+    Column {
+        OutlinedTextField(
+            value = currentDateTime.toString(),
+            onValueChange = { 
+                try {
+                    val dateTime = java.time.LocalDateTime.parse(it)
+                    onFieldUpdated(FieldUpdate.Content(dateTime))
+                } catch (e: java.time.format.DateTimeParseException) {
+                    // Invalid format, don't update
+                }
+            },
+            label = { Text(stringResource(R.string.datetime_content)) },
+            placeholder = { Text(stringResource(R.string.datetime_format)) },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true
+        )
+        
+        Spacer(modifier = Modifier.height(spacing.small))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.small)
+        ) {
+            Button(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.pick_date))
+            }
+            Button(
+                onClick = { showTimePicker = true },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.pick_time))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FieldConfigurationSection(
+    field: FieldCreationData,
+    onFieldUpdated: (FieldUpdate) -> Unit,
+    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+) {
+    Spacer(modifier = Modifier.height(spacing.medium))
+    Text(
+        text = stringResource(R.string.field_configuration),
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary
+    )
+    Spacer(modifier = Modifier.height(spacing.small))
+    
+    when (field.type) {
+        FieldType.TEXT -> {
+            OutlinedTextField(
+                value = field.placeholder ?: "",
+                onValueChange = { onFieldUpdated(FieldUpdate.Placeholder(it)) },
+                label = { Text(stringResource(R.string.placeholder_optional)) },
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(spacing.small))
-            
-            when (field.type) {
-                FieldType.TEXT -> {
-                    OutlinedTextField(
-                        value = field.placeholder ?: "",
-                        onValueChange = { onFieldUpdated(FieldUpdate.Placeholder(it)) },
-                        label = { Text(stringResource(R.string.placeholder_optional)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(spacing.small))
-                    OutlinedTextField(
-                        value = field.maxLength?.toString() ?: "",
-                        onValueChange = {
-                            val value = it.toIntOrNull()
-                            onFieldUpdated(FieldUpdate.MaxLength(value))
-                        },
-                        label = { Text(stringResource(R.string.max_length_optional)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                FieldType.NUMBER -> {
-                    OutlinedTextField(
-                        value = field.min?.toString() ?: "",
-                        onValueChange = {
-                            val value = it.toIntOrNull()
-                            onFieldUpdated(FieldUpdate.Min(value))
-                        },
-                        label = { Text(stringResource(R.string.min_optional)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(spacing.small))
-                    OutlinedTextField(
-                        value = field.max?.toString() ?: "",
-                        onValueChange = {
-                            val value = it.toIntOrNull()
-                            onFieldUpdated(FieldUpdate.Max(value))
-                        },
-                        label = { Text(stringResource(R.string.max_optional)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                FieldType.DATETIME -> {
-                    Text(
-                        text = stringResource(R.string.datetime_config_coming_soon),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            OutlinedTextField(
+                value = field.maxLength?.toString() ?: "",
+                onValueChange = {
+                    val value = it.toIntOrNull()
+                    onFieldUpdated(FieldUpdate.MaxLength(value))
+                },
+                label = { Text(stringResource(R.string.max_length_optional)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        FieldType.NUMBER -> {
+            OutlinedTextField(
+                value = field.min?.toString() ?: "",
+                onValueChange = {
+                    val value = it.toIntOrNull()
+                    onFieldUpdated(FieldUpdate.Min(value))
+                },
+                label = { Text(stringResource(R.string.min_optional)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(spacing.small))
+            OutlinedTextField(
+                value = field.max?.toString() ?: "",
+                onValueChange = {
+                    val value = it.toIntOrNull()
+                    onFieldUpdated(FieldUpdate.Max(value))
+                },
+                label = { Text(stringResource(R.string.max_optional)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        FieldType.DATETIME -> {
+            Text(
+                text = stringResource(R.string.datetime_config_coming_soon),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun FieldsList(
+    fields: List<FieldCreationData>,
+    noteType: NoteType,
+    onFieldRemoved: (String) -> Unit,
+    onFieldUpdated: (String, FieldUpdate) -> Unit,
+    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+) {
+    if (fields.isEmpty()) {
+        Text(
+            text = stringResource(R.string.no_fields_added_yet),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(vertical = spacing.medium)
+        )
+    } else {
+        fields.forEach { field ->
+            FieldEditCard(
+                field = field,
+                noteType = noteType,
+                onFieldRemoved = { onFieldRemoved(field.id) },
+                onFieldUpdated = { update -> onFieldUpdated(field.id, update) }
+            )
+            Spacer(modifier = Modifier.height(spacing.small))
         }
     }
 }
@@ -764,57 +898,27 @@ fun WorkspaceSelectionDialog(
     onConfirm: (String) -> Unit
 ) {
     var selectedWorkspaceId by remember { mutableStateOf("") }
-    // TODO: Load actual workspaces from WorkspaceRepository
-    val workspaces = remember { workspaces.map{Pair(it._id, it.profile.name)}}
+    val workspacePairs = remember { workspaces.map{Pair(it._id, it.profile.name)}}
 
     AlertDialog(
         onDismissRequest = { if (!isProcessing) onDismiss() },
         title = { Text(title) },
         text = {
-            if (isLoadingWorkspaces){
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {CircularProgressIndicator()}
-            }
-            else Column {
-                Text(stringResource(R.string.select_workspace))
-                Spacer(modifier = Modifier.height(8.dp))
-                workspaces.forEach { (id, name) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = !isProcessing) {
-                                selectedWorkspaceId = id
-                            }
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedWorkspaceId == id,
-                            onClick = { selectedWorkspaceId = id },
-                            enabled = !isProcessing
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(name)
-                    }
-                }
-            }
+            WorkspaceSelectionContent(
+                isLoadingWorkspaces = isLoadingWorkspaces,
+                workspacePairs = workspacePairs,
+                selectedWorkspaceId = selectedWorkspaceId,
+                isProcessing = isProcessing,
+                onWorkspaceSelected = { selectedWorkspaceId = it }
+            )
         },
         confirmButton = {
-            Button(
-                onClick = { onConfirm(selectedWorkspaceId) },
-                enabled = selectedWorkspaceId.isNotEmpty() && !isProcessing
-            ) {
-                if (isProcessing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(confirmText)
-                }
-            }
+            WorkspaceSelectionConfirmButton(
+                onConfirm = { onConfirm(selectedWorkspaceId) },
+                confirmText = confirmText,
+                isProcessing = isProcessing,
+                isEnabled = selectedWorkspaceId.isNotEmpty() && !isProcessing
+            )
         },
         dismissButton = {
             TextButton(
@@ -825,4 +929,80 @@ fun WorkspaceSelectionDialog(
             }
         }
     )
+}
+
+@Composable
+private fun WorkspaceSelectionContent(
+    isLoadingWorkspaces: Boolean,
+    workspacePairs: List<Pair<String, String>>,
+    selectedWorkspaceId: String,
+    isProcessing: Boolean,
+    onWorkspaceSelected: (String) -> Unit
+) {
+    if (isLoadingWorkspaces) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            CircularProgressIndicator()
+        }
+    } else {
+        Column {
+            Text(stringResource(R.string.select_workspace))
+            Spacer(modifier = Modifier.height(8.dp))
+            workspacePairs.forEach { (id, name) ->
+                WorkspaceSelectionItem(
+                    id = id,
+                    name = name,
+                    isSelected = selectedWorkspaceId == id,
+                    isProcessing = isProcessing,
+                    onSelected = onWorkspaceSelected
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkspaceSelectionItem(
+    id: String,
+    name: String,
+    isSelected: Boolean,
+    isProcessing: Boolean,
+    onSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !isProcessing) { onSelected(id) }
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = isSelected,
+            onClick = { onSelected(id) },
+            enabled = !isProcessing
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(name)
+    }
+}
+
+@Composable
+private fun WorkspaceSelectionConfirmButton(
+    onConfirm: () -> Unit,
+    confirmText: String,
+    isProcessing: Boolean,
+    isEnabled: Boolean
+) {
+    Button(
+        onClick = onConfirm,
+        enabled = isEnabled
+    ) {
+        if (isProcessing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        } else {
+            Text(confirmText)
+        }
+    }
 }
