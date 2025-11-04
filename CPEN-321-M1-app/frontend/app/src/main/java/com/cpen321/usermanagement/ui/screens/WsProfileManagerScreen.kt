@@ -138,11 +138,13 @@ fun WsProfileManagerScreen(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-            showImagePickerDialog = showImagePickerDialog,
             featureActions = featureActions,
             wsProfileManagerViewModel = wsProfileManagerViewModel,
-            onFormStateChange = { formState = it },
-            onShowImagePickerDialogChange = { showImagePickerDialog = it }
+            dialogState = ImagePickerDialogState(
+                showImagePickerDialog = showImagePickerDialog,
+                onShowImagePickerDialogChange = { showImagePickerDialog = it }
+            ),
+            formStateHandler = { formState = it }
         )
     } else {
         Box(modifier = Modifier, contentAlignment = Alignment.Center) {
@@ -187,35 +189,39 @@ private fun WsProfileManagerLaunchedEffects(
     }
 }
 
+private data class ImagePickerDialogState(
+    val showImagePickerDialog: Boolean,
+    val onShowImagePickerDialogChange: (Boolean) -> Unit
+)
+
 @Composable
 private fun WsProfileManagerContent(
     uiState: WsProfileManagerUiState,
     formState: WsProfileFormState,
     snackBarHostState: SnackbarHostState,
-    showImagePickerDialog: Boolean,
     featureActions: FeatureActions,
     wsProfileManagerViewModel: WsProfileManagerViewModel,
-    onFormStateChange: (WsProfileFormState) -> Unit,
-    onShowImagePickerDialogChange: (Boolean) -> Unit
+    dialogState: ImagePickerDialogState,
+    formStateHandler: (WsProfileFormState) -> Unit
 ) {
     val actions = WsManageProfileScreenActions(
             onBackClick = { featureActions.navigateToWsSelect() },
-            onNameChange = { onFormStateChange(formState.copy(name = it)) },
-            onDescriptionChange = { onFormStateChange(formState.copy(description = it)) },
-            onEditPictureClick = { onShowImagePickerDialogChange(true) },
+            onNameChange = { formStateHandler(formState.copy(name = it)) },
+            onDescriptionChange = { formStateHandler(formState.copy(description = it)) },
+            onEditPictureClick = { dialogState.onShowImagePickerDialogChange(true) },
             onSaveClick = {
                 wsProfileManagerViewModel.updateProfile(formState.name, formState.description)
             },
-            onImagePickerDismiss = { onShowImagePickerDialogChange(false) },
+            onImagePickerDismiss = { dialogState.onShowImagePickerDialogChange(false) },
             onImageSelected = { uri ->
-                onShowImagePickerDialogChange(false)
+                dialogState.onShowImagePickerDialogChange(false)
                 wsProfileManagerViewModel.uploadProfilePicture(uri)
             },
             onLoadingPhotoChange = wsProfileManagerViewModel::setLoadingPhoto,
             onSuccessMessageShown = wsProfileManagerViewModel::clearSuccessMessage,
             onErrorMessageShown = wsProfileManagerViewModel::clearError,
-            onInviteClick = { featureActions.ws.navigateToInvite() },
-            onMembersClick = { featureActions.ws.navigateToMembersManager() },
+            onInviteClick = { featureActions.navigateToInvite() },
+            onMembersClick = { featureActions.navigateToMembersManager() },
             onDeleteClick = { wsProfileManagerViewModel.deleteWorkspace() }
         )
 
@@ -223,14 +229,9 @@ private fun WsProfileManagerContent(
             uiState = uiState,
             formState = formState,
             snackBarHostState = snackBarHostState,
-            showImagePickerDialog = showImagePickerDialog,
+            showImagePickerDialog = dialogState.showImagePickerDialog,
             actions = actions
         )
-    }
-    else{
-        Box(modifier = Modifier, contentAlignment = Alignment.Center){
-            CircularProgressIndicator()}
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

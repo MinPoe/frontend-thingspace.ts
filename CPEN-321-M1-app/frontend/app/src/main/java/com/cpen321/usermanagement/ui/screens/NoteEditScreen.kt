@@ -53,11 +53,13 @@ fun NoteEditScreen(
                 editState = editState,
                 noteEditViewModel = noteEditViewModel,
                 featureActions = featureActions,
-                showShareDialog = showShareDialog,
-                showCopyDialog = showCopyDialog,
                 onBackClick = onBackClick,
-                onShareDialogChange = { showShareDialog = it },
-                onCopyDialogChange = { showCopyDialog = it }
+                dialogState = DialogState(
+                    showShareDialog = showShareDialog,
+                    showCopyDialog = showCopyDialog,
+                    onShareDialogChange = { showShareDialog = it },
+                    onCopyDialogChange = { showCopyDialog = it }
+                )
             )
         }
     }
@@ -73,7 +75,7 @@ private fun NoteEditScreenLaunchedEffects(
     onCopyDialogDismiss: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        noteEditViewModel.loadNote(featureActions.state.getNoteId())
+        noteEditViewModel.loadNote(featureActions.getNoteId())
     }
 
     LaunchedEffect(editState.isSuccess) {
@@ -99,20 +101,24 @@ private fun NoteEditScreenLaunchedEffects(
     }
 }
 
+private data class DialogState(
+    val showShareDialog: Boolean,
+    val showCopyDialog: Boolean,
+    val onShareDialogChange: (Boolean) -> Unit,
+    val onCopyDialogChange: (Boolean) -> Unit
+)
+
 @Composable
 private fun NoteEditScreenContent(
     editState: NoteEditState,
     noteEditViewModel: NoteEditViewModel,
     featureActions: IFeatureActions,
-    showShareDialog: Boolean,
-    showCopyDialog: Boolean,
     onBackClick: () -> Unit,
-    onShareDialogChange: (Boolean) -> Unit,
-    onCopyDialogChange: (Boolean) -> Unit
+    dialogState: DialogState
 ) {
     val onSaveClick = { noteEditViewModel.saveNote(featureActions.getNoteId()) }
-    val onShareClick = { onShareDialogChange(true) }
-    val onCopyClick = { onCopyDialogChange(true) }
+    val onShareClick = { dialogState.onShareDialogChange(true) }
+    val onCopyClick = { dialogState.onCopyDialogChange(true) }
 
     NoteEditContent(
         editState = editState,
@@ -129,20 +135,20 @@ private fun NoteEditScreenContent(
     )
 
     ShareNoteDialog(
-        showDialog = showShareDialog,
+        showDialog = dialogState.showShareDialog,
         editState = editState,
         noteId = featureActions.getNoteId(),
-        onDismiss = { onShareDialogChange(false) },
+        onDismiss = { dialogState.onShareDialogChange(false) },
         onShare = { workspaceId ->
             noteEditViewModel.shareNote(featureActions.getNoteId(), workspaceId)
         }
     )
 
     CopyNoteDialog(
-        showDialog = showCopyDialog,
+        showDialog = dialogState.showCopyDialog,
         editState = editState,
         noteId = featureActions.getNoteId(),
-        onDismiss = { onCopyDialogChange(false) },
+        onDismiss = { dialogState.onCopyDialogChange(false) },
         onCopy = { workspaceId ->
             noteEditViewModel.copyNote(featureActions.getNoteId(), workspaceId)
         }
