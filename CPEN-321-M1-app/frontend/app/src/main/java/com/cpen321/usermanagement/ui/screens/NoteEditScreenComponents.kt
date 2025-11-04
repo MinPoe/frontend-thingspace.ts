@@ -64,33 +64,48 @@ fun TagsEditSection(
         }
     }
 
+    AddTagDialog(
+        showDialog = showDialog,
+        tagInput = tagInput,
+        onTagInputChange = { tagInput = it },
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if (tagInput.isNotBlank()) {
+                onTagAdded(tagInput.trim())
+                tagInput = ""
+                showDialog = false
+            }
+        }
+    )
+}
+
+@Composable
+private fun AddTagDialog(
+    showDialog: Boolean,
+    tagInput: String,
+    onTagInputChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = onDismiss,
             title = { Text(stringResource(R.string.add_tag)) },
             text = {
                 OutlinedTextField(
                     value = tagInput,
-                    onValueChange = { tagInput = it },
+                    onValueChange = onTagInputChange,
                     label = { Text(stringResource(R.string.enter_tag_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        if (tagInput.isNotBlank()) {
-                            onTagAdded(tagInput.trim())
-                            tagInput = ""
-                            showDialog = false
-                        }
-                    }
-                ) {
+                Button(onClick = onConfirm) {
                     Text(stringResource(R.string.add))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
+                TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.cancel))
                 }
             }
