@@ -101,72 +101,97 @@ fun TagSelector(
     var isAllSelected by remember { mutableStateOf(allTagsSelected) }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        // "All" checkbox row — now fully clickable
+        AllTagsCheckbox(
+            isAllSelected = isAllSelected,
+            onCheckedChange = { checked ->
+                isAllSelected = checked
+                if (checked) {
+                    currentSelectedTags = tags.toMutableSet()
+                } else {
+                    currentSelectedTags.clear()
+                }
+                onSelectionChanged(currentSelectedTags, isAllSelected)
+            }
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        TagsList(
+            tags = tags,
+            currentSelectedTags = currentSelectedTags,
+            isAllSelected = isAllSelected,
+            onSelectedTagsChange = { currentSelectedTags = it },
+            onSelectionChanged = onSelectionChanged
+        )
+    }
+}
+
+@Composable
+private fun AllTagsCheckbox(
+    isAllSelected: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+    ) {
+        Checkbox(
+            checked = isAllSelected,
+            onCheckedChange = onCheckedChange
+        )
+        Text(
+            text = stringResource(R.string.all),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+
+@Composable
+private fun TagsList(
+    tags: List<String>,
+    currentSelectedTags: MutableSet<String>,
+    isAllSelected: Boolean,
+    onSelectedTagsChange: (MutableSet<String>) -> Unit,
+    onSelectionChanged: (Set<String>, Boolean) -> Unit
+) {
+    tags.forEach { tag ->
+        val isChecked = currentSelectedTags.contains(tag)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp)
+                .padding(vertical = 2.dp)
         ) {
             Checkbox(
-                checked = isAllSelected,
+                checked = isChecked,
                 onCheckedChange = { checked ->
-                    isAllSelected = checked
-                    if (checked) {
-                        currentSelectedTags = tags.toMutableSet()
+                    val newSelectedTags = if (checked) {
+                        (currentSelectedTags + tag).toMutableSet()
                     } else {
-                        currentSelectedTags.clear()
+                        (currentSelectedTags - tag).toMutableSet()
                     }
-                    onSelectionChanged(currentSelectedTags, isAllSelected)
+                    onSelectedTagsChange(newSelectedTags)
+                    onSelectionChanged(newSelectedTags, isAllSelected)
                 }
             )
             Text(
-                text = stringResource(R.string.all),
+                text = tag,
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
-
-        // Replace deprecated Divider with HorizontalDivider
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-        // Tag checkboxes
-        // Tag checkboxes
-        tags.forEach { tag ->
-            val isChecked = currentSelectedTags.contains(tag)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.dp)
-            ) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { checked ->
-                        currentSelectedTags = if (isChecked) {
+                    .padding(start = 8.dp)
+                    .clickable {
+                        val newSelectedTags = if (isChecked) {
                             (currentSelectedTags - tag).toMutableSet()
                         } else {
                             (currentSelectedTags + tag).toMutableSet()
                         }
-                        // "All" does not change automatically
-                        onSelectionChanged(currentSelectedTags, isAllSelected)
+                        onSelectedTagsChange(newSelectedTags)
+                        onSelectionChanged(newSelectedTags, isAllSelected)
                     }
-                )
-                Text(
-                    text = tag,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .clickable {
-                            currentSelectedTags = if (isChecked) {
-                                (currentSelectedTags - tag).toMutableSet()
-                            } else {
-                                (currentSelectedTags + tag).toMutableSet()
-                            }
-                            onSelectionChanged(currentSelectedTags, isAllSelected)
-                        }
-                )
-            }
+            )
         }
     }
 }

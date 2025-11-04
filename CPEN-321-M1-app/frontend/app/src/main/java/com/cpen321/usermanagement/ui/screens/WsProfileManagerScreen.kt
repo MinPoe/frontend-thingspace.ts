@@ -123,15 +123,41 @@ fun WsProfileManagerScreen(
 ) {
     val uiState by wsProfileManagerViewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-
     var showImagePickerDialog by remember { mutableStateOf(false) }
+    var formState by remember { mutableStateOf(WsProfileFormState()) }
 
-    // Form state
-    var formState by remember {
-        mutableStateOf(WsProfileFormState())
+    WsProfileManagerLaunchedEffects(
+        wsProfileManagerViewModel = wsProfileManagerViewModel,
+        uiState = uiState,
+        featureActions = featureActions,
+        onFormStateUpdate = { formState = it }
+    )
+
+    if (uiState.deleting == DeletingTracer.NOT) {
+        WsProfileManagerContent(
+            uiState = uiState,
+            formState = formState,
+            snackBarHostState = snackBarHostState,
+            showImagePickerDialog = showImagePickerDialog,
+            featureActions = featureActions,
+            wsProfileManagerViewModel = wsProfileManagerViewModel,
+            onFormStateChange = { formState = it },
+            onShowImagePickerDialogChange = { showImagePickerDialog = it }
+        )
+    } else {
+        Box(modifier = Modifier, contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
     }
+}
 
-    // Side effects
+@Composable
+private fun WsProfileManagerLaunchedEffects(
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    uiState: WsProfileManagerUiState,
+    featureActions: FeatureActions,
+    onFormStateUpdate: (WsProfileFormState) -> Unit
+) {
     LaunchedEffect(Unit) {
         wsProfileManagerViewModel.clearSuccessMessage()
         wsProfileManagerViewModel.clearError()
@@ -142,34 +168,47 @@ fun WsProfileManagerScreen(
 
     LaunchedEffect(uiState.workspace) {
         uiState.workspace?.let { workspace ->
-            formState = WsProfileFormState(
-                name = workspace.profile.name,
-                description = workspace.profile.description ?: "",
-                originalName = workspace.profile.name,
-                originalDescription = workspace.profile.description ?: ""
+            onFormStateUpdate(
+                WsProfileFormState(
+                    name = workspace.profile.name,
+                    description = workspace.profile.description ?: "",
+                    originalName = workspace.profile.name,
+                    originalDescription = workspace.profile.description ?: ""
+                )
             )
         }
     }
 
     LaunchedEffect(uiState.deleting) {
-        if (uiState.deleting == DeletingTracer.DONE){
-            featureActions.ws.navigateToWsSelect()
+        if (uiState.deleting == DeletingTracer.DONE) {
+            featureActions.navigateToWsSelect()
             wsProfileManagerViewModel.setDelTracer(DeletingTracer.NOT)
         }
     }
+}
 
-    if (uiState.deleting == DeletingTracer.NOT) {
-        val actions = WsManageProfileScreenActions(
-            onBackClick = { featureActions.ws.navigateToWsSelect() },
-            onNameChange = { formState = formState.copy(name = it) },
-            onDescriptionChange = { formState = formState.copy(description = it) },
-            onEditPictureClick = { showImagePickerDialog = true },
+@Composable
+private fun WsProfileManagerContent(
+    uiState: WsProfileManagerUiState,
+    formState: WsProfileFormState,
+    snackBarHostState: SnackbarHostState,
+    showImagePickerDialog: Boolean,
+    featureActions: FeatureActions,
+    wsProfileManagerViewModel: WsProfileManagerViewModel,
+    onFormStateChange: (WsProfileFormState) -> Unit,
+    onShowImagePickerDialogChange: (Boolean) -> Unit
+) {
+    val actions = WsManageProfileScreenActions(
+            onBackClick = { featureActions.navigateToWsSelect() },
+            onNameChange = { onFormStateChange(formState.copy(name = it)) },
+            onDescriptionChange = { onFormStateChange(formState.copy(description = it)) },
+            onEditPictureClick = { onShowImagePickerDialogChange(true) },
             onSaveClick = {
                 wsProfileManagerViewModel.updateProfile(formState.name, formState.description)
             },
-            onImagePickerDismiss = { showImagePickerDialog = false },
+            onImagePickerDismiss = { onShowImagePickerDialogChange(false) },
             onImageSelected = { uri ->
-                showImagePickerDialog = false
+                onShowImagePickerDialogChange(false)
                 wsProfileManagerViewModel.uploadProfilePicture(uri)
             },
             onLoadingPhotoChange = wsProfileManagerViewModel::setLoadingPhoto,
