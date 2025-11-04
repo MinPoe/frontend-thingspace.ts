@@ -100,7 +100,28 @@ fun AppNavigation(
 
     val viewModels = initializeNavigationViewModels()
 
-    // Handle navigation events from NavigationStateManager
+    AppNavigationEffects(
+        navigationEvent = navigationEvent,
+        navController = navController,
+        navigationStateManager = navigationStateManager,
+        viewModels = viewModels
+    )
+
+    AppNavHost(
+        navController = navController,
+        viewModels = viewModels,
+        navigationStateManager = navigationStateManager,
+        featureActions = featureActions
+    )
+}
+
+@Composable
+private fun AppNavigationEffects(
+    navigationEvent: NavigationEvent,
+    navController: NavHostController,
+    navigationStateManager: NavigationStateManager,
+    viewModels: NavigationViewModels
+) {
     LaunchedEffect(navigationEvent) {
         handleNavigationEvent(
             navigationEvent,
@@ -127,31 +148,6 @@ fun AppNavigation(
             profileViewModel = viewModels.profileViewModel
         )
     }
-
-    AppNavHost(
-        navController = navController,
-        authViewModel = viewModels.authViewModel,
-        profileViewModel = viewModels.profileViewModel,
-        mainViewModel = viewModels.mainViewModel,
-        chatViewModel = viewModels.chatViewModel,
-        copyViewModel = viewModels.copyViewModel,
-        fieldsViewModel = viewModels.fieldsViewModel,
-        filterViewModel = viewModels.filterViewModel,
-        inviteViewModel = viewModels.inviteViewModel,
-        membersManagerViewModel = viewModels.membersManagerViewModel,
-        membersViewModel = viewModels.membersViewModel,
-        noteViewModel = viewModels.noteViewModel,
-        noteCreationViewModel = viewModels.noteCreationViewModel,
-        noteEditViewModel = viewModels.noteEditViewModel,
-        sharingViewModel = viewModels.sharingViewModel,
-        templateViewModel = viewModels.templateViewModel,
-        wsCreationViewModel = viewModels.wsCreationViewModel,
-        wsProfileManagerViewModel = viewModels.wsProfileManagerViewModel,
-        wsProfileViewModel = viewModels.wsProfileViewModel,
-        wsSelectViewModel = viewModels.wsSelectViewModel,
-        navigationStateManager = navigationStateManager,
-        featureActions = featureActions
-    )
 }
 
 @Composable
@@ -225,15 +221,50 @@ private fun handleNavigationEvent(
     wsSelectViewModel: WsSelectViewModel,
     mainViewModel: MainViewModel
 ) {
-    val basicViewModels = BasicNavigationViewModels(
+    val viewModelGroups = createNavigationViewModelGroups(
+        membersManagerViewModel,
+        wsSelectViewModel,
+        wsProfileViewModel,
+        mainViewModel,
+        templateViewModel,
+        filterViewModel,
+        membersViewModel,
+        noteEditViewModel,
+        profileViewModel
+    )
+
+    routeNavigationEvent(
+        navigationEvent = navigationEvent,
+        navController = navController,
+        navigationStateManager = navigationStateManager,
+        authViewModel = authViewModel,
+        profileViewModel = profileViewModel,
+        mainViewModel = mainViewModel,
+        wsProfileViewModel = wsProfileViewModel,
+        wsSelectViewModel = wsSelectViewModel,
+        viewModelGroups = viewModelGroups
+    )
+}
+
+private fun createNavigationViewModelGroups(
+    membersManagerViewModel: MembersManagerViewModel,
+    wsSelectViewModel: WsSelectViewModel,
+    wsProfileViewModel: WsProfileViewModel,
+    mainViewModel: MainViewModel,
+    templateViewModel: TemplateViewModel,
+    filterViewModel: FilterViewModel,
+    membersViewModel: MembersViewModel,
+    noteEditViewModel: NoteEditViewModel,
+    profileViewModel: ProfileViewModel
+) = Pair(
+    BasicNavigationViewModels(
         membersManagerViewModel,
         wsSelectViewModel,
         wsProfileViewModel,
         mainViewModel,
         templateViewModel
-    )
-    
-    val featureViewModels = FeatureNavigationViewModels(
+    ),
+    FeatureNavigationViewModels(
         filterViewModel,
         membersManagerViewModel,
         membersViewModel,
@@ -241,6 +272,20 @@ private fun handleNavigationEvent(
         profileViewModel,
         templateViewModel
     )
+)
+
+private fun routeNavigationEvent(
+    navigationEvent: NavigationEvent,
+    navController: NavHostController,
+    navigationStateManager: NavigationStateManager,
+    authViewModel: AuthViewModel,
+    profileViewModel: ProfileViewModel,
+    mainViewModel: MainViewModel,
+    wsProfileViewModel: WsProfileViewModel,
+    wsSelectViewModel: WsSelectViewModel,
+    viewModelGroups: Pair<BasicNavigationViewModels, FeatureNavigationViewModels>
+) {
+    val (basicViewModels, featureViewModels) = viewModelGroups
 
     when (navigationEvent) {
         is NavigationEvent.NavigateToAuth,
@@ -669,25 +714,7 @@ class NavigationActions(private val navigationStateManager: NavigationStateManag
 @Composable
 private fun AppNavHost(
     navController: NavHostController,
-    authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel,
-    mainViewModel: MainViewModel,
-    chatViewModel: ChatViewModel,
-    copyViewModel: CopyViewModel,
-    fieldsViewModel: FieldsViewModel,
-    filterViewModel: FilterViewModel,
-    inviteViewModel: InviteViewModel,
-    membersManagerViewModel: MembersManagerViewModel,
-    membersViewModel: MembersViewModel,
-    noteViewModel: NoteViewModel,
-    noteCreationViewModel: NoteCreationViewModel,
-    noteEditViewModel: NoteEditViewModel,
-    sharingViewModel: SharingViewModel,
-    templateViewModel: TemplateViewModel,
-    wsCreationViewModel: WsCreationViewModel,
-    wsProfileManagerViewModel: WsProfileManagerViewModel,
-    wsProfileViewModel: WsProfileViewModel,
-    wsSelectViewModel: WsSelectViewModel,
+    viewModels: NavigationViewModels,
     navigationStateManager: NavigationStateManager,
     featureActions: FeatureActions
 ) {
@@ -695,22 +722,22 @@ private fun AppNavHost(
         navController = navController,
         startDestination = NavRoutes.LOADING
     ) {
-        addAuthRoutes(authViewModel, profileViewModel, navigationStateManager)
-        addMainRoutes(mainViewModel, templateViewModel, navigationStateManager, featureActions)
-        addProfileRoutes(authViewModel, profileViewModel, navigationStateManager)
-        addWorkspaceRoutes(wsSelectViewModel, navigationStateManager, featureActions)
+        addAuthRoutes(viewModels.authViewModel, viewModels.profileViewModel, navigationStateManager)
+        addMainRoutes(viewModels.mainViewModel, viewModels.templateViewModel, navigationStateManager, featureActions)
+        addProfileRoutes(viewModels.authViewModel, viewModels.profileViewModel, navigationStateManager)
+        addWorkspaceRoutes(viewModels.wsSelectViewModel, navigationStateManager, featureActions)
         addFeatureRoutes(
-            chatViewModel, filterViewModel, noteViewModel, noteCreationViewModel,
-            noteEditViewModel, navigationStateManager, featureActions
+            viewModels.chatViewModel, viewModels.filterViewModel, viewModels.noteViewModel, viewModels.noteCreationViewModel,
+            viewModels.noteEditViewModel, navigationStateManager, featureActions
         )
         addWorkspaceManagementRoutes(
             WorkspaceManagementViewModels(
-                wsProfileViewModel,
-                inviteViewModel,
-                membersViewModel,
-                membersManagerViewModel,
-                wsProfileManagerViewModel,
-                wsCreationViewModel
+                viewModels.wsProfileViewModel,
+                viewModels.inviteViewModel,
+                viewModels.membersViewModel,
+                viewModels.membersManagerViewModel,
+                viewModels.wsProfileManagerViewModel,
+                viewModels.wsCreationViewModel
             ),
             navigationStateManager,
             featureActions
