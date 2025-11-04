@@ -25,7 +25,7 @@ import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
-import com.cpen321.usermanagement.ui.navigation.FeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.viewmodels.InviteUiState
 import com.cpen321.usermanagement.ui.viewmodels.InviteViewModel
 import kotlinx.coroutines.flow.StateFlow

@@ -23,7 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -32,7 +32,7 @@ fun ChatScreen(
     chatViewModel: ChatViewModel,
     onProfileClick: () -> Unit,
     onBackClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ) {
     val uiState by chatViewModel.uiState.collectAsState()
 
@@ -47,7 +47,7 @@ fun ChatScreen(
         onSendMessage = { chatViewModel.sendMessage(it) },
         onDeleteMessage = { chatViewModel.deleteMessage(it) },
         onProfileClick = onProfileClick,
-        onOtherProfileClick = { userId -> featureActions.navigateToOtherProfile(userId) }
+        onOtherProfileClick = { userId -> featureActions.navs.navigateToOtherProfile(userId) }
     )
 }
 

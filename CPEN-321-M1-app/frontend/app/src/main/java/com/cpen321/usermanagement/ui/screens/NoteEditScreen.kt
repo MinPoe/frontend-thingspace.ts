@@ -19,7 +19,7 @@ import com.cpen321.usermanagement.ui.viewmodels.FieldType
 import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
 import com.cpen321.usermanagement.ui.viewmodels.NoteEditViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NoteEditState
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.unit.dp
 
@@ -27,14 +27,14 @@ import androidx.compose.ui.unit.dp
 fun NoteEditScreen(
     noteEditViewModel: NoteEditViewModel,
     onBackClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ) {
     val editState by noteEditViewModel.editState.collectAsState()
     var showShareDialog by remember { mutableStateOf(false) }
     var showCopyDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        noteEditViewModel.loadNote(featureActions.getNoteId())
+        noteEditViewModel.loadNote(featureActions.state.getNoteId())
     }
 
     LaunchedEffect(editState.isSuccess) {
@@ -66,7 +66,7 @@ fun NoteEditScreen(
             onBackClick = onBackClick
         )
         else -> {
-            val onSaveClick = { noteEditViewModel.saveNote(featureActions.getNoteId()) }
+            val onSaveClick = { noteEditViewModel.saveNote(featureActions.state.getNoteId()) }
             val onShareClick = { showShareDialog = true }
             val onCopyClick = { showCopyDialog = true }
 
@@ -87,20 +87,20 @@ fun NoteEditScreen(
             ShareNoteDialog(
                 showDialog = showShareDialog,
                 editState = editState,
-                noteId = featureActions.getNoteId(),
+                noteId = featureActions.state.getNoteId(),
                 onDismiss = { showShareDialog = false },
                 onShare = { workspaceId ->
-                    noteEditViewModel.shareNote(featureActions.getNoteId(), workspaceId)
+                    noteEditViewModel.shareNote(featureActions.state.getNoteId(), workspaceId)
                 }
             )
 
             CopyNoteDialog(
                 showDialog = showCopyDialog,
                 editState = editState,
-                noteId = featureActions.getNoteId(),
+                noteId = featureActions.state.getNoteId(),
                 onDismiss = { showCopyDialog = false },
                 onCopy = { workspaceId ->
-                    noteEditViewModel.copyNote(featureActions.getNoteId(), workspaceId)
+                    noteEditViewModel.copyNote(featureActions.state.getNoteId(), workspaceId)
                 }
             )
         }

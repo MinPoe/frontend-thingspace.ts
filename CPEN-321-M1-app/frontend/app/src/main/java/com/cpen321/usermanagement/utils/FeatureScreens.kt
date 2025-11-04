@@ -1,7 +1,17 @@
 package com.cpen321.usermanagement.utils
 import com.cpen321.usermanagement.data.remote.dto.NoteType
-interface IFeatureActions {
-    // --- Common navigation state getters and setters---
+
+interface IWorkspaceActions{
+    fun navigateToInvite()
+    fun navigateToMembersManager()
+    fun navigateToMembers()
+    fun navigateToWsCreation()
+    fun navigateToWsProfileManager(workspaceId: String)
+    fun navigateToWsProfile(workspaceId: String)
+    fun navigateToWsSelect()
+}
+
+interface IStateWrapper{
     fun getWorkspaceId(): String
     fun getOtherUserId(): String
     fun getNoteType(): NoteType
@@ -11,7 +21,9 @@ interface IFeatureActions {
     fun getSearchQuery(): String
     fun setSearchQuery(query: String): Unit
     fun updateTagSelection(selectedTags:List<String>, allTagsSelected: Boolean): Unit
+}
 
+interface INavigationActions {
     // --- Navigation methods ---
 
     fun navigateToChat(
@@ -31,11 +43,7 @@ interface IFeatureActions {
         allTagsSelected: Boolean
     )
 
-    fun navigateToInvite()
 
-    fun navigateToMembersManager()
-
-    fun navigateToMembers()
 
     fun navigateToNote(noteId: String)
     fun navigateToNoteCreation()
@@ -52,11 +60,7 @@ interface IFeatureActions {
         searchQuery: String = ""
     )
 
-    fun navigateToWsCreation()
 
-    fun navigateToWsProfileManager(workspaceId: String)
-
-    fun navigateToWsProfile(workspaceId: String)
 
     fun navigateToMainWithContext(
         workspaceId: String,
@@ -65,8 +69,14 @@ interface IFeatureActions {
         searchQuery: String = ""
     )
 
-    fun navigateToWsSelect()
+
     fun navigateToMainTagReset(workspaceId: String)
     fun navigateToChatTagReset(workspaceId: String)
     fun navigateToTemplateTagReset(workspaceId: String)
 }
+
+class FeatureActions(
+    val state: IStateWrapper,
+    val ws: IWorkspaceActions,
+    val navs: INavigationActions
+)

@@ -55,7 +55,10 @@ import com.cpen321.usermanagement.ui.screens.WsMembersManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsMembersScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsProfileScreen
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
+import com.cpen321.usermanagement.utils.INavigationActions
+import com.cpen321.usermanagement.utils.IStateWrapper
+import com.cpen321.usermanagement.utils.IWorkspaceActions
 
 object NavRoutes {
     const val LOADING = "loading"
@@ -90,7 +93,10 @@ fun AppNavigation(
     val navigationViewModel: NavigationViewModel = hiltViewModel()
     val navigationStateManager = navigationViewModel.navigationStateManager
     val navigationEvent by navigationStateManager.navigationEvent.collectAsState()
-    val featureActions = FeatureActions(navigationStateManager)
+    val featureActions = FeatureActions(
+        StateWrapper(navigationStateManager),
+        WorkspaceActions(navigationStateManager),
+        NavigationActions(navigationStateManager))
 
     // Initialize view models required for navigation-level scope
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -464,8 +470,8 @@ private fun handleWorkspaceNavigation(
 }
 
 
-class FeatureActions(private val navigationStateManager: NavigationStateManager) :
-    IFeatureActions {
+class StateWrapper(private val navigationStateManager: NavigationStateManager) :
+    IStateWrapper {
 
     // --- Getters delegation ---
     override fun getWorkspaceId(): String {
@@ -496,15 +502,50 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         return navigationStateManager.state.getSearchQuery()
     }
 
-    override fun setSearchQuery(query: String){
+    override fun setSearchQuery(query: String) {
         navigationStateManager.state.setSearchQuery(query)
     }
 
     override fun updateTagSelection(selectedTags: List<String>, allTagsSelected: Boolean) {
-        navigationStateManager.state.updateTagSelection(selectedTags = selectedTags,
-            allTagsSelected = allTagsSelected)
+        navigationStateManager.state.updateTagSelection(
+            selectedTags = selectedTags,
+            allTagsSelected = allTagsSelected
+        )
+    }
+}
+
+class WorkspaceActions(private val navigationStateManager: NavigationStateManager): IWorkspaceActions {
+    override fun navigateToInvite() {
+        navigationStateManager.ws.navigateToInvite()
     }
 
+    override fun navigateToMembersManager() {
+        navigationStateManager.ws.navigateToMembersManager()
+    }
+
+    override fun navigateToMembers() {
+        navigationStateManager.ws.navigateToMembers()
+    }
+
+    override fun navigateToWsCreation() {
+        navigationStateManager.ws.navigateToWsCreation()
+    }
+
+    override fun navigateToWsProfileManager(workspaceId: String) {
+        navigationStateManager.ws.navigateToWsProfileManager(workspaceId)
+    }
+
+    override fun navigateToWsProfile(workspaceId: String) {
+        navigationStateManager.ws.navigateToWsProfile(workspaceId)
+    }
+
+    override fun navigateToWsSelect() {
+        navigationStateManager.ws.navigateToWsSelect()
+    }
+}
+
+class NavigationActions(private val navigationStateManager: NavigationStateManager) :
+    INavigationActions {
     // --- Navigation delegation ---
     override fun navigateToChat(
         workspaceId: String,
@@ -538,18 +579,6 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
             selectedTags,
             allTagsSelected
         )
-    }
-
-    override fun navigateToInvite() {
-        navigationStateManager.ws.navigateToInvite()
-    }
-
-    override fun navigateToMembersManager() {
-        navigationStateManager.ws.navigateToMembersManager()
-    }
-
-    override fun navigateToMembers() {
-        navigationStateManager.ws.navigateToMembers()
     }
 
     override fun navigateToNote(noteId: String) {
@@ -586,18 +615,6 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         )
     }
 
-    override fun navigateToWsCreation() {
-        navigationStateManager.ws.navigateToWsCreation()
-    }
-
-    override fun navigateToWsProfileManager(workspaceId: String) {
-        navigationStateManager.ws.navigateToWsProfileManager(workspaceId)
-    }
-
-    override fun navigateToWsProfile(workspaceId: String) {
-        navigationStateManager.ws.navigateToWsProfile(workspaceId)
-    }
-
     override fun navigateToMainWithContext(
         workspaceId: String,
         selectedTags: List<String>,
@@ -610,10 +627,6 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
             allTagsSelected,
             searchQuery
         )
-    }
-
-    override fun navigateToWsSelect() {
-        navigationStateManager.ws.navigateToWsSelect()
     }
 
     override fun navigateToChatTagReset(workspaceId: String) {
@@ -629,6 +642,7 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     }
 
 }
+
 
 @Composable
 private fun AppNavHost(

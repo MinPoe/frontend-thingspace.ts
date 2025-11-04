@@ -51,7 +51,7 @@ import com.cpen321.usermanagement.ui.components.ImagePicker
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.components.WsProfileManagerBar
-import com.cpen321.usermanagement.ui.navigation.FeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.DeletingTracer
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerUiState
@@ -135,7 +135,7 @@ fun WsProfileManagerScreen(
     LaunchedEffect(Unit) {
         wsProfileManagerViewModel.clearSuccessMessage()
         wsProfileManagerViewModel.clearError()
-        if (uiState.workspace?._id != featureActions.getWorkspaceId()) {
+        if (uiState.workspace?._id != featureActions.state.getWorkspaceId()) {
             wsProfileManagerViewModel.loadProfile()
         }
     }
@@ -153,14 +153,14 @@ fun WsProfileManagerScreen(
 
     LaunchedEffect(uiState.deleting) {
         if (uiState.deleting == DeletingTracer.DONE){
-            featureActions.navigateToWsSelect()
+            featureActions.ws.navigateToWsSelect()
             wsProfileManagerViewModel.setDelTracer(DeletingTracer.NOT)
         }
     }
 
     if (uiState.deleting == DeletingTracer.NOT) {
         val actions = WsManageProfileScreenActions(
-            onBackClick = { featureActions.navigateToWsSelect() },
+            onBackClick = { featureActions.ws.navigateToWsSelect() },
             onNameChange = { formState = formState.copy(name = it) },
             onDescriptionChange = { formState = formState.copy(description = it) },
             onEditPictureClick = { showImagePickerDialog = true },
@@ -175,8 +175,8 @@ fun WsProfileManagerScreen(
             onLoadingPhotoChange = wsProfileManagerViewModel::setLoadingPhoto,
             onSuccessMessageShown = wsProfileManagerViewModel::clearSuccessMessage,
             onErrorMessageShown = wsProfileManagerViewModel::clearError,
-            onInviteClick = { featureActions.navigateToInvite() },
-            onMembersClick = { featureActions.navigateToMembersManager() },
+            onInviteClick = { featureActions.ws.navigateToInvite() },
+            onMembersClick = { featureActions.ws.navigateToMembersManager() },
             onDeleteClick = { wsProfileManagerViewModel.deleteWorkspace() }
         )
 

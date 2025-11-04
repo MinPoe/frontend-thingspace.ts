@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.cpen321.usermanagement.ui.components.BackActionButton
 import com.cpen321.usermanagement.ui.viewmodels.FilterViewModel
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import androidx.compose.foundation.layout.PaddingValues
 
 //AI-generated imports
@@ -22,17 +22,17 @@ import com.cpen321.usermanagement.R
 fun FilterScreen(
     filterViewModel: FilterViewModel,
     onBackClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ){
     val loading = filterViewModel.loading.collectAsState()
     FilterContent(
         onBackClick,
         availableTags = filterViewModel.getAvailTags(),
-        selectedTags = featureActions.getSelectedTags(),
+        selectedTags = featureActions.state.getSelectedTags(),
         loading = loading.value,
-        allTagsSelected = featureActions.getAllTagsSelected(),
+        allTagsSelected = featureActions.state.getAllTagsSelected(),
         onSelectionChanged = {selection:Set<String>, allSelected:Boolean ->
-            featureActions.updateTagSelection(
+            featureActions.state.updateTagSelection(
             selectedTags = selection.toList(),
             allTagsSelected = allSelected
             ) }

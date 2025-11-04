@@ -17,19 +17,19 @@ import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.NoteViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NoteState
-import com.cpen321.usermanagement.utils.IFeatureActions
+import com.cpen321.usermanagement.utils.FeatureActions
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun NoteScreen(
     noteViewModel: NoteViewModel,
     onBackClick: () -> Unit,
-    featureActions: IFeatureActions
+    featureActions: FeatureActions
 ){
     val noteState by noteViewModel.noteState.collectAsState()
 
     LaunchedEffect(Unit) {
-        noteViewModel.loadNote(featureActions.getNoteId())
+        noteViewModel.loadNote(featureActions.state.getNoteId())
     }
 
     // Handle successful deletion
@@ -43,8 +43,8 @@ fun NoteScreen(
     NoteContent(
         noteState = noteState,
         onBackClick = onBackClick,
-        onEditClick = { featureActions.navigateToNoteEdit(featureActions.getNoteId()) },
-        onDeleteClick = { noteViewModel.deleteNote(featureActions.getNoteId()) }
+        onEditClick = { featureActions.navs.navigateToNoteEdit(featureActions.state.getNoteId()) },
+        onDeleteClick = { noteViewModel.deleteNote(featureActions.state.getNoteId()) }
     )
 }
 
