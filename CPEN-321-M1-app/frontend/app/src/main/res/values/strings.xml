@@ -129,4 +129,5 @@
     <string name="invite_to_workspace">Invite to the workspace</string>
     <!-- Go back -->
     <string name="back_icon_description">Go back</string>
+    <string name="no_fields_added_yet">No fields added yet</string>
 </resources>

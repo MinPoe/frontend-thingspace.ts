@@ -86,6 +86,7 @@ fun NoteCreationContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NoteCreationTopBar(onBackClick: () -> Unit) {
     TopAppBar(

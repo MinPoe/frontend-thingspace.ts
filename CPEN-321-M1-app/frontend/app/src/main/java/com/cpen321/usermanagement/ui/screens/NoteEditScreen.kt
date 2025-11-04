@@ -226,6 +226,7 @@ fun NoteEditContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NoteEditTopBar(
     onBackClick: () -> Unit,

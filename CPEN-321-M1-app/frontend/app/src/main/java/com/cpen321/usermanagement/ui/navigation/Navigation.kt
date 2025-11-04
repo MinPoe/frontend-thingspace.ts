@@ -323,7 +323,7 @@ private fun handleProfileNavigation(
         }
         is NavigationEvent.NavigateToOtherProfile -> {
             navController.navigate(NavRoutes.OTHER_PROFILE)
-            profileViewModel.loadProfile(navigationStateManager.getOtherUserId())
+            profileViewModel.loadProfile(navigationStateManager.state.getOtherUserId())
         }
         else -> {}
     }
@@ -469,39 +469,39 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
 
     // --- Getters delegation ---
     override fun getWorkspaceId(): String {
-        return navigationStateManager.getWorkspaceId()
+        return navigationStateManager.state.getWorkspaceId()
     }
 
     override fun getOtherUserId(): String {
-        return navigationStateManager.getOtherUserId()
+        return navigationStateManager.state.getOtherUserId()
     }
 
     override fun getNoteType(): NoteType {
-        return navigationStateManager.getNoteType()
+        return navigationStateManager.state.getNoteType()
     }
 
     override fun getNoteId(): String {
-        return navigationStateManager.getNoteId()
+        return navigationStateManager.state.getNoteId()
     }
 
     override fun getSelectedTags(): List<String> {
-        return navigationStateManager.getSelectedTags()
+        return navigationStateManager.state.getSelectedTags()
     }
 
     override fun getAllTagsSelected(): Boolean {
-        return navigationStateManager.getAllTagsSelected()
+        return navigationStateManager.state.getAllTagsSelected()
     }
 
     override fun getSearchQuery(): String {
-        return navigationStateManager.getSearchQuery()
+        return navigationStateManager.state.getSearchQuery()
     }
 
     override fun setSearchQuery(query: String){
-        navigationStateManager.setSearchQuery(query)
+        navigationStateManager.state.setSearchQuery(query)
     }
 
     override fun updateTagSelection(selectedTags: List<String>, allTagsSelected: Boolean) {
-        navigationStateManager.updateTagSelection(selectedTags = selectedTags,
+        navigationStateManager.state.updateTagSelection(selectedTags = selectedTags,
             allTagsSelected = allTagsSelected)
     }
 
@@ -512,7 +512,7 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         allTagsSelected: Boolean,
         searchQuery: String
     ) {
-        navigationStateManager.navigateToChat(
+        navigationStateManager.display.navigateToChat(
             workspaceId,
             selectedTags,
             allTagsSelected,
@@ -521,11 +521,11 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     }
 
     override fun navigateToCopy() {
-        navigationStateManager.navigateToCopy()
+        navigationStateManager.note.navigateToCopy()
     }
 
     override fun navigateToFields() {
-        navigationStateManager.navigateToFields()
+        navigationStateManager.note.navigateToFields()
     }
 
     override fun navigateToFilter(
@@ -533,7 +533,7 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         selectedTags: List<String>,
         allTagsSelected: Boolean
     ) {
-        navigationStateManager.navigateToFilter(
+        navigationStateManager.display.navigateToFilter(
             workspaceId,
             selectedTags,
             allTagsSelected
@@ -541,27 +541,27 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     }
 
     override fun navigateToInvite() {
-        navigationStateManager.navigateToInvite()
+        navigationStateManager.ws.navigateToInvite()
     }
 
     override fun navigateToMembersManager() {
-        navigationStateManager.navigateToMembersManager()
+        navigationStateManager.ws.navigateToMembersManager()
     }
 
     override fun navigateToMembers() {
-        navigationStateManager.navigateToMembers()
+        navigationStateManager.ws.navigateToMembers()
     }
 
     override fun navigateToNote(noteId: String) {
-        navigationStateManager.navigateToNote(noteId)
+        navigationStateManager.note.navigateToNote(noteId)
     }
 
     override fun navigateToNoteCreation() {
-        navigationStateManager.navigateToNoteCreation()
+        navigationStateManager.note.navigateToNoteCreation()
     }
 
     override fun navigateToNoteEdit(noteId: String) {
-        navigationStateManager.navigateToNoteEdit(noteId)
+        navigationStateManager.note.navigateToNoteEdit(noteId)
     }
 
     override fun navigateToOtherProfile(otherUserId: String) {
@@ -569,7 +569,7 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     }
 
     override fun navigateToSharing() {
-        navigationStateManager.navigateToSharing()
+        navigationStateManager.note.navigateToSharing()
     }
 
     override fun navigateToTemplate(
@@ -578,7 +578,7 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         allTagsSelected: Boolean,
         searchQuery: String
     ) {
-        navigationStateManager.navigateToTemplate(
+        navigationStateManager.display.navigateToTemplate(
             workspaceId,
             selectedTags,
             allTagsSelected,
@@ -587,15 +587,15 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     }
 
     override fun navigateToWsCreation() {
-        navigationStateManager.navigateToWsCreation()
+        navigationStateManager.ws.navigateToWsCreation()
     }
 
     override fun navigateToWsProfileManager(workspaceId: String) {
-        navigationStateManager.navigateToWsProfileManager(workspaceId)
+        navigationStateManager.ws.navigateToWsProfileManager(workspaceId)
     }
 
     override fun navigateToWsProfile(workspaceId: String) {
-        navigationStateManager.navigateToWsProfile(workspaceId)
+        navigationStateManager.ws.navigateToWsProfile(workspaceId)
     }
 
     override fun navigateToMainWithContext(
@@ -604,7 +604,7 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
         allTagsSelected: Boolean,
         searchQuery: String
     ) {
-        navigationStateManager.navigateToMainWithContext(
+        navigationStateManager.display.navigateToMainWithContext(
             workspaceId,
             selectedTags,
             allTagsSelected,
@@ -613,19 +613,19 @@ class FeatureActions(private val navigationStateManager: NavigationStateManager)
     }
 
     override fun navigateToWsSelect() {
-        navigationStateManager.navigateToWsSelect()
+        navigationStateManager.ws.navigateToWsSelect()
     }
 
     override fun navigateToChatTagReset(workspaceId: String) {
-        navigationStateManager.navigateToChatTagReset(workspaceId)
+        navigationStateManager.display.navigateToChatTagReset(workspaceId)
     }
 
     override fun navigateToTemplateTagReset(workspaceId: String) {
-        navigationStateManager.navigateToTemplateTagReset(workspaceId)
+        navigationStateManager.display.navigateToTemplateTagReset(workspaceId)
     }
 
     override fun navigateToMainTagReset(workspaceId: String) {
-        navigationStateManager.navigateToMainTagReset(workspaceId)
+        navigationStateManager.display.navigateToMainTagReset(workspaceId)
     }
 
 }
@@ -774,20 +774,20 @@ private fun NavGraphBuilder.addWorkspaceRoutes(
         WorkspacesScreen(
             workspacesViewModel = wsSelectViewModel,
             onBackClick = {
-                when (navigationStateManager.getNoteType()) {
+                when (navigationStateManager.state.getNoteType()) {
                     NoteType.CHAT -> {
-                        navigationStateManager.navigateToChatTagReset(
-                            navigationStateManager.getWorkspaceId()
+                        navigationStateManager.display.navigateToChatTagReset(
+                            navigationStateManager.state.getWorkspaceId()
                         )
                     }
                     NoteType.CONTENT -> {
-                        navigationStateManager.navigateToMainTagReset(
-                            navigationStateManager.getWorkspaceId()
+                        navigationStateManager.display.navigateToMainTagReset(
+                            navigationStateManager.state.getWorkspaceId()
                         )
                     }
                     NoteType.TEMPLATE -> {
-                        navigationStateManager.navigateToTemplateTagReset(
-                            navigationStateManager.getWorkspaceId()
+                        navigationStateManager.display.navigateToTemplateTagReset(
+                            navigationStateManager.state.getWorkspaceId()
                         )
                     }
                 }
