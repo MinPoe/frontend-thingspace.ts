@@ -127,25 +127,7 @@ private fun AppNavigationEffects(
             navigationEvent,
             navController,
             navigationStateManager,
-            viewModels.authViewModel,
-            chatViewModel = viewModels.chatViewModel,
-            copyViewModel = viewModels.copyViewModel,
-            fieldsViewModel = viewModels.fieldsViewModel,
-            filterViewModel = viewModels.filterViewModel,
-            inviteViewModel = viewModels.inviteViewModel,
-            membersManagerViewModel = viewModels.membersManagerViewModel,
-            membersViewModel = viewModels.membersViewModel,
-            noteViewModel = viewModels.noteViewModel,
-            noteCreationViewModel = viewModels.noteCreationViewModel,
-            noteEditViewModel = viewModels.noteEditViewModel,
-            sharingViewModel = viewModels.sharingViewModel,
-            templateViewModel = viewModels.templateViewModel,
-            wsCreationViewModel = viewModels.wsCreationViewModel,
-            wsProfileManagerViewModel = viewModels.wsProfileManagerViewModel,
-            wsProfileViewModel = viewModels.wsProfileViewModel,
-            wsSelectViewModel = viewModels.wsSelectViewModel,
-            mainViewModel = viewModels.mainViewModel,
-            profileViewModel = viewModels.profileViewModel
+            viewModels,
         )
     }
 }
@@ -201,37 +183,20 @@ private fun handleNavigationEvent(
     navigationEvent: NavigationEvent,
     navController: NavHostController,
     navigationStateManager: NavigationStateManager,
-    authViewModel: AuthViewModel,
-    profileViewModel: ProfileViewModel,
-    chatViewModel: ChatViewModel,
-    copyViewModel: CopyViewModel,
-    fieldsViewModel: FieldsViewModel,
-    filterViewModel: FilterViewModel,
-    inviteViewModel: InviteViewModel,
-    membersManagerViewModel: MembersManagerViewModel,
-    membersViewModel: MembersViewModel,
-    noteViewModel: NoteViewModel,
-    noteCreationViewModel: NoteCreationViewModel,
-    noteEditViewModel: NoteEditViewModel,
-    sharingViewModel: SharingViewModel,
-    templateViewModel: TemplateViewModel,
-    wsCreationViewModel: WsCreationViewModel,
-    wsProfileManagerViewModel: WsProfileManagerViewModel,
-    wsProfileViewModel: WsProfileViewModel,
-    wsSelectViewModel: WsSelectViewModel,
-    mainViewModel: MainViewModel
+    viewModels: NavigationViewModels
 ) {
+
     val viewModelGroups = createNavigationViewModelGroups(
         NavigationViewModelGroupParams(
-            membersManagerViewModel = membersManagerViewModel,
-            wsSelectViewModel = wsSelectViewModel,
-            wsProfileViewModel = wsProfileViewModel,
-            mainViewModel = mainViewModel,
-            templateViewModel = templateViewModel,
-            filterViewModel = filterViewModel,
-            membersViewModel = membersViewModel,
-            noteEditViewModel = noteEditViewModel,
-            profileViewModel = profileViewModel
+            membersManagerViewModel = viewModels.membersManagerViewModel,
+            wsSelectViewModel = viewModels.wsSelectViewModel,
+            wsProfileViewModel = viewModels.wsProfileViewModel,
+            mainViewModel = viewModels.mainViewModel,
+            templateViewModel = viewModels.templateViewModel,
+            filterViewModel = viewModels.filterViewModel,
+            membersViewModel = viewModels.membersViewModel,
+            noteEditViewModel = viewModels.noteEditViewModel,
+            profileViewModel = viewModels.profileViewModel
         )
     )
 
@@ -240,11 +205,11 @@ private fun handleNavigationEvent(
         navController = navController,
         navigationStateManager = navigationStateManager,
         routingContext = NavigationRoutingContext(
-            authViewModel = authViewModel,
-            profileViewModel = profileViewModel,
-            mainViewModel = mainViewModel,
-            wsProfileViewModel = wsProfileViewModel,
-            wsSelectViewModel = wsSelectViewModel
+            authViewModel = viewModels.authViewModel,
+            profileViewModel = viewModels.profileViewModel,
+            mainViewModel = viewModels.mainViewModel,
+            wsProfileViewModel = viewModels.wsProfileViewModel,
+            wsSelectViewModel = viewModels.wsSelectViewModel
         ),
         viewModelGroups = viewModelGroups
     )

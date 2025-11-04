@@ -40,6 +40,17 @@ import com.cpen321.usermanagement.ui.components.SearchBar
 import com.cpen321.usermanagement.utils.FeatureActions
 import kotlinx.coroutines.flow.compose
 
+data class MainActions(
+    val onNoteClick: (String) -> Unit,
+    val onTemplateClick: ()-> Unit,
+    val onWorkspaceClick: () -> Unit,
+    val onFilterClick: () -> Unit,
+    val onChatClick: () -> Unit,
+    val onSearchClick: () -> Unit,
+    val onQueryChange: (String) -> Unit,
+    val onCreateNoteClick: () -> Unit
+)
+
 @Composable
 fun MainScreen(
     mainViewModel: MainViewModel,
@@ -51,10 +62,7 @@ fun MainScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     val wsname =  mainViewModel.getWorkspaceName()
 
-    MainContent(
-        uiState = uiState,
-        snackBarHostState = snackBarHostState,
-        onProfileClick = onProfileClick,
+    val actions = MainActions(
         onTemplateClick = {  featureActions.navs.navigateToTemplateTagReset(
             featureActions.state.getWorkspaceId())},
         onWorkspaceClick = { featureActions.ws.navigateToWsSelect()},
@@ -71,12 +79,19 @@ fun MainScreen(
         )},
         onChatClick = { featureActions.navs.navigateToChatTagReset(
             featureActions.state.getWorkspaceId()) },
-        onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
+        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
+        onNoteClick = {noteId:String -> featureActions.navs.navigateToNote(noteId)},
+        onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)}
+    )
+
+    MainContent(
+        uiState = uiState,
+        snackBarHostState = snackBarHostState,
+        onProfileClick = onProfileClick,
+        actions = actions,
         workspaceName = wsname,
         query = featureActions.state.getSearchQuery(),
         onSuccessMessageShown = mainViewModel::clearSuccessMessage,
-        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
-        onNoteClick = {noteId:String -> featureActions.navs.navigateToNote(noteId)},
         fetching = fetching,
         notes = mainViewModel.getNotesTitlesFound(0) //TODO no pagination 4 now
     )
@@ -87,17 +102,10 @@ private fun MainContent(
     uiState: MainUiState,
     snackBarHostState: SnackbarHostState,
     onProfileClick: () -> Unit,
-    onTemplateClick: ()-> Unit,
-    onWorkspaceClick: () -> Unit,
-    onFilterClick: () -> Unit,
-    onChatClick: ()->Unit,
-    onSearchClick: ()-> Unit,
-    onQueryChange: (String)-> Unit,
+    actions: MainActions,
     query: String,
     onSuccessMessageShown: () -> Unit,
     workspaceName: String,
-    onCreateNoteClick: ()-> Unit,
-    onNoteClick: (String)->Unit,
     notes:List<Note>,
     fetching: Boolean,
     modifier: Modifier = Modifier
@@ -116,11 +124,11 @@ private fun MainContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = onCreateNoteClick,
-                onWorkspacesClick = onWorkspaceClick,
-                onTemplatesClick = onTemplateClick,
+                onCreateNoteClick = actions.onCreateNoteClick,
+                onWorkspacesClick = actions.onWorkspaceClick,
+                onTemplatesClick = actions.onTemplateClick,
                 onContentClick = {  },
-                onChatClick = onChatClick,
+                onChatClick = actions.onChatClick,
                 modifier = modifier)
         }
     ) { paddingValues ->
@@ -128,10 +136,7 @@ private fun MainContent(
             MainBody(
                 paddingValues = paddingValues,
                 workspaceName = workspaceName,
-                onFilterClick = onFilterClick,
-                onSearchClick = onSearchClick,
-                onQueryChange = onQueryChange,
-                onNoteClick = onNoteClick,
+                actions = actions,
                 notes = notes,
                 query = query
             )
@@ -224,12 +229,9 @@ private fun MainSnackbarHost(
 @Composable
 private fun MainBody(
     paddingValues: PaddingValues,
-    onFilterClick: () -> Unit,
+    actions: MainActions,
     workspaceName: String,
     query: String,
-    onSearchClick: ()-> Unit,
-    onQueryChange: (String) -> Unit,
-    onNoteClick: (String) -> Unit,
     notes:List<Note>,
     modifier: Modifier = Modifier
 ) {
@@ -241,13 +243,13 @@ private fun MainBody(
     ) {
         WorkspaceName(workspaceName)
         SearchBar(
-            onSearchClick = onSearchClick,
-            onFilterClick = onFilterClick,
-            onQueryChange = onQueryChange,
+            onSearchClick = actions.onSearchClick,
+            onFilterClick = actions.onFilterClick,
+            onQueryChange = actions.onQueryChange,
             query = query
         )
         NoteDisplayList(
-            onNoteClick = onNoteClick,
+            onNoteClick = actions.onNoteClick,
             notes = notes,
         )
     }
