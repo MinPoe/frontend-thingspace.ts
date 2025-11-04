@@ -7,6 +7,7 @@ import { workspaceModel } from '../workspace.model';
 import { userModel } from '../user.model';
 import { noteModel } from '../note.model';
 import { NoteType } from '../notes.types';
+import { notificationService } from '../notification.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
 const app = createTestApp();
@@ -336,6 +337,77 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.tags).toBeDefined();
       expect(Array.isArray(res.body.data.tags)).toBe(true);
       expect(res.body.data.tags.length).toBeGreaterThanOrEqual(3); // tag1, tag2, tag3
+      // Verify flatMap is executed by checking tags are extracted from multiple notes
+      expect(res.body.data.tags).toContain('tag1');
+      expect(res.body.data.tags).toContain('tag2');
+      expect(res.body.data.tags).toContain('tag3');
+    });
+
+    test('200 – handles notes without tags (covers tags || [] fallback)', async () => {
+      // Input: workspaceId with notes that have no tags
+      // Expected status code: 200
+      // Expected behavior: notes without tags are handled gracefully
+      // Expected output: array of tags (handles undefined/null tags)
+      
+      // Create a note without tags to cover the || [] fallback
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: testData.testWorkspaceId,
+        noteType: NoteType.CONTENT,
+        fields: [{ fieldType: 'title', content: 'Note without tags', _id: '3' }],
+        // tags field is intentionally omitted/undefined
+      });
+
+      const res = await request(app)
+        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.tags).toBeDefined();
+      expect(Array.isArray(res.body.data.tags)).toBe(true);
+      // Should still return tags from other notes, not crash on undefined tags
+    });
+
+    test('200 – handles notes with null/undefined tags (covers || [] branch)', async () => {
+      // Input: workspaceId with notes that explicitly have null/undefined tags
+      // Expected status code: 200
+      // Expected behavior: || [] fallback is executed when note.tags is falsy
+      // Expected output: empty array or tags from other notes
+      
+      // Create a new workspace with only notes that have no tags to ensure || [] branch is hit
+      const emptyTagsWorkspace = await workspaceModel.create({
+        name: 'Empty Tags Workspace',
+        profile: { imagePath: '', name: 'Empty Tags Workspace', description: '' },
+        ownerId: new mongoose.Types.ObjectId(testData.testUserId),
+        members: [new mongoose.Types.ObjectId(testData.testUserId)],
+      });
+
+      // Create notes with explicitly null/undefined tags to force || [] execution
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: emptyTagsWorkspace._id.toString(),
+        noteType: NoteType.CONTENT,
+        tags: null as any, // Explicitly null to trigger || []
+        fields: [{ fieldType: 'title', content: 'Note with null tags', _id: '6' }],
+      });
+
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: emptyTagsWorkspace._id.toString(),
+        noteType: NoteType.CONTENT,
+        tags: undefined as any, // Explicitly undefined to trigger || []
+        fields: [{ fieldType: 'title', content: 'Note with undefined tags', _id: '7' }],
+      });
+
+      const res = await request(app)
+        .get(`/api/workspaces/${emptyTagsWorkspace._id.toString()}/tags`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.tags).toBeDefined();
+      expect(Array.isArray(res.body.data.tags)).toBe(true);
+      // Since all notes have falsy tags, result should be empty array
+      expect(res.body.data.tags.length).toBe(0);
     });
 
     test('403 – cannot access tags when not a member', async () => {
@@ -524,6 +596,23 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.body.error).toBe('User to add not found');
     });
 
+    test('403 – cannot invite when not a member', async () => {
+      // Input: workspaceId where requesting user is not a member
+      // Expected status code: 403
+      // Expected behavior: error message returned
+      // Expected output: error message
+      
+      // testUserId is not a member of testWorkspace2Id
+      const res = await request(app)
+        .post(`/api/workspaces/${testData.testWorkspace2Id}/members`)
+        .set('x-test-user-id', testData.testUserId)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('Access denied');
+      expect(res.body.error).toContain('not a member of this workspace');
+    });
+
     test('403 – cannot invite members to personal workspace', async () => {
       // Input: workspaceId of a personal workspace
       // Expected status code: 403
@@ -571,6 +660,79 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('banned from this workspace');
     });
+
+    test('200 – sends notification when user has fcmToken', async () => {
+      // Input: workspaceId, userId with fcmToken set
+      // Expected status code: 200
+      // Expected behavior: member added, notification attempted (covers notification sending branch)
+      // Expected output: updated workspace object
+      
+      // Set fcmToken for testUser2Id
+      await userModel.updateFcmToken(
+        new mongoose.Types.ObjectId(testData.testUser2Id),
+        'test-fcm-token-123'
+      );
+
+      const res = await request(app)
+        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
+        .set('x-test-user-id', testData.testUserId)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member added successfully');
+      // Note: Notification may succeed or fail depending on Firebase setup, but the code path is covered
+    });
+
+    test('200 – skips notification when user has no fcmToken', async () => {
+      // Input: workspaceId, userId without fcmToken
+      // Expected status code: 200
+      // Expected behavior: member added, notification skipped (covers else branch)
+      // Expected output: updated workspace object
+      
+      // Ensure testUser2Id has no fcmToken (should be null/undefined by default)
+      const user = await userModel.findById(new mongoose.Types.ObjectId(testData.testUser2Id));
+      expect(user?.fcmToken).toBeUndefined();
+
+      const res = await request(app)
+        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
+        .set('x-test-user-id', testData.testUserId)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member added successfully');
+      // This covers the else branch where fcmToken is missing
+    });
+
+    test('200 – handles notification error gracefully (covers catch block)', async () => {
+      // Input: workspaceId, userId with fcmToken, but notification service throws
+      // Expected status code: 200
+      // Expected behavior: member added despite notification failure (covers catch block)
+      // Expected output: updated workspace object
+      
+      // Set fcmToken for testUser2Id
+      await userModel.updateFcmToken(
+        new mongoose.Types.ObjectId(testData.testUser2Id),
+        'test-fcm-token-456'
+      );
+
+      // Mock notification service to throw an error to trigger the catch block
+      const sendNotificationSpy = jest.spyOn(notificationService, 'sendNotification')
+        .mockRejectedValueOnce(new Error('Notification service error'));
+
+      const res = await request(app)
+        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
+        .set('x-test-user-id', testData.testUserId)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member added successfully');
+      expect(res.body.data.workspace.members).toContain(testData.testUser2Id);
+      // Verify notification was attempted (covers the catch block)
+      expect(sendNotificationSpy).toHaveBeenCalledTimes(1);
+
+      // Restore the spy
+      sendNotificationSpy.mockRestore();
+    });
   });
 
   describe('POST /api/workspaces/:id/leave - Leave Workspace', () => {
@@ -594,6 +756,40 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.body.message).toBe('Successfully left the workspace');
       expect(res.body.data.workspace).toBeDefined();
       expect(res.body.data.workspace.members).not.toContain(testData.testUser2Id);
+    });
+
+    test('403 – cannot leave personal workspace', async () => {
+      // Input: workspaceId of a personal workspace
+      // Expected status code: 403
+      // Expected behavior: error message returned
+      // Expected output: error message
+      
+      // Create a personal workspace
+      const personalWorkspace = await workspaceModel.create({
+        name: 'Personal Workspace',
+        profile: { imagePath: '', name: 'Personal Workspace', description: '' },
+        ownerId: new mongoose.Types.ObjectId(testData.testUserId),
+        members: [new mongoose.Types.ObjectId(testData.testUserId)],
+      });
+      
+      // Set it as the user's personal workspace
+      await userModel.updatePersonalWorkspace(
+        new mongoose.Types.ObjectId(testData.testUserId),
+        personalWorkspace._id
+      );
+      
+      // Add testUser2 as a member so they can try to leave
+      await workspaceModel.findByIdAndUpdate(
+        personalWorkspace._id,
+        { $push: { members: new mongoose.Types.ObjectId(testData.testUser2Id) } }
+      );
+
+      const res = await request(app)
+        .post(`/api/workspaces/${personalWorkspace._id.toString()}/leave`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('Cannot leave your personal workspace');
     });
 
     test('403 – owner cannot leave workspace', async () => {
@@ -779,6 +975,66 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.workspace.members).not.toContain(testData.testUser2Id);
     });
 
+    test('200 – bans already banned user (no duplicate)', async () => {
+      // Input: workspaceId and userId where user is already banned
+      // Expected status code: 200
+      // Expected behavior: user remains banned, no duplicate
+      // Expected output: updated workspace object
+      
+      // First ban the user
+      await workspaceModel.findByIdAndUpdate(testData.testWorkspaceId, {
+        $push: { bannedMembers: new mongoose.Types.ObjectId(testData.testUser2Id) },
+        $pull: { members: new mongoose.Types.ObjectId(testData.testUser2Id) },
+      });
+
+      // Try to ban again
+      const res = await request(app)
+        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member banned successfully');
+      
+      // Verify user is still banned (check by verifying workspace)
+      const workspace = await workspaceModel.findById(testData.testWorkspaceId);
+      const bannedCount = workspace?.bannedMembers.filter(id => id.toString() === testData.testUser2Id).length || 0;
+      expect(bannedCount).toBe(1); // Should only appear once, not duplicated
+    });
+
+    test('403 – cannot ban members from personal workspace', async () => {
+      // Input: workspaceId of a personal workspace
+      // Expected status code: 403
+      // Expected behavior: error message returned
+      // Expected output: error message
+      
+      // Create a personal workspace
+      const personalWorkspace = await workspaceModel.create({
+        name: 'Personal Workspace',
+        profile: { imagePath: '', name: 'Personal Workspace', description: '' },
+        ownerId: new mongoose.Types.ObjectId(testData.testUserId),
+        members: [new mongoose.Types.ObjectId(testData.testUserId)],
+      });
+      
+      // Set it as the user's personal workspace
+      await userModel.updatePersonalWorkspace(
+        new mongoose.Types.ObjectId(testData.testUserId),
+        personalWorkspace._id
+      );
+      
+      // Add testUser2 as a member
+      await workspaceModel.findByIdAndUpdate(
+        personalWorkspace._id,
+        { $push: { members: new mongoose.Types.ObjectId(testData.testUser2Id) } }
+      );
+
+      const res = await request(app)
+        .delete(`/api/workspaces/${personalWorkspace._id.toString()}/members/${testData.testUser2Id}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('Cannot ban members from personal workspace');
+    });
+
     test('403 – only owner can ban members', async () => {
       // Input: workspaceId and userId, but requesting user is not owner
       // Expected status code: 403
@@ -883,6 +1139,34 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Verify notes are deleted
       const notes = await noteModel.find({ workspaceId: testData.testWorkspaceId });
       expect(notes.length).toBe(0);
+    });
+
+    test('403 – cannot delete personal workspace', async () => {
+      // Input: workspaceId of a personal workspace
+      // Expected status code: 403
+      // Expected behavior: error message returned
+      // Expected output: error message
+      
+      // Create a personal workspace
+      const personalWorkspace = await workspaceModel.create({
+        name: 'Personal Workspace',
+        profile: { imagePath: '', name: 'Personal Workspace', description: '' },
+        ownerId: new mongoose.Types.ObjectId(testData.testUserId),
+        members: [new mongoose.Types.ObjectId(testData.testUserId)],
+      });
+      
+      // Set it as the user's personal workspace
+      await userModel.updatePersonalWorkspace(
+        new mongoose.Types.ObjectId(testData.testUserId),
+        personalWorkspace._id
+      );
+
+      const res = await request(app)
+        .delete(`/api/workspaces/${personalWorkspace._id.toString()}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain('Cannot delete your personal workspace');
     });
 
     test('403 – only owner can delete workspace', async () => {

@@ -1,0 +1,199 @@
+/// <reference types="jest" />
+import mongoose from 'mongoose';
+import request from 'supertest';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+
+import { messageModel } from '../message.model';
+import { workspaceModel } from '../workspace.model';
+import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
+
+// Mock authenticateToken before requiring message routes
+jest.mock('../auth.middleware', () => {
+  const mongoose = require('mongoose');
+  const originalModule = jest.requireActual('../auth.middleware');
+  return {
+    ...originalModule,
+    authenticateToken: (req: any, res: any, next: any) => {
+      const mockUserId = req.headers['x-test-user-id'] as string;
+      if (mockUserId) {
+        req.user = {
+          _id: new mongoose.Types.ObjectId(mockUserId),
+          googleId: 'test-google-id',
+          email: 'test@example.com',
+          profile: { name: 'Test User', imagePath: '', description: '' },
+          personalWorkspaceId: null,
+        };
+        return next();
+      }
+      return res.status(401).json({ error: 'No test user ID provided' });
+    },
+  };
+});
+
+const app = createTestApp();
+
+// ---------------------------
+// Test suite
+// ---------------------------
+describe('Message API – Mocked Tests (Jest Mocks)', () => {
+  let mongo: MongoMemoryServer;
+  let testData: TestData;
+
+  // Spin up in-memory Mongo
+  beforeAll(async () => {
+    mongo = await MongoMemoryServer.create();
+    const uri = mongo.getUri();
+    await mongoose.connect(uri);
+    console.log('✅ Connected to in-memory MongoDB');
+  });
+
+  // Clean mocks every test
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.clearAllMocks();
+  });
+
+  // Tear down DB
+  afterAll(async () => {
+    await mongoose.disconnect();
+    await mongo.stop();
+  });
+
+  // Fresh DB state before each test
+  beforeEach(async () => {
+    testData = await setupTestDatabase();
+  });
+
+  describe('GET /api/messages/workspace/:workspaceId - Get Messages, with mocks', () => {
+    test('500 – returns 500 when messageModel.find throws error', async () => {
+      // Mocked behavior: messageModel.find throws database error
+      // Input: workspaceId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: error message "Failed to fetch messages"
+      jest.spyOn(messageModel, 'find').mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockReturnValue({
+            lean: jest.fn().mockRejectedValue(new Error('Database error')),
+          }),
+        }),
+      } as any);
+
+      const res = await request(app)
+        .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to fetch messages');
+    });
+  });
+
+  describe('POST /api/messages/workspace/:workspaceId - Create Message, with mocks', () => {
+    test('500 – returns 500 when messageModel.create throws error', async () => {
+      // Mocked behavior: messageModel.create throws database error
+      // Input: workspaceId in URL, content in body
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: error message "Failed to create message"
+      jest.spyOn(messageModel, 'create').mockRejectedValue(new Error('Database error'));
+
+      const res = await request(app)
+        .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
+        .set('x-test-user-id', testData.testUserId)
+        .send({ content: 'Test message' });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to create message');
+    });
+
+    test('500 – returns 500 when workspaceModel.findByIdAndUpdate throws error', async () => {
+      // Mocked behavior: workspaceModel.findByIdAndUpdate throws error
+      // Input: workspaceId in URL, content in body
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: error message "Failed to create message"
+      jest.spyOn(messageModel, 'create').mockResolvedValue({
+        _id: new mongoose.Types.ObjectId(),
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        authorId: new mongoose.Types.ObjectId(testData.testUserId),
+        content: 'Test',
+        createdAt: new Date(),
+      } as any);
+      jest.spyOn(workspaceModel, 'findByIdAndUpdate').mockRejectedValue(new Error('Update error'));
+
+      const res = await request(app)
+        .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
+        .set('x-test-user-id', testData.testUserId)
+        .send({ content: 'Test message' });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to create message');
+    });
+  });
+
+  describe('DELETE /api/messages/:messageId - Delete Message, with mocks', () => {
+    test('500 – returns 500 when messageModel.findById throws error', async () => {
+      // Mocked behavior: messageModel.findById throws database error
+      // Input: messageId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: error message "Failed to delete message"
+      jest.spyOn(messageModel, 'findById').mockRejectedValue(new Error('Database error'));
+
+      const messageId = new mongoose.Types.ObjectId();
+      const res = await request(app)
+        .delete(`/api/messages/${messageId}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to delete message');
+    });
+
+    test('500 – returns 500 when messageModel.findByIdAndDelete throws error', async () => {
+      // Mocked behavior: messageModel.findByIdAndDelete throws database error
+      // Input: messageId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: error message "Failed to delete message"
+      // Create a message first
+      const message = await messageModel.create({
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        authorId: new mongoose.Types.ObjectId(testData.testUserId),
+        content: 'Test',
+      });
+
+      jest.spyOn(messageModel, 'findByIdAndDelete').mockRejectedValue(new Error('Delete error'));
+
+      const res = await request(app)
+        .delete(`/api/messages/${message._id}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to delete message');
+    });
+
+    test('500 – returns 500 when workspaceModel.findById throws error', async () => {
+      // Mocked behavior: workspaceModel.findById throws database error
+      // Input: messageId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: error message "Failed to delete message"
+      // Create a message first
+      const message = await messageModel.create({
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        authorId: new mongoose.Types.ObjectId(testData.testUserId),
+        content: 'Test',
+      });
+
+      jest.spyOn(workspaceModel, 'findById').mockRejectedValue(new Error('Database error'));
+
+      const res = await request(app)
+        .delete(`/api/messages/${message._id}`)
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to delete message');
+    });
+  });
+});
+

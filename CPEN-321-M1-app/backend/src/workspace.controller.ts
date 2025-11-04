@@ -209,6 +209,10 @@ export class WorkspaceController {
                     res.status(403).json({ error: error.message });
                     return;
                 }
+                if (error.message.includes('Access denied')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
                 if (error.message.includes('Cannot invite members to personal workspace')) {
                     res.status(403).json({ error: error.message });
                     return;
@@ -251,6 +255,10 @@ export class WorkspaceController {
             console.error('Error leaving workspace:', error);
             
             if (error instanceof Error) {
+                if (error.message.includes('Cannot leave your personal workspace')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
                 if (error.message.includes('Owner cannot leave')) {
                     res.status(403).json({ error: error.message });
                     return;
@@ -287,6 +295,10 @@ export class WorkspaceController {
             
             if (error instanceof Error) {
                 if (error.message.includes('Only workspace owner')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message.includes('Cannot ban members from personal workspace')) {
                     res.status(403).json({ error: error.message });
                     return;
                 }
@@ -392,6 +404,10 @@ export class WorkspaceController {
             
             if (error instanceof Error) {
                 if (error.message.includes('Only workspace owner')) {
+                    res.status(403).json({ error: error.message });
+                    return;
+                }
+                if (error.message.includes('Cannot delete your personal workspace')) {
                     res.status(403).json({ error: error.message });
                     return;
                 }

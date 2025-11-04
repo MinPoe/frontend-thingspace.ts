@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import { NotesController } from '../notes.controller';
 import { WorkspaceController } from '../workspace.controller';
+import { UserController } from '../user.controller';
 import { workspaceModel } from '../workspace.model';
 
 // ---------------------------
@@ -67,6 +68,7 @@ export function createTestApp() {
   // Controllers
   const notesController = new NotesController();
   const workspaceController = new WorkspaceController();
+  const userController = new UserController();
 
   // ---------------------------
   // Route mounting (ORDER MATTERS)
@@ -97,6 +99,28 @@ export function createTestApp() {
   app.put('/api/notes/:id', mockAuthMiddleware, mockValidateBody, notesController.updateNote.bind(notesController));
   app.delete('/api/notes/:id', mockAuthMiddleware, notesController.deleteNote.bind(notesController));
   app.get('/api/notes/:id', mockAuthMiddleware, notesController.getNote.bind(notesController));
+
+  // User routes - Put specific routes before generic :id route
+  app.get('/api/users/profile', mockAuthMiddleware, userController.getProfile.bind(userController));
+  app.put('/api/users/profile', mockAuthMiddleware, mockValidateBody, userController.updateProfile.bind(userController));
+  app.delete('/api/users/profile', mockAuthMiddleware, userController.deleteProfile.bind(userController));
+  app.post('/api/users/fcm-token', mockAuthMiddleware, mockValidateBody, userController.updateFcmToken.bind(userController));
+  app.get('/api/users/email/:email', mockAuthMiddleware, userController.getUserByEmail.bind(userController));
+  app.get('/api/users/:id', mockAuthMiddleware, userController.getUserById.bind(userController));
+
+  // Message routes - messageRouter uses authenticateToken, so we apply mockAuthMiddleware 
+  // instead of the router's authenticateToken. The router's authenticateToken would fail 
+  // because it requires a real JWT token. We apply mockAuthMiddleware before the router.
+  // Note: The router still has authenticateToken in its route definitions, so we need to
+  // mock it at module level. This should be done in the test files that use message routes.
+  const { messageRouter } = require('../message.routes');
+  app.use('/api/messages', mockAuthMiddleware, messageRouter);
+
+  // Media routes
+  const MediaController = require('../media.controller').MediaController;
+  const mediaController = new MediaController();
+  const { upload } = require('../storage');
+  app.post('/api/media/upload', mockAuthMiddleware, upload.single('media'), mediaController.uploadImage.bind(mediaController));
 
   return app;
 }

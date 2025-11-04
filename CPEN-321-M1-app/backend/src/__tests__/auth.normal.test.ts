@@ -1,0 +1,214 @@
+/// <reference types="jest" />
+import mongoose from 'mongoose';
+import request from 'supertest';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import jwt from 'jsonwebtoken';
+
+import { userModel } from '../user.model';
+import { workspaceModel } from '../workspace.model';
+import { authService } from '../auth.service';
+import { setupTestDatabase, TestData } from './test-helpers';
+
+// Create app with auth routes but NO mock auth middleware (auth routes don't require it)
+function createAuthTestApp() {
+  const express = require('express');
+  const app = express();
+  app.use(express.json());
+
+  // Import auth routes
+  const authRoutes = require('../auth.routes').default;
+  app.use('/api/auth', authRoutes);
+
+  // Error handler for tests
+  app.use((err: any, req: any, res: any, next: any) => {
+    res.status(err.status || 500).json({
+      message: err.message || 'Internal server error',
+    });
+  });
+
+  return app;
+}
+
+// ---------------------------
+// Test suite
+// ---------------------------
+describe('Auth API – Normal Tests (No Mocking)', () => {
+  let mongo: MongoMemoryServer;
+  let testData: TestData;
+
+  // Spin up in-memory Mongo
+  beforeAll(async () => {
+    mongo = await MongoMemoryServer.create();
+    const uri = mongo.getUri();
+    await mongoose.connect(uri);
+    console.log('✅ Connected to in-memory MongoDB');
+
+    // Ensure JWT_SECRET is set
+    if (!process.env.JWT_SECRET) {
+      process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
+    }
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
+    }
+  });
+
+  // Tear down DB
+  afterAll(async () => {
+    await mongoose.disconnect();
+    await mongo.stop();
+  });
+
+  // Fresh DB state before each test
+  beforeEach(async () => {
+    testData = await setupTestDatabase();
+  });
+
+  const app = createAuthTestApp();
+
+  describe('POST /api/auth/dev-login - Dev Login', () => {
+    test('200 – creates new test user and returns token', async () => {
+      // Input: email in request body (optional, defaults to test@example.com)
+      // Expected status code: 200
+      // Expected behavior: creates new user if doesn't exist, returns token
+      // Expected output: success response with token and user data
+      const res = await request(app)
+        .post('/api/auth/dev-login')
+        .send({ email: 'dev-test@example.com' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Dev login successful');
+      expect(res.body.data).toBeDefined();
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.user).toBeDefined();
+      expect(res.body.data.user.email).toBe('dev-test@example.com');
+    });
+
+    test('200 – returns token for existing user', async () => {
+      // Input: email of existing user
+      // Expected status code: 200
+      // Expected behavior: finds existing user, returns token
+      // Expected output: success response with token and user data
+      // First create a user
+      const existingUser = await userModel.create({
+        googleId: 'dev-test-existing',
+        email: 'existing@example.com',
+        name: 'Existing User',
+        profilePicture: '',
+      });
+
+      const res = await request(app)
+        .post('/api/auth/dev-login')
+        .send({ email: 'existing@example.com' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Dev login successful');
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.user._id).toBe(existingUser._id.toString());
+    });
+
+    test('200 – uses default email when email not provided', async () => {
+      // Input: empty request body (no email)
+      // Expected status code: 200
+      // Expected behavior: uses default email 'test@example.com'
+      // Expected output: success response with token and user data
+      const res = await request(app)
+        .post('/api/auth/dev-login')
+        .send({});
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.user.email).toBe('test@example.com');
+    });
+  });
+
+  describe('POST /api/auth/signup - Sign Up', () => {
+    test('400 – returns 400 when idToken is missing', async () => {
+      // Input: request body without idToken
+      // Expected status code: 400
+      // Expected behavior: validation error returned
+      // Expected output: validation error response
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+    });
+
+    test('400 – returns 400 when idToken is empty string', async () => {
+      // Input: request body with empty idToken
+      // Expected status code: 400
+      // Expected behavior: validation error returned
+      // Expected output: validation error response
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ idToken: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+    });
+  });
+
+  describe('POST /api/auth/signin - Sign In', () => {
+    test('400 – returns 400 when idToken is missing', async () => {
+      // Input: request body without idToken
+      // Expected status code: 400
+      // Expected behavior: validation error returned
+      // Expected output: validation error response
+      const res = await request(app)
+        .post('/api/auth/signin')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+    });
+
+    test('400 – returns 400 when idToken is empty string', async () => {
+      // Input: request body with empty idToken
+      // Expected status code: 400
+      // Expected behavior: validation error returned
+      // Expected output: validation error response
+      const res = await request(app)
+        .post('/api/auth/signin')
+        .send({ idToken: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+    });
+  });
+
+  describe('Auth Service Error Branches - Direct Service Tests', () => {
+    beforeEach(async () => {
+      // Ensure database is connected before each test in this describe block
+      if (mongoose.connection.readyState === 0) {
+        await mongoose.connect(mongo.getUri());
+      }
+    });
+
+    afterEach(async () => {
+      // Ensure database is reconnected after each test
+      if (mongoose.connection.readyState === 0) {
+        await mongoose.connect(mongo.getUri());
+      }
+    });
+
+    test('devLogin throws error on database error', async () => {
+      // Input: database operation that fails
+      // Expected behavior: Error caught and re-thrown
+      // Expected output: Error with message
+      const currentUri = mongo.getUri();
+      
+      // Disconnect database temporarily to trigger error
+      await mongoose.disconnect();
+      
+      try {
+        await expect(
+          authService.devLogin('test@example.com')
+        ).rejects.toThrow();
+      } finally {
+        // Reconnect using the same Mongo instance
+        await mongoose.connect(currentUri);
+      }
+    });
+  });
+});
+

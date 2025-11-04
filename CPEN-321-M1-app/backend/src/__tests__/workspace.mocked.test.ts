@@ -41,7 +41,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
     testData = await setupTestDatabase();
   });
 
-  describe('Mocked – Database/Service failures', () => {
+  describe('POST /api/workspaces - Create Workspace, with mocks', () => {
     test('500 – create workspace handles service error', async () => {
       // Mocked behavior: workspaceService.createWorkspace throws database connection error
       // Input: workspaceData with name
@@ -79,7 +79,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to create workspace');
     });
+  });
 
+  describe('GET /api/workspaces/personal - Get Personal Workspace, with mocks', () => {
     test('500 – get personal workspace handles service error', async () => {
       // Mocked behavior: workspaceService.getPersonalWorkspaceForUser throws database lookup error
       // Input: userId in header
@@ -111,7 +113,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve personal workspace');
     });
+  });
 
+  describe('GET /api/workspaces/user - Get Workspaces For User, with mocks', () => {
     test('500 – get workspaces for user handles service error', async () => {
       // Mocked behavior: workspaceService.getWorkspacesForUser throws database query error
       // Input: userId in header
@@ -143,7 +147,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve workspaces');
     });
+  });
 
+  describe('GET /api/workspaces/:id - Get Workspace, with mocks', () => {
     test('500 – get workspace handles service error', async () => {
       // Mocked behavior: workspaceService.getWorkspace throws database lookup error
       // Input: workspaceId in URL
@@ -175,7 +181,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve workspace');
     });
+  });
 
+  describe('GET /api/workspaces/:id/members - Get Workspace Members, with mocks', () => {
     test('403 – get workspace members handles Access denied error', async () => {
       // Mocked behavior: workspaceService.getWorkspaceMembers throws Access denied error
       // Input: workspaceId in URL
@@ -223,7 +231,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve members');
     });
+  });
 
+  describe('GET /api/workspaces/:id/tags - Get All Tags, with mocks', () => {
     test('500 – get all tags handles service error', async () => {
       // Mocked behavior: workspaceService.getAllTags throws database query error
       // Input: workspaceId in URL
@@ -255,7 +265,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve tags');
     });
+  });
 
+  describe('GET /api/workspaces/:id/membership/:userId - Get Membership Status, with mocks', () => {
     test('500 – get membership status handles service error', async () => {
       // Mocked behavior: workspaceService.getMembershipStatus throws database lookup error
       // Input: workspaceId and userId in URL
@@ -287,7 +299,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve membership status');
     });
+  });
 
+  describe('POST /api/workspaces/:id/members - Invite Member, with mocks', () => {
     test('403 – invite member handles Only workspace owner error', async () => {
       // Mocked behavior: workspaceService.inviteMember throws Only workspace owner error
       // Input: workspaceId in URL, userId in body
@@ -355,7 +369,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to add member');
     });
+  });
 
+  describe('POST /api/workspaces/:id/leave - Leave Workspace, with mocks', () => {
     test('500 – leave workspace handles service error', async () => {
       // Mocked behavior: workspaceService.leaveWorkspace throws database update error
       // Input: workspaceId in URL
@@ -371,7 +387,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to leave workspace');
     });
+  });
 
+  describe('PUT /api/workspaces/:id - Update Workspace Profile, with mocks', () => {
     test('500 – update workspace profile handles service error', async () => {
       // Mocked behavior: workspaceService.updateWorkspaceProfile throws database update error
       // Input: workspaceId in URL, updateData in body
@@ -405,7 +423,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to update workspace profile');
     });
+  });
 
+  describe('PUT /api/workspaces/:id/picture - Update Workspace Picture, with mocks', () => {
     test('500 – update workspace picture handles service error', async () => {
       // Mocked behavior: workspaceService.updateWorkspacePicture throws database update error
       // Input: workspaceId in URL, profilePicture in body
@@ -439,7 +459,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to update workspace picture');
     });
+  });
 
+  describe('DELETE /api/workspaces/:id/members/:userId - Ban Member, with mocks', () => {
     test('500 – ban member handles service error', async () => {
       // Mocked behavior: workspaceService.banMember throws database update error
       // Input: workspaceId and userId in URL
@@ -471,7 +493,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to ban member');
     });
+  });
 
+  describe('DELETE /api/workspaces/:id - Delete Workspace, with mocks', () => {
     test('500 – delete workspace handles service error', async () => {
       // Mocked behavior: workspaceService.deleteWorkspace throws database delete error
       // Input: workspaceId in URL
@@ -503,7 +527,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to delete workspace');
     });
+  });
 
+  describe('GET /api/workspaces/:id/poll - Poll For New Messages, with mocks', () => {
     test('500 – poll for new messages handles service error', async () => {
       // Mocked behavior: workspaceService.checkForNewChatMessages throws database lookup error
       // Input: workspaceId in URL
