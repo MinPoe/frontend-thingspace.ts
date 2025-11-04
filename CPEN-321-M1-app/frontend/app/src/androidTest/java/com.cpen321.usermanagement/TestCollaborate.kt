@@ -14,7 +14,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.textAsString
 import androidx.test.uiautomator.uiAutomator
 import com.cpen321.usermanagement.data.local.preferences.TokenManager
@@ -111,9 +113,10 @@ class TestCollaborate {
             onElement { textAsString() == "Allow" }.click()
         }
         composeRule.onNodeWithText(signInString).performClick()
+        composeRule.waitForIdle()
         uiAutomator {
             onElement { textAsString() == ACCT_NAME }.click()
-            sleep(5000)
+            sleep(2000)
         }
         composeRule.waitForIdle()
 
@@ -141,8 +144,8 @@ class TestCollaborate {
         Log.d("TEST COLLABORATE","Update Workspace Tests")
         composeRule.onNodeWithText(text = studyWsName).performTextReplacement(v2Name)
         composeRule.onNodeWithText(text = wsDescriptionString).performTextInput(v2Bio)
-        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        device.pressBack() //hiding the keyboard so that the success message is unobstructed
+//        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+//        device.pressBack() //hiding the keyboard so that the success message is unobstructed
         composeRule.onNodeWithText(text = saveButtonString).performClick()
         waitForVm(5000)
         composeRule.onNodeWithText(text = saveConfirmString).assertIsDisplayed()
@@ -152,7 +155,7 @@ class TestCollaborate {
         waitForVm(5000)
         Log.d("TEST COLLABORATE","1) Inviting an invalid email")
         composeRule.onNodeWithText(emailBoxString).performTextInput(invalidEmailSample)
-        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack() //hiding the keyboard so that the success message is unobstructed
+        //UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack() //hiding the keyboard so that the success message is unobstructed
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(invalidEmailString).assertIsDisplayed()
