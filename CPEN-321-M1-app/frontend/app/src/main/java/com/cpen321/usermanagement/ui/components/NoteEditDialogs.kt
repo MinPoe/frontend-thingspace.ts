@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Workspace
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
+import com.cpen321.usermanagement.ui.viewmodels.NoteEditState
 
 @Composable
 fun FieldTypeDialog(
@@ -182,5 +183,27 @@ private fun WorkspaceSelectionConfirmButton(
         } else {
             Text(confirmText)
         }
+    }
+}
+
+
+@Composable
+fun CopyNoteDialog(
+    showDialog: Boolean,
+    editState: NoteEditState,
+    noteId: String,
+    onDismiss: () -> Unit,
+    onCopy: (String) -> Unit
+) {
+    if (showDialog) {
+        WorkspaceSelectionDialog(
+            title = stringResource(R.string.copy_note),
+            confirmText = stringResource(R.string.copy),
+            isProcessing = editState.isCopying,
+            workspaces = editState.workspaces,
+            isLoadingWorkspaces = editState.isLoadingWorkspaces,
+            onDismiss = onDismiss,
+            onConfirm = onCopy
+        )
     }
 }

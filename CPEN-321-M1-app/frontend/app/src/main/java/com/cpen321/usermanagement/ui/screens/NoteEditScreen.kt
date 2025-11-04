@@ -22,6 +22,7 @@ import com.cpen321.usermanagement.ui.viewmodels.NoteEditState
 import com.cpen321.usermanagement.utils.FeatureActions
 import com.cpen321.usermanagement.ui.components.FieldTypeDialog
 import com.cpen321.usermanagement.ui.components.WorkspaceSelectionDialog
+import com.cpen321.usermanagement.ui.components.CopyNoteDialog
 
 @Composable
 fun NoteEditScreen(
@@ -124,27 +125,6 @@ private fun ShareNoteDialog(
             isLoadingWorkspaces = editState.isLoadingWorkspaces,
             onDismiss = onDismiss,
             onConfirm = onShare
-        )
-    }
-}
-
-@Composable
-private fun CopyNoteDialog(
-    showDialog: Boolean,
-    editState: NoteEditState,
-    noteId: String,
-    onDismiss: () -> Unit,
-    onCopy: (String) -> Unit
-) {
-    if (showDialog) {
-        WorkspaceSelectionDialog(
-            title = stringResource(R.string.copy_note),
-            confirmText = stringResource(R.string.copy),
-            isProcessing = editState.isCopying,
-            workspaces = editState.workspaces,
-            isLoadingWorkspaces = editState.isLoadingWorkspaces,
-            onDismiss = onDismiss,
-            onConfirm = onCopy
         )
     }
 }
