@@ -44,6 +44,7 @@ class TestRetrieveNotes {
         const val DISPLAY2: String = "note2"
         const val DISPLAY3: String = "3"
         const val DISPLAY4: String = "note4"
+        const val QUERY: String = "1"
     }
 
     @get:Rule(order = 0)
@@ -78,6 +79,17 @@ class TestRetrieveNotes {
         }
     }
 
+    private fun assessOrder(first:String, other:List<String>){
+        val bounds1 = composeRule.onNodeWithText(first).fetchSemanticsNode().boundsInRoot
+        for (item in other){
+            val boundsO = composeRule.onNodeWithText(item).fetchSemanticsNode().boundsInRoot
+            if (bounds1.bottom<boundsO.top) {
+                Log.d("TEST RETRIEVE NOTES", "${bounds1.bottom},${boundsO.top}")
+                assert(false)
+            }
+        }
+    }
+
     @Test
     fun testNoteRetrieval() {
         hiltRule.inject()
@@ -95,15 +107,15 @@ class TestRetrieveNotes {
         Log.d("TEST RETRIEVE NOTES", "Testing Search")
         waitForSearch(searchButtonString)
         composeRule.onNodeWithTag(searchButtonString).performClick()
-        waitForVm(1000)
+        waitForSearch(searchButtonString)
         composeRule.onNodeWithText(DISPLAY1).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY2).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY4).assertIsDisplayed()
-        composeRule.onNodeWithTag(searchTextboxString).performTextInput(DISPLAY1)
+        composeRule.onNodeWithTag(searchTextboxString).performTextInput(QUERY)
         composeRule.onNodeWithTag(searchButtonString).performClick()
         waitForSearch(searchButtonString)
-        //TODO asserts of note order
+        assessOrder(DISPLAY1, listOf(DISPLAY2, DISPLAY3, DISPLAY4))
 
         Log.d("TEST RETRIEVE NOTES", "Testing Filter - All Checkbox")
         composeRule.onNodeWithTag(filterIcString).performClick()
@@ -133,10 +145,10 @@ class TestRetrieveNotes {
         composeRule.onNodeWithTag(TAG3).assertIsOn()
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForSearch(searchButtonString)
-        composeRule.onAllNodesWithText(DISPLAY1).assertCountEquals(2) //we also have the query
+        composeRule.onNodeWithText(DISPLAY1).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY2).assertIsNotDisplayed()
         composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY4).assertIsDisplayed()
-        //TODO also assert order, maybe change search query
+        assessOrder(DISPLAY1, listOf(DISPLAY3, DISPLAY4))
     }
 }
