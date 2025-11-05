@@ -37,6 +37,7 @@ import java.lang.Thread.sleep
 @HiltAndroidTest
 class TestRetrieveNotes {
     companion object{
+        const val ACCT_NAME:String = "Marricc Ammerk"
         const val TAG1:String = "tag1"
         const val TAG2:String = "tag2"
         const val TAG3:String = "tag3"
@@ -103,6 +104,11 @@ class TestRetrieveNotes {
         val searchButtonString = composeRule.activity.getString(R.string.search_button)
         val searchTextboxString = composeRule.activity.getString(R.string.search_textbox)
         val backIcString = composeRule.activity.getString(R.string.back_icon_description)
+        val signInString = composeRule.activity.getString(R.string.sign_in_with_google)
+
+        uiAutomator { onElement { textAsString()=="Allow" }.click() }
+        waitForVm(1000)
+        signIn(signInString = signInString, ACCT_NAME)
 
         Log.d("TEST RETRIEVE NOTES", "Testing Search")
         waitForSearch(searchButtonString)
