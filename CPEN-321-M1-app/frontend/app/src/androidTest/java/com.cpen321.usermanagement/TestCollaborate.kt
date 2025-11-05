@@ -46,6 +46,7 @@ class TestCollaborate {
 
     companion object{
         const val ACCT_NAME="Friedrich van Aukstin"
+        const val ACCT_GMAIL="vanaukstinfriedrich@gmail.com"
         const val ACCT_WS="Friedrich van Aukstin's Personal Workspace"
         const val MEMBER_ACCT_NAME="Marricc Ammerk"
         const val MEMBER_ACCT_GMAIL="marricc7@gmail.com"
@@ -122,10 +123,10 @@ class TestCollaborate {
         val membersIcString = composeRule.activity.getString(R.string.members)
         val banIcString = composeRule.activity.getString(R.string.ban)
 
-//        uiAutomator {
-//            onElement { textAsString() == "Allow" }.click()
-//        }
-        //signIn(signInString, ACCT_NAME)
+        uiAutomator {
+            onElement { textAsString() == "Allow" }.click()
+        }
+        signIn(signInString, ACCT_GMAIL)
         waitForVm(2000)
         Log.d("TEST COLLABORATE","Workspace Creation Tests")
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
@@ -170,12 +171,7 @@ class TestCollaborate {
         waitForVm(2000)
         composeRule.onNodeWithText(addedAMemberString).assertIsDisplayed()
         Log.d("TEST COLLABORATE","3) Inviting already a member")
-        composeRule.waitUntil(20000){
-            composeRule //Waiting for the success message to disappear
-                .onAllNodesWithText(addedAMemberString)
-                .fetchSemanticsNodes()
-                .isEmpty()
-        }
+        waitForVm(2000)
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
         waitForVm(1000)
         composeRule.onNodeWithText(alreadyAMemberString).assertIsDisplayed()
