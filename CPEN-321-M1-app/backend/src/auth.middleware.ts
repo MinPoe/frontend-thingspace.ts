@@ -47,18 +47,18 @@ export const authenticateToken: RequestHandler = async (
 
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token is malformed or expired',
-      });
-      return;
-    }
-
     if (error instanceof jwt.TokenExpiredError) {
       res.status(401).json({
         error: 'Token expired',
         message: 'Please login again',
+      });
+      return;
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({
+        error: 'Invalid token',
+        message: 'Token is malformed or expired',
       });
       return;
     }
@@ -87,8 +87,23 @@ export const authMiddleware = async (
 
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded as any;
-    next();
+    return next();
   } catch (error) {
+    // Handle JWT_SECRET configuration error
+    if (error instanceof Error && error.message === 'JWT_SECRET not configured') {
+      return next(error);
+    }
+    
+    // Handle JWT-specific errors
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    
+    // Handle any other errors (shouldn't happen for JWT verification, but just in case)
     return res.status(401).json({ error: 'Invalid token' });
   }
 };
