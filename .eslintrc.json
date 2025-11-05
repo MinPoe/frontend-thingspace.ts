@@ -31,7 +31,7 @@
 	],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
-		"project": "./CPEN-321-M1-app/backend/tsconfig.json"
+		"project": "./backend/tsconfig.json"
 	},
 	"settings": {
 		"jest": {
@@ -255,7 +255,7 @@
 		"@typescript-eslint/no-magic-numbers": "off",
 		"@typescript-eslint/no-meaningless-void-operator": "error",
 		"@typescript-eslint/no-misused-new": "error",
-		"@typescript-eslint/no-misused-promises": "off",
+		"@typescript-eslint/no-misused-promises": "error",
 		"@typescript-eslint/no-misused-spread": "off",
 		"@typescript-eslint/no-mixed-enums": "error",
 		"@typescript-eslint/no-namespace": "error", 
