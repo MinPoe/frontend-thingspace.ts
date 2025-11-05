@@ -1,4 +1,4 @@
 ---
 exclude_paths:
-  - "CPEN-321-M1-app/frontend/app/scr/androidTest/**"
-  - "CPEN-321-M1-app/backend/src/__tests__/**"
+  - "frontend/app/scr/androidTest/**"
+  - "backend/src/__tests__/**"
