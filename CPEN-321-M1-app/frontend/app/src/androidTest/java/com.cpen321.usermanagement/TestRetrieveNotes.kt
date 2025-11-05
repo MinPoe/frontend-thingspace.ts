@@ -2,11 +2,17 @@ package com.cpen321.usermanagement
 
 import android.util.Log
 import androidx.activity.compose.setContent
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -63,6 +69,15 @@ class TestRetrieveNotes {
         composeRule.waitForIdle()
     }
 
+    private fun waitForSearch(searchButtonString:String){
+        composeRule.waitUntil(20000){
+            composeRule //Waiting for the success message to disappear
+                .onAllNodesWithTag(searchButtonString)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
     @Test
     fun testNoteRetrieval() {
         hiltRule.inject()
@@ -78,22 +93,50 @@ class TestRetrieveNotes {
         val backIcString = composeRule.activity.getString(R.string.back_icon_description)
 
         Log.d("TEST RETRIEVE NOTES", "Testing Search")
-        composeRule.waitUntil(20000){
-            composeRule //Waiting for the success message to disappear
-                .onAllNodesWithTag(searchButtonString)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForSearch(searchButtonString)
         composeRule.onNodeWithTag(searchButtonString).performClick()
         waitForVm(1000)
-        //TODO assert all 4 notes are present
+        composeRule.onNodeWithText(DISPLAY1).assertIsDisplayed()
+        composeRule.onNodeWithText(DISPLAY2).assertIsDisplayed()
+        composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
+        composeRule.onNodeWithText(DISPLAY4).assertIsDisplayed()
         composeRule.onNodeWithTag(searchTextboxString).performTextInput(DISPLAY1)
         composeRule.onNodeWithTag(searchButtonString).performClick()
+        waitForSearch(searchButtonString)
+        //TODO asserts of note order
+
+        Log.d("TEST RETRIEVE NOTES", "Testing Filter - All Checkbox")
+        composeRule.onNodeWithTag(filterIcString).performClick()
         waitForVm(1000)
-        //TODO asserts of order
-
-        Log.d("TEST RETRIEVE NOTES", "Testing Filter")
-
-
+        //by default, all tags should be selected, so that's where we start
+        composeRule.onNodeWithTag(allString).assertIsOn()
+        composeRule.onNodeWithTag(TAG1).assertIsOn()
+        composeRule.onNodeWithTag(TAG2).assertIsOn()
+        composeRule.onNodeWithTag(TAG3).assertIsOn()
+        composeRule.onNodeWithTag(allString).performClick()
+        waitForVm(1000)
+        composeRule.onNodeWithTag(allString).assertIsOff()
+        composeRule.onNodeWithTag(TAG1).assertIsOff()
+        composeRule.onNodeWithTag(TAG2).assertIsOff()
+        composeRule.onNodeWithTag(TAG3).assertIsOff()
+        composeRule.onNodeWithTag(allString).performClick()
+        waitForVm(1000)
+        composeRule.onNodeWithTag(allString).assertIsOn()
+        composeRule.onNodeWithTag(TAG1).assertIsOn()
+        composeRule.onNodeWithTag(TAG2).assertIsOn()
+        composeRule.onNodeWithTag(TAG3).assertIsOn()
+        Log.d("TEST RETRIEVE NOTES", "Testing Filter - Note Selection by Tag")
+        composeRule.onNodeWithTag(TAG2).performClick()
+        composeRule.onNodeWithTag(allString).assertIsOn()
+        composeRule.onNodeWithTag(TAG1).assertIsOn()
+        composeRule.onNodeWithTag(TAG2).assertIsOff()
+        composeRule.onNodeWithTag(TAG3).assertIsOn()
+        composeRule.onNodeWithContentDescription(backIcString).performClick()
+        waitForSearch(searchButtonString)
+        composeRule.onAllNodesWithText(DISPLAY1).assertCountEquals(2) //we also have the query
+        composeRule.onNodeWithText(DISPLAY2).assertIsNotDisplayed()
+        composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
+        composeRule.onNodeWithText(DISPLAY4).assertIsDisplayed()
+        //TODO also assert order, maybe change search query
     }
 }

@@ -89,7 +89,7 @@ private fun FilterActionButton(
 
     IconButton(
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
+        modifier = modifier.size(spacing.extraLarge2).testTag(stringResource(R.string.filter))
     ) {
         FilterIcon()
     }
@@ -97,7 +97,6 @@ private fun FilterActionButton(
 @Composable
 private fun FilterIcon() {
     Icon(
-        name = R.drawable.filter,
-        contentDescription = stringResource(R.string.filter)
+        name = R.drawable.filter
     )
 }
