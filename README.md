@@ -1,2 +1,9 @@
-# ThingSpace.ts
-UBC Vancouver CPEN 321 project. A Global Memory System for all your notes, to-dos, and things around your house
+# CPEN321 M1
+
+## Backend
+
+You can see how to setup the backend [here](./backend/README.md)
+
+## Frontend
+
+You can see how to setup the frontend [here](./frontend/README.md)

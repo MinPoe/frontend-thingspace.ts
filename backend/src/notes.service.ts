@@ -10,10 +10,7 @@ export class NoteService {
     private client?: OpenAI;
 
     private getClient(): OpenAI {
-        if (!this.client) {
-            this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-        }
-        return this.client;
+        return this.client || (this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }));
     }
 
     async createNote(userId: mongoose.Types.ObjectId, data: CreateNoteRequest): Promise<Note> {
@@ -111,28 +108,6 @@ export class NoteService {
         } as Note : null;
     }
 
-
-    async getAuthors(noteIds: string[]): Promise<any[]> {
-        if (!noteIds || noteIds.length === 0) {
-            return [];
-        }
-
-        // Convert note IDs to ObjectIds
-        const objectIds = noteIds.map(id => new mongoose.Types.ObjectId(id));
-        
-        // Fetch all notes
-        const notes = await noteModel.find({ _id: { $in: objectIds } });
-        
-        // Extract user IDs from the notes (in order)
-        const userIds = notes.map(note => note.userId);
-        
-        // Fetch all users using mongoose model directly
-        const User = mongoose.model('User');
-        const users = await User.find({ _id: { $in: userIds } });
-
-        // Return users in the same order as the notes
-        return users;
-    }
 
     // Share note to a different workspace
     async shareNoteToWorkspace(noteId: string, userId: mongoose.Types.ObjectId, workspaceId: string): Promise<Note> {
@@ -308,11 +283,6 @@ export class NoteService {
             _id: note._id.toString(),
             userId: note.userId.toString(),
         } as Note));
-    }
-
-    // Delete all notes in a workspace
-    async deleteNotesByWorkspaceId(workspaceId: string): Promise<void> {
-        await noteModel.deleteMany({ workspaceId });
     }
 
 }

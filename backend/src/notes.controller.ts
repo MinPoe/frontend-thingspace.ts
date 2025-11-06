@@ -5,11 +5,7 @@ import { noteService } from './notes.service';
 export class NotesController {
   async createNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
 
       const noteData = req.body as CreateNoteRequest;
 
@@ -28,11 +24,7 @@ export class NotesController {
 
   async updateNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
 
       const noteId = req.params.id;
       const updateData = req.body as UpdateNoteRequest;
@@ -51,11 +43,7 @@ export class NotesController {
 
   async deleteNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
       const noteId = req.params.id;
       const deletedNote = await noteService.deleteNote(noteId, userId);
 
@@ -71,11 +59,7 @@ export class NotesController {
 
   async getNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
       const noteId = req.params.id;
       const note = await noteService.getNote(noteId, userId);
 
@@ -94,34 +78,9 @@ export class NotesController {
     }
   }
 
-  async getAuthors(req: Request, res: Response): Promise<void> {
-    try {
-      const { noteIds } = req.body;
-      
-      if (!noteIds || !Array.isArray(noteIds)) {
-        res.status(400).json({ error: 'noteIds array is required' });
-        return;
-      }
-
-      const authors = await noteService.getAuthors(noteIds);
-
-      res.status(200).json({
-        message: 'Authors retrieved successfully',
-        data: { authors },
-      });
-    } catch (error) {
-      console.error('Error retrieving authors:', error);
-      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to retrieve authors' });
-    }
-  }
-
   async shareNoteToWorkspace(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
 
       const noteId = req.params.id;
       const { workspaceId } = req.body;
@@ -159,11 +118,7 @@ export class NotesController {
 
   async copyNoteToWorkspace(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
   
       const noteId = req.params.id;
       const { workspaceId } = req.body;
@@ -216,28 +171,22 @@ export class NotesController {
 
   async findNotes(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?._id;
-      if (!userId) {
-        res.status(401).json({ error: 'User not authenticated' });
-        return;
-      }
+      const userId = req.user!._id;
 
-      // Required filters: workspaceId, noteType, tags (array of strings, can be empty)
-      // TODO: Implement filtering by workspaceId, noteType, tags, searchQuery, pagination
       const { workspaceId, noteType, tags, query } = req.query;
 
-      if (!workspaceId || typeof workspaceId !== 'string') {
+      if (!workspaceId) {
         res.status(400).json({ error: 'workspaceId is required' });
         return;
       }
-      if (!noteType || typeof noteType !== 'string') {
+      if (!noteType) {
         res.status(400).json({ error: 'noteType is required' });
         return;
       }
 
-
-      const q = typeof query === 'string' ? query : '';
-      const notes = await noteService.getNotes(userId, workspaceId, noteType, tags as string[] || [], q);
+      // Query param is optional, default to empty string if not provided
+      const q = query || '';
+      const notes = await noteService.getNotes(userId, workspaceId as string, noteType as string, tags as string[] || [], q as string);
 
       res.status(200).json({
         message: 'Notes retrieved successfully',
