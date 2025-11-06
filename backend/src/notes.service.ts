@@ -20,9 +20,12 @@ export class NoteService {
         let vectorInput = "";
 
         for (const field of data.fields) {
-            vectorInput += "field label: " + field.label + " ";
-            if ('content' in field) {
-                vectorInput += "field content: " + field.content + " ";
+            if (typeof field === 'object' && field !== null) {
+                const fieldObj = field as Record<string, unknown>;
+                vectorInput += "field label: " + String(fieldObj.label ?? '') + " ";
+                if ('content' in fieldObj) {
+                    vectorInput += "field content: " + String(fieldObj.content ?? '') + " ";
+                }
             }
         }
 

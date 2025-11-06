@@ -107,6 +107,7 @@ export class AuthController {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async devLogin(req: Request, res: Response, _next: NextFunction) {
     try {
       const email = (req.body.email as string | undefined) ?? 'test@example.com';

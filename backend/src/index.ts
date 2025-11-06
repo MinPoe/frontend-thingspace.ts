@@ -16,9 +16,12 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('*', notFoundHandler);
 app.use(errorHandler);
 
-void connectDB();
+connectDB().catch((error: unknown) => {
+  console.error('Failed to connect to database:', error);
+  process.exit(1);
+});
 app.listen(PORT, () => {
   // PORT is from environment variable, not user input
-  // eslint-disable-next-line security/detect-crlf
+  /* eslint-disable-next-line security/detect-crlf, no-console */
   console.log(`🚀 Server running on port ${PORT}`);
 });
