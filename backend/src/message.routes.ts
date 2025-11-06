@@ -13,7 +13,10 @@ const router = express.Router();
 router.get('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { workspaceId } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     // Validate query params
     const queryResult = getMessagesQuerySchema.safeParse(req.query);
@@ -56,7 +59,10 @@ router.get('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req
 router.post('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { workspaceId } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     // Validate request body
     const bodyResult = createMessageSchema.safeParse(req.body);
@@ -98,7 +104,10 @@ router.post('/workspace/:workspaceId', authenticateToken, asyncHandler(async (re
 router.delete('/:messageId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { messageId } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     const message = await messageModel.findById(messageId);
     if (!message) {
