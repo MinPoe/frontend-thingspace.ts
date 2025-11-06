@@ -19,7 +19,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.uiautomator.textAsString
 import androidx.test.uiautomator.uiAutomator
-import com.cpen321.usermanagement.TestCollaborate.Companion.addedAMemberString
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Rule
@@ -150,7 +149,7 @@ class TestRetrieveNotes {
         composeRule.onNodeWithTag(TAG2).assertIsOff()
         composeRule.onNodeWithTag(TAG3).assertIsOn()
         composeRule.onNodeWithContentDescription(backIcString).performClick()
-        waitForSearch(searchButtonString)
+        waitForVm(1000)
         composeRule.onNodeWithText(DISPLAY1).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY2).assertIsNotDisplayed()
         composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
