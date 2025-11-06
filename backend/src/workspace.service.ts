@@ -122,7 +122,7 @@ export class WorkspaceService {
         };
     }
 
-    async getWorkspaceMembers(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<IUser[]> {
+    async getWorkspaceMembers(workspaceId: string): Promise<IUser[]> {
         // 1. Fetch workspace
         const workspace = await workspaceModel.findById(workspaceId);
         

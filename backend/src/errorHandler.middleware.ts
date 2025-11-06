@@ -12,10 +12,11 @@ export const notFoundHandler = (req: Request, res: Response) => {
   });
 };
 
-export const errorHandler = (error: Error, req: Request, res: Response, next: NextFunction) => {
-  logger.error('Error:', error);
-
-  return res.status(500).json({
-    message: 'Internal server error',
-  });
-};
+export const errorHandler = (error: Error, req: Request, res: Response, _next: NextFunction) => {
+    logger.error('Error:', error);
+  
+    return res.status(500).json({
+      message: 'Internal server error',
+    });
+   
+  };

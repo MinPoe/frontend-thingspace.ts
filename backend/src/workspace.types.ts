@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import mongoose from 'mongoose';
 
 // Profile interface (embedded in workspace)
 export interface Profile {
