@@ -22,9 +22,9 @@ export class WorkspaceService {
         const newWorkspace = await workspaceModel.create({
             name: data.name,
             profile: {
-                imagePath: data.profilePicture || '',
+                imagePath: data.profilePicture ?? '',
                 name: data.name,
-                description: data.description || ''
+                description: data.description ?? ''
             },
             ownerId: userId,
             members: [userId] // Owner is automatically a member

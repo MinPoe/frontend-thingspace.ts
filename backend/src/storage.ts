@@ -5,7 +5,10 @@ import path from 'path';
 
 import { IMAGES_DIR, MAX_FILE_SIZE } from './constants';
 
+// IMAGES_DIR is a constant resolved from constants.ts, safe to use
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 if (!fs.existsSync(IMAGES_DIR)) {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 

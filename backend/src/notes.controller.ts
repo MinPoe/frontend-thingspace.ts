@@ -213,7 +213,7 @@ export class NotesController {
       }
 
       // Query param is optional, default to empty string if not provided
-      const q = query || '';
+      const q = query ?? '';
       const tagsArray = Array.isArray(tags) ? tags as string[] : [];
       const notes = await noteService.getNotes(userId, workspaceId as string, noteType as string, tagsArray, q as string);
 

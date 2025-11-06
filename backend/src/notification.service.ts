@@ -29,7 +29,7 @@ export class NotificationService {
           title,
           body,
         },
-        data: data || {},
+        data: data ?? {},
         android: {
           priority: 'high',
           notification: {

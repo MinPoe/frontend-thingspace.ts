@@ -22,7 +22,7 @@ export class AuthController {
       const data = await authService.signUpWithGoogle(idToken);
       const workspace_data = {
         name: `${data.user.profile.name}'s Personal Workspace`, 
-        profilePicture: data.user.profile.imagePath || '', 
+        profilePicture: data.user.profile.imagePath ?? '', 
         description: 'Your personal workspace for all your personal notes'
       }
       const personalWorkspace = await workspaceService.createWorkspace(
@@ -110,7 +110,7 @@ export class AuthController {
   // DEV ONLY - Creates a test user and returns token
   async devLogin(req: Request, res: Response, next: NextFunction) {
     try {
-      const email = (req.body.email as string | undefined) || 'test@example.com';
+      const email = (req.body.email as string | undefined) ?? 'test@example.com';
       
       const data = await authService.devLogin(email);
 
