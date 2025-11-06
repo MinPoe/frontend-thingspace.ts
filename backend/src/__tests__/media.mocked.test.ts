@@ -193,6 +193,10 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       }
       fs.writeFileSync(constructedPath, Buffer.from('test data'));
 
+      // Mock validatePath to return true (so we can test the error handling)
+      // We need to access the private method via bracket notation or spy on the class
+      const validatePathSpy = jest.spyOn(MediaService as any, 'validatePath').mockReturnValue(true);
+      
       // Mock fs.unlinkSync to throw error
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       const existsSyncSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
@@ -209,6 +213,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
         expect(unlinkSyncSpy).toHaveBeenCalled();
       } finally {
         // Restore
+        validatePathSpy.mockRestore();
         existsSyncSpy.mockRestore();
         unlinkSyncSpy.mockRestore();
         consoleErrorSpy.mockRestore();
