@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { WsMembershipStatus } from './workspace.types';
 
 export interface IWorkspaceDocument extends Document {
   _id: mongoose.Types.ObjectId;

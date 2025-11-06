@@ -107,7 +107,6 @@ export class AuthController {
     }
   }
 
-  // DEV ONLY - Creates a test user and returns token
   async devLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const email = (req.body.email as string | undefined) || 'test@example.com';
@@ -120,9 +119,14 @@ export class AuthController {
       });
     } catch (error) {
       logger.error('Dev login error:', error);
-      return res.status(500).json({
-        message: error instanceof Error ? error.message : 'Dev login failed',
-      });
+      
+      if (error instanceof Error) {
+        return res.status(500).json({
+          message: error.message || 'Dev login failed',
+        });
+      }
+
+      next(error);
     }
   }
 }

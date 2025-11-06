@@ -128,7 +128,7 @@ export class WorkspaceController {
             }
 
             const workspaceId = req.params.id;
-            const members = await workspaceService.getWorkspaceMembers(workspaceId, userId);
+            const members = await workspaceService.getWorkspaceMembers(workspaceId);
 
             res.status(200).json({
                 message: 'Members retrieved successfully',
@@ -472,8 +472,7 @@ export class WorkspaceController {
 
     async pollForNewMessages(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?._id;
-            if (!userId) {
+            if (!req.user) {
                 res.status(401).json({ error: 'User not authenticated' });
                 return;
             }
