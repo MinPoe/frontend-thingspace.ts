@@ -4,6 +4,7 @@ import { authenticateToken } from './auth.middleware';
 import { NotesController } from './notes.controller';
 import { CreateNoteRequest, UpdateNoteRequest, createNoteSchema, updateNoteSchema } from './notes.types';
 import { validateBody } from './validation.middleware';
+import { asyncHandler } from './asyncHandler.util';
 
 const router = Router();
 const notesController = new NotesController();
@@ -12,7 +13,7 @@ router.post(
   '/',
   authenticateToken,
   validateBody<CreateNoteRequest>(createNoteSchema),
-  notesController.createNote
+  asyncHandler(notesController.createNote.bind(notesController))
 );
 
 
@@ -20,43 +21,43 @@ router.put(
   '/:id',
   authenticateToken,
   validateBody<UpdateNoteRequest>(updateNoteSchema),
-  notesController.updateNote
+  asyncHandler(notesController.updateNote.bind(notesController))
 );
 
 router.delete(
   '/:id',
   authenticateToken,
-  notesController.deleteNote
+  asyncHandler(notesController.deleteNote.bind(notesController))
 );
 
 router.get(
   '/:id',
   authenticateToken,
-  notesController.getNote
+  asyncHandler(notesController.getNote.bind(notesController))
 );
 
 router.get(
   '/',
   authenticateToken,
-  notesController.findNotes
+  asyncHandler(notesController.findNotes.bind(notesController))
 );
 
 router.get(
   '/:id/workspaces',
   authenticateToken,
-  notesController.getWorkspacesForNote
+  asyncHandler(notesController.getWorkspacesForNote.bind(notesController))
 )
 
 router.post(
   '/:id/share',
   authenticateToken,
-  notesController.shareNoteToWorkspace
+  asyncHandler(notesController.shareNoteToWorkspace.bind(notesController))
 );
 
 router.post(
   '/:id/copy',
   authenticateToken,
-  notesController.copyNoteToWorkspace
+  asyncHandler(notesController.copyNoteToWorkspace.bind(notesController))
 );
 
 export default router;

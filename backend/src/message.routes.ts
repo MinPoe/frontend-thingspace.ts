@@ -4,11 +4,12 @@ import { messageModel } from './message.model';
 import { workspaceModel } from './workspace.model';
 import { createMessageSchema, getMessagesQuerySchema } from './message.types';
 import mongoose from 'mongoose';
+import { asyncHandler } from './asyncHandler.util';
 
 const router = express.Router();
 
 // Get messages for a workspace
-router.get('/workspace/:workspaceId', authenticateToken, async (req, res) => {
+router.get('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { workspaceId } = req.params;
     const userId = req.user!._id;
@@ -48,10 +49,10 @@ router.get('/workspace/:workspaceId', authenticateToken, async (req, res) => {
     console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
-});
+}));
 
 // Create a message
-router.post('/workspace/:workspaceId', authenticateToken, async (req, res) => {
+router.post('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { workspaceId } = req.params;
     const userId = req.user!._id;
@@ -90,10 +91,10 @@ router.post('/workspace/:workspaceId', authenticateToken, async (req, res) => {
     console.error('Error creating message:', error);
     res.status(500).json({ error: 'Failed to create message' });
   }
-});
+}));
 
 // Delete a message (workspace owner only)
-router.delete('/:messageId', authenticateToken, async (req, res) => {
+router.delete('/:messageId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { messageId } = req.params;
     const userId = req.user!._id;
@@ -119,6 +120,6 @@ router.delete('/:messageId', authenticateToken, async (req, res) => {
     console.error('Error deleting message:', error);
     res.status(500).json({ error: 'Failed to delete message' });
   }
-});
+}));
 
 export const messageRouter = router;
