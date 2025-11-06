@@ -281,6 +281,51 @@ describe('Auth Middleware – Real Middleware Tests', () => {
       expect(res.body.error).toBe('User not found');
       expect(res.body.message).toBe('Token is valid but user no longer exists');
     });
+
+    test('500 – handles missing JWT_SECRET in authenticateToken', async () => {
+      // Input: JWT_SECRET not set in environment
+      // Expected status code: 500
+      // Expected behavior: error message returned
+      // Expected output: error message (tests auth.middleware.ts lines 27-33)
+      const originalSecret = process.env.JWT_SECRET;
+      delete process.env.JWT_SECRET;
+
+      // Clear module cache and re-import to get fresh JWT_SECRET value
+      jest.resetModules();
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { authenticateToken: freshAuthenticateToken } = require('../auth.middleware');
+      
+      // Create a new app with the fresh middleware
+      const testApp = express();
+      testApp.use(express.json());
+      testApp.use('/api/protected', freshAuthenticateToken);
+      testApp.get('/api/protected/test', (req: Request, res: Response) => {
+        res.status(200).json({ message: 'Authenticated', user: req.user });
+      });
+
+      const token = jwt.sign(
+        { id: testData.testUserId },
+        'some-secret'
+      );
+
+      const res = await request(testApp)
+        .get('/api/protected/test')
+        .set('authorization', `Bearer ${token}`);
+
+      // Should return 500 with JWT_SECRET not configured message
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Server configuration error');
+      expect(res.body.message).toBe('JWT_SECRET not configured');
+
+      // Restore JWT_SECRET and re-import original module
+      if (originalSecret) {
+        process.env.JWT_SECRET = originalSecret;
+      }
+      jest.resetModules();
+      // Re-import to restore the original middleware
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require('../auth.middleware');
+    });
   });
 
   describe('authMiddleware (alternative middleware)', () => {
@@ -310,7 +355,7 @@ describe('Auth Middleware – Real Middleware Tests', () => {
     });
 
     test('401 – returns 401 when token is expired (TokenExpiredError branch)', async () => {
-      // Input: expired JWT token (tests auth.middleware.ts line 99)
+      // Input: expired JWT token (tests auth.middleware.ts line 104)
       // Expected status code: 401
       // Expected behavior: TokenExpiredError caught and returns 401 with "Invalid token"
       // Expected output: error message "Invalid token"
@@ -326,6 +371,45 @@ describe('Auth Middleware – Real Middleware Tests', () => {
 
       expect(res.status).toBe(401);
       expect(res.body.error).toBe('Invalid token');
+    });
+
+    test('401 – returns 401 when token is malformed (JsonWebTokenError branch)', async () => {
+      // Input: malformed JWT token (tests auth.middleware.ts line 108)
+      // Expected status code: 401
+      // Expected behavior: JsonWebTokenError caught and returns 401 with "Invalid token"
+      // Expected output: error message "Invalid token"
+      const res = await request(app2)
+        .get('/api/protected2/test')
+        .set('authorization', 'Bearer invalid.malformed.token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+    });
+
+    test('401 – handles other errors (covers final catch branch)', async () => {
+      // Input: request that triggers non-JWT error
+      // Expected status code: 401
+      // Expected behavior: other errors caught and returns 401 (tests auth.middleware.ts line 112-113)
+      // Expected output: error message "Invalid token"
+      // Mock jwt.verify to throw a non-JWT error
+      const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new Error('Some other error');
+      });
+
+      const token = jwt.sign(
+        { id: testData.testUserId },
+        process.env.JWT_SECRET!
+      );
+
+      const res = await request(app2)
+        .get('/api/protected2/test')
+        .set('authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('Invalid token');
+
+      // Restore
+      verifySpy.mockRestore();
     });
 
     test('200 – allows request when token is valid', async () => {

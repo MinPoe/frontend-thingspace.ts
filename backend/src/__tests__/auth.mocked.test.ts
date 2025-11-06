@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import jwt from 'jsonwebtoken';
 
 import { authService, AuthService } from '../auth.service';
 import { workspaceService } from '../workspace.service';
@@ -423,6 +424,24 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Dev login failed');
     });
+
+    test('500 – handles Error with empty message (covers error.message || fallback)', async () => {
+      // Mocked behavior: authService.devLogin throws Error with empty message
+      // Input: email
+      // Expected status code: 500
+      // Expected behavior: error.message is empty, so fallback to 'Dev login failed'
+      // Expected output: 'Dev login failed' (tests auth.controller.ts line 126)
+      const errorWithEmptyMessage = new Error('');
+      errorWithEmptyMessage.message = ''; // Explicitly set empty message
+      jest.spyOn(authService, 'devLogin').mockRejectedValueOnce(errorWithEmptyMessage);
+
+      const res = await request(app)
+        .post('/api/auth/dev-login')
+        .send({ email: 'dev-error@example.com' });
+
+      expect(res.status).toBe(500);
+      expect(res.body.message).toBe('Dev login failed');
+    });
   });
 
   describe('Auth Service - Direct Service Tests with Mocks', () => {
@@ -607,6 +626,185 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       await expect(
         serviceInstance.signInWithGoogle('invalid-token')
       ).rejects.toThrow('Invalid Google token');
+    });
+
+    test('signUpWithGoogle successfully creates user and generates token', async () => {
+      // Input: valid Google token for new user
+      // Expected behavior: User created, token generated (tests auth.service.ts lines 71-74)
+      // Expected output: AuthResult with token and user
+      const mockTicket = {
+        getPayload: jest.fn().mockReturnValue({
+          sub: 'new-google-id',
+          email: 'newuser@example.com',
+          name: 'New User',
+          picture: 'https://example.com/pic.jpg',
+        }),
+      };
+
+      const mockVerifyIdToken = jest.fn().mockResolvedValue(mockTicket);
+      const mockGoogleClient = {
+        verifyIdToken: mockVerifyIdToken,
+      } as any;
+
+      // Create a new service instance with mocked Google client
+      const serviceInstance = new AuthService();
+      (serviceInstance as any).googleClient = mockGoogleClient;
+
+      const result = await serviceInstance.signUpWithGoogle('valid-token');
+
+      expect(result).toBeDefined();
+      expect(result.token).toBeDefined();
+      expect(result.user).toBeDefined();
+      expect(result.user.email).toBe('newuser@example.com');
+    });
+
+    test('signInWithGoogle successfully generates token for existing user', async () => {
+      // Input: valid Google token for existing user
+      // Expected behavior: Token generated (tests auth.service.ts lines 91-93)
+      // Expected output: AuthResult with token and user
+      // Create a user first
+      const existingUser = await userModel.create({
+        googleId: 'existing-google-id',
+        email: 'existing@example.com',
+        name: 'Existing User',
+        profilePicture: '',
+      });
+
+      const mockTicket = {
+        getPayload: jest.fn().mockReturnValue({
+          sub: existingUser.googleId,
+          email: 'existing@example.com',
+          name: 'Existing User',
+          picture: '',
+        }),
+      };
+
+      const mockVerifyIdToken = jest.fn().mockResolvedValue(mockTicket);
+      const mockGoogleClient = {
+        verifyIdToken: mockVerifyIdToken,
+      } as any;
+
+      // Create a new service instance with mocked Google client
+      const serviceInstance = new AuthService();
+      (serviceInstance as any).googleClient = mockGoogleClient;
+
+      const result = await serviceInstance.signInWithGoogle('valid-token');
+
+      expect(result).toBeDefined();
+      expect(result.token).toBeDefined();
+      expect(result.user).toBeDefined();
+      expect(result.user._id.toString()).toBe(existingUser._id.toString());
+    });
+
+    test('generateAccessToken throws error when JWT_SECRET not configured', async () => {
+      // Input: JWT_SECRET not set
+      // Expected behavior: Throws "JWT_SECRET not configured" error (tests auth.service.ts line 47)
+      // Expected output: Error thrown
+      const originalSecret = process.env.JWT_SECRET;
+      delete process.env.JWT_SECRET;
+
+      // Use a unique googleId that doesn't exist
+      const uniqueGoogleId = `test-google-id-jwt-secret-${Date.now()}`;
+
+      // Clear module cache and re-import to get fresh JWT_SECRET value
+      jest.resetModules();
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { AuthService: FreshAuthService } = require('../auth.service');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { userModel: freshUserModel } = require('../user.model');
+      const serviceInstance = new FreshAuthService();
+
+      // Mock Google client to avoid verification issues
+      const mockTicket = {
+        getPayload: jest.fn().mockReturnValue({
+          sub: uniqueGoogleId,
+          email: 'test-jwt-secret@example.com',
+          name: 'Test User JWT',
+          picture: '',
+        }),
+      };
+      const mockVerifyIdToken = jest.fn().mockResolvedValue(mockTicket);
+      (serviceInstance as any).googleClient = {
+        verifyIdToken: mockVerifyIdToken,
+      };
+
+      // Mock findByGoogleId to return null (user doesn't exist)
+      jest.spyOn(freshUserModel, 'findByGoogleId').mockResolvedValueOnce(null);
+      // Mock create to return a user
+      const mockUser = {
+        _id: new mongoose.Types.ObjectId(),
+        googleId: uniqueGoogleId,
+        email: 'test-jwt-secret@example.com',
+        name: 'Test User JWT',
+        profilePicture: '',
+      };
+      jest.spyOn(freshUserModel, 'create').mockResolvedValueOnce(mockUser as any);
+
+      await expect(
+        serviceInstance.signUpWithGoogle('valid-token')
+      ).rejects.toThrow('JWT_SECRET not configured');
+
+      // Restore JWT_SECRET
+      if (originalSecret) {
+        process.env.JWT_SECRET = originalSecret;
+      }
+      jest.resetModules();
+      // Re-import to restore
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require('../auth.service');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require('../user.model');
+    });
+
+    test('generateAccessToken handles token generation failure', async () => {
+      // Input: jwt.sign returns non-string (tests auth.service.ts line 53)
+      // Expected behavior: Throws "Failed to generate token" error
+      // Expected output: Error thrown
+      // Use a unique googleId that doesn't exist
+      const uniqueGoogleId = `test-google-id-token-fail-${Date.now()}`;
+
+      // Mock Google client
+      const mockTicket = {
+        getPayload: jest.fn().mockReturnValue({
+          sub: uniqueGoogleId,
+          email: `test-token-fail-${Date.now()}@example.com`,
+          name: 'Test User Token Fail',
+          picture: '',
+        }),
+      };
+      const mockVerifyIdToken = jest.fn().mockResolvedValue(mockTicket);
+      const mockGoogleClient = {
+        verifyIdToken: mockVerifyIdToken,
+      } as any;
+
+      const serviceInstance = new AuthService();
+      (serviceInstance as any).googleClient = mockGoogleClient;
+
+      // Mock findByGoogleId to return null (user doesn't exist)
+      jest.spyOn(userModel, 'findByGoogleId').mockResolvedValueOnce(null);
+      // Mock create to return a user
+      const mockUser = {
+        _id: new mongoose.Types.ObjectId(),
+        googleId: uniqueGoogleId,
+        email: `test-token-fail-${Date.now()}@example.com`,
+        name: 'Test User Token Fail',
+        profilePicture: '',
+      };
+      jest.spyOn(userModel, 'create').mockResolvedValueOnce(mockUser as any);
+
+      // Mock jwt.sign to return null - spy on the same module that auth.service uses
+      const signSpy = jest.spyOn(jwt, 'sign').mockReturnValue(null as any);
+
+      await expect(
+        serviceInstance.signUpWithGoogle('valid-token')
+      ).rejects.toThrow('Failed to generate token');
+
+      // Verify jwt.sign was called
+      expect(signSpy).toHaveBeenCalled();
+
+      // Restore
+      signSpy.mockRestore();
+      jest.restoreAllMocks();
     });
   });
 });
