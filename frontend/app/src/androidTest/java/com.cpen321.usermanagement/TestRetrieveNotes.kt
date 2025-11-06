@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -32,12 +33,10 @@ import java.lang.Thread.sleep
 * Passwords as in attachments.
 * Fill in the bio's of the account (with anything, just not empty).
 *
-* To run the test, make sure that you are signed out of the application.
 *
 * It might happen the UI Automator picks the wrong button on sign in. In this case:
 * 1) run the app regularly, sign in to any account
-* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
-* 3) run the test again (this time should work)
+* 2) run the test again (this time should work)
 * */
 @HiltAndroidTest
 class TestRetrieveNotes {
@@ -112,9 +111,9 @@ class TestRetrieveNotes {
         val backIcString = composeRule.activity.getString(R.string.back_icon_description)
         val signInString = composeRule.activity.getString(R.string.sign_in_with_google)
 
-        uiAutomator { onElement { textAsString()=="Allow" }.click() }
+        try{uiAutomator { onElement { textAsString()=="Allow" }.click() }}catch(e:Exception){}
         waitForVm(1000)
-        signIn(signInString = signInString, ACCT_NAME)
+        if(composeRule.onNodeWithText(signInString).isDisplayed()) signIn(signInString = signInString, ACCT_NAME)
 
         Log.d("TEST RETRIEVE NOTES", "Testing Search")
         waitForSearch(searchButtonString)
