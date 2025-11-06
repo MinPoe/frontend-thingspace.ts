@@ -107,7 +107,7 @@ export class AuthController {
     }
   }
 
-  async devLogin(req: Request, res: Response, next: NextFunction) {
+  async devLogin(req: Request, res: Response, _next: NextFunction) {
     try {
       const email = (req.body.email as string | undefined) ?? 'test@example.com';
       
@@ -126,7 +126,10 @@ export class AuthController {
         });
       }
 
-      next(error);
+      // For non-Error values, return generic message instead of calling next
+      return res.status(500).json({
+        message: 'Dev login failed',
+      });
     }
   }
 }

@@ -194,7 +194,8 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       fs.writeFileSync(constructedPath, Buffer.from('test data'));
 
       // Mock fs.unlinkSync to throw error
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const existsSyncSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       const unlinkSyncSpy = jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {
         throw new Error('Unlink failed');
       });
@@ -203,11 +204,12 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
         // deleteImage should catch the error and log it
         await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
         
-        // Verify error was logged - line 33
+        // Verify error was logged
         expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to delete old profile picture:', expect.any(Error));
         expect(unlinkSyncSpy).toHaveBeenCalled();
       } finally {
         // Restore
+        existsSyncSpy.mockRestore();
         unlinkSyncSpy.mockRestore();
         consoleErrorSpy.mockRestore();
         // Clean up
