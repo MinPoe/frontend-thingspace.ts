@@ -96,11 +96,13 @@ export const authMiddleware = async (
 
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded as any;
-    return next();
+    next();
+    return;
   } catch (error) {
     // Handle JWT_SECRET configuration error
     if (error instanceof Error && error.message === 'JWT_SECRET not configured') {
-      return next(error);
+      next(error);
+      return;
     }
     
     // Handle JWT-specific errors

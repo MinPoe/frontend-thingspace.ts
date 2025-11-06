@@ -109,7 +109,7 @@ export class AuthService {
       const consistentGoogleId = `dev-${email.replace(/[^a-zA-Z0-9]/g, '-')}`;
       const testUserInfo: GoogleUserInfo = {
         googleId: consistentGoogleId,
-        email: email,
+        email,
         name: 'Test User',
         profilePicture: 'https://via.placeholder.com/150',
       };

@@ -241,7 +241,7 @@ export class WorkspaceService {
                     `${invitingUser.profile.name} added you to "${workspace.name}"`,
                     {
                         type: 'workspace_invite',
-                        workspaceId: workspaceId,
+                        workspaceId,
                         workspaceName: workspace.name,
                         inviterId: requestingUserId.toString()
                     }

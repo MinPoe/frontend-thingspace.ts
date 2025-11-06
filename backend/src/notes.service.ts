@@ -47,7 +47,7 @@ export class NoteService {
             fields: data.fields,
             noteType: data.noteType,
             tags: data.tags,
-            vectorData: vectorData,
+            vectorData,
         });
 
         // Update workspace timestamp if this is a chat message
