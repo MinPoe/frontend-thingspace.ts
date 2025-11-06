@@ -45,10 +45,11 @@ export const updateFcmTokenSchema = z.object({
 // Request types
 // ------------------------------------------------------------
 export type GetProfileResponse = {
-  message: string;
+  message?: string;
   data?: {
     user: IUser;
   };
+  error?: string;
 };
 
 export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;

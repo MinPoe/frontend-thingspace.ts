@@ -2,7 +2,11 @@ import admin from 'firebase-admin';
 import logger from './logger.util';
 
 // Initialize Firebase Admin
-const serviceAccount = JSON.parse(process.env.FIREBASE_JSON!);
+const firebaseJson = process.env.FIREBASE_JSON;
+if (!firebaseJson) {
+  throw new Error('FIREBASE_JSON environment variable is not set');
+}
+const serviceAccount = JSON.parse(firebaseJson);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
