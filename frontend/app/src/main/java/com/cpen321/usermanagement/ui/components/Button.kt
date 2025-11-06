@@ -15,7 +15,8 @@ fun Button(
     fullWidth: Boolean = true,
     enabled: Boolean = true,
     onClick: () -> Unit,
-    content: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit
 ) {
     val spacing = LocalSpacing.current
 
@@ -27,7 +28,7 @@ fun Button(
         )
     }
 
-    var modifier = Modifier.height(spacing.extraLarge2)
+    var modifier = modifier.height(spacing.extraLarge2)
     if (fullWidth) {
         modifier = modifier.fillMaxWidth()
     }

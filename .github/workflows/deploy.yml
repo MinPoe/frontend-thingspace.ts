@@ -1,54 +1,54 @@
-# name: Deploy to EC2
+name: Deploy to EC2
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   deploy:
-#    runs-on: ubuntu-latest
-#    steps:
-#     - name: CheckOut
-#       uses: actions/checkout@v3
+jobs:
+  deploy:
+   runs-on: ubuntu-latest
+   steps:
+    - name: CheckOut
+      uses: actions/checkout@v3
 
-#     - name: Copy files to EC2
-#       uses: appleboy/scp-action@v1
-#       with: 
-#         host: ${{ secrets.EC2_HOST }}
-#         username: ${{ secrets.EC2_USER }}
-#         key: ${{ secrets.EC2_KEY }}
-#         source: "."
-#         target: "/home/ubuntu/cpen321M3"
+    - name: Copy files to EC2
+      uses: appleboy/scp-action@v1
+      with: 
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        source: "backend/*"
+        target: "/home/ubuntu/cpen321M3/"
 
-#     - name: Rebuild and Deploy
-#       uses: appleboy/ssh-action@v1
-#       with: 
-#         host: ${{ secrets.EC2_HOST }}
-#         username: ${{ secrets.EC2_USER }}
-#         key: ${{ secrets.EC2_KEY }}
-#         script: |
-#           cd /home/ubuntu/cpen321M3/CPEN-321-M1-app/backend/
+    - name: Rebuild and Deploy
+      uses: appleboy/ssh-action@v1
+      with: 
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          cd /home/ubuntu/cpen321M3/backend
 
-#           # write secrets into env
-#           cat > .env << EOF
-#           PORT=${{ secrets.PROD_PORT }}
-#           MONGODB_URI=${{ secrets.PROD_DB_URI }}
-#           JWT_SECRET=${{ secrets.JWT_SECRET }}
-#           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-#           OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}
-#           EOF
+          # write secrets into .env
+          cat > .env << EOF
+          PORT=${{ secrets.PROD_PORT }}
+          MONGODB_URI=${{ secrets.PROD_DB_URI }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}
+          EOF
 
-#           # write into the firebase json file
-#           cat > firebase-service-account.json << EOF
-#           ${{secrets.FIREBASE_JSON}}
-#           EOF
+          # write into the firebase json file
+          cat > firebase-service-account.json << EOF
+          ${{secrets.FIREBASE_JSON}}
+          EOF
 
-#           # Give .env and firebase-service-account.json permissions
-#           chmod 600 .env
-#           chmod 600 firebase-service-account.json
+          # Give .env and firebase-service-account.json permissions
+          chmod 600 .env
+          chmod 600 firebase-service-account.json
 
-#           # Build and run the container
-#           docker-compose down
-#           docker-compose --env-file .env build
-#           docker-compose --env-file .env up -d
+          # Build and run the container
+          docker-compose down
+          docker-compose --env-file .env build
+          docker-compose --env-file .env up -d

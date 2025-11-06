@@ -24,7 +24,6 @@
     <string name="bio">Bio</string>
     <string name="bio_description">Tell us about yourself to get started</string>
     <string name="bio_placeholder">Tell us about yourself...</string>
-    <string name="search">Search</string>
     <string name="search_placeholder">Search notes...</string>
     <string name="save">Save</string>
     <string name="skip">Skip</string>
@@ -109,6 +108,7 @@
     <string name="create_workspace">Create Workspace</string>
     <!-- Filter screen -->
     <string name="all">All</string>
+    <string name="filter">Filter</string>
     <!-- Chat screen -->
     <string name="no_messages_yet">No messages yet</string>
     <string name="start_conversation">Start the conversation!</string>
@@ -130,4 +130,8 @@
     <!-- Go back -->
     <string name="back_icon_description">Go back</string>
     <string name="no_fields_added_yet">No fields added yet</string>
+    <!-- Search Screen -->
+    <string name="search">Search</string>
+    <string name="search_textbox">Search Field</string>
+    <string name="search_button">Search Button</string>
 </resources>
