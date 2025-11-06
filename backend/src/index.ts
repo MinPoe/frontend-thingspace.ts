@@ -18,5 +18,7 @@ app.use(errorHandler);
 
 connectDB();
 app.listen(PORT, () => {
+  // PORT is from environment variable, not user input
+  // eslint-disable-next-line security/detect-crlf
   console.log(`🚀 Server running on port ${PORT}`);
 });
