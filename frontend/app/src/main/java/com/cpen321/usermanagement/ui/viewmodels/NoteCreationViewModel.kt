@@ -121,28 +121,32 @@ class NoteCreationViewModel @Inject constructor(
 
     fun createNote(workspaceId: String) {
         viewModelScope.launch {
-            Log.d("NoteCreation", "Creating note with workspaceId: '$workspaceId'")
-
-            _creationState.value = _creationState.value.copy(
-                isCreating = true,
-                error = null
-            )
-
-            val actualWorkspaceId = resolveWorkspaceId(workspaceId) ?: return@launch
-            val validationError = validateFields()
-            if (validationError != null) {
-                _creationState.value = _creationState.value.copy(
-                    isCreating = false,
-                    error = validationError
-                )
-                return@launch
-            }
-
-            val userId = getCurrentUserId() ?: return@launch
-            val fields = convertFieldsToDto()
-
-            createNoteRequest(actualWorkspaceId, userId, fields)
+            createNoteInternal(workspaceId)
         }
+    }
+
+    private suspend fun createNoteInternal(workspaceId: String) {
+        Log.d("NoteCreation", "Creating note with workspaceId: '$workspaceId'")
+
+        _creationState.value = _creationState.value.copy(
+            isCreating = true,
+            error = null
+        )
+
+        val actualWorkspaceId = resolveWorkspaceId(workspaceId) ?: return
+        val validationError = validateFields()
+        if (validationError != null) {
+            _creationState.value = _creationState.value.copy(
+                isCreating = false,
+                error = validationError
+            )
+            return
+        }
+
+        val userId = getCurrentUserId() ?: return
+        val fields = convertFieldsToDto()
+
+        createNoteRequest(actualWorkspaceId, userId, fields)
     }
 
     private suspend fun resolveWorkspaceId(workspaceId: String): String? {

@@ -98,26 +98,29 @@ class WsProfileManagerViewModel@Inject constructor(
 
     fun uploadProfilePicture(pictureUri: Uri) {
         viewModelScope.launch {
-            val result = workspaceRepository.updateWorkspacePicture(
-                workspaceProfilePicture = pictureUri.toString(),
-                workspaceId = navigationStateManager.state.getWorkspaceId()
-            )
-            if (result.isSuccess) {
-                val currentWorkspace = _uiState.value.workspace ?: return@launch
-                val updatedWorkspace = currentWorkspace.copy(
-                    profile = currentWorkspace.profile.copy(imagePath = pictureUri.toString())
-                )
-                _uiState.value = _uiState.value.copy(isLoadingPhoto = false, workspace= updatedWorkspace, successMessage = "Profile picture updated successfully!")
-            }else {
-                val error = result.exceptionOrNull()
-                Log.e(TAG, "Failed to update profile", error)
-                val errorMessage = error?.message ?: "Failed to update profile"
-                _uiState.value = _uiState.value.copy(
-                    isSavingProfile = false,
-                    errorMessage = errorMessage
-                )
-            }
+            uploadProfilePictureInternal(pictureUri)
+        }
+    }
 
+    private suspend fun uploadProfilePictureInternal(pictureUri: Uri) {
+        val result = workspaceRepository.updateWorkspacePicture(
+            workspaceProfilePicture = pictureUri.toString(),
+            workspaceId = navigationStateManager.state.getWorkspaceId()
+        )
+        if (result.isSuccess) {
+            val currentWorkspace = _uiState.value.workspace ?: return
+            val updatedWorkspace = currentWorkspace.copy(
+                profile = currentWorkspace.profile.copy(imagePath = pictureUri.toString())
+            )
+            _uiState.value = _uiState.value.copy(isLoadingPhoto = false, workspace= updatedWorkspace, successMessage = "Profile picture updated successfully!")
+        }else {
+            val error = result.exceptionOrNull()
+            Log.e(TAG, "Failed to update profile", error)
+            val errorMessage = error?.message ?: "Failed to update profile"
+            _uiState.value = _uiState.value.copy(
+                isSavingProfile = false,
+                errorMessage = errorMessage
+            )
         }
     }
 
