@@ -184,8 +184,10 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: No error thrown, error logged
       const testFile = path.resolve(IMAGES_DIR, 'test-delete-error.png');
       fs.writeFileSync(testFile, Buffer.from('test data'));
-      const url = `${IMAGES_DIR}/test-delete-error.png`.replace(/\\/g, '/');
-      const constructedPath = path.join(process.cwd(), url.substring(1));
+      // Use relative path from process.cwd() as deleteImage expects
+      const relativePath = path.relative(process.cwd(), testFile);
+      const url = relativePath.replace(/\\/g, '/');
+      const constructedPath = path.resolve(process.cwd(), url);
       
       // Create file at the path that will be checked
       if (!fs.existsSync(path.dirname(constructedPath))) {

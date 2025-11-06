@@ -343,8 +343,6 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.tags).toContain('tag3');
     });
 
-
-
     test('403 – cannot access tags when not a member', async () => {
       // Input: workspaceId of workspace user is not a member of
       // Expected status code: 403

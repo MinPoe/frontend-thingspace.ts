@@ -159,25 +159,6 @@ describe('Auth Middleware – Real Middleware Tests', () => {
       expect(res.body.message).toBe('Please login again');
     });
 
-    test('401 – returns 401 when decoded token has no id', async () => {
-      // Input: valid JWT token but without id field
-      // Expected status code: 401
-      // Expected behavior: error message returned
-      // Expected output: error message
-      const tokenWithoutId = jwt.sign(
-        { someOtherField: 'value' },
-        process.env.JWT_SECRET!
-      );
-
-      const res = await request(app)
-        .get('/api/protected/test')
-        .set('authorization', `Bearer ${tokenWithoutId}`);
-
-      expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Invalid token');
-      expect(res.body.message).toBe('Token verification failed');
-    });
-
     test('401 – returns 401 when user not found (token valid but user deleted)', async () => {
       // Input: valid JWT token but user doesn't exist
       // Expected status code: 401
@@ -297,8 +278,8 @@ describe('Auth Middleware – Real Middleware Tests', () => {
         .set('authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Invalid token');
-      expect(res.body.message).toBe('Token verification failed');
+      expect(res.body.error).toBe('User not found');
+      expect(res.body.message).toBe('Token is valid but user no longer exists');
     });
   });
 

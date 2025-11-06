@@ -50,12 +50,16 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
     if (!process.env.GOOGLE_CLIENT_ID) {
       process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
     }
-  });
+  }, 60000); // 60 second timeout for MongoDB Memory Server startup
 
   // Tear down DB
   afterAll(async () => {
-    await mongoose.disconnect();
-    await mongo.stop();
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+    if (mongo) {
+      await mongo.stop();
+    }
   });
 
   // Fresh DB state before each test
@@ -179,14 +183,14 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
   describe('Auth Service Error Branches - Direct Service Tests', () => {
     beforeEach(async () => {
       // Ensure database is connected before each test in this describe block
-      if (mongoose.connection.readyState === 0) {
+      if (mongoose.connection.readyState === 0 && mongo) {
         await mongoose.connect(mongo.getUri());
       }
     });
 
     afterEach(async () => {
       // Ensure database is reconnected after each test
-      if (mongoose.connection.readyState === 0) {
+      if (mongoose.connection.readyState === 0 && mongo) {
         await mongoose.connect(mongo.getUri());
       }
     });
@@ -195,6 +199,9 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
       // Input: database operation that fails
       // Expected behavior: Error caught and re-thrown
       // Expected output: Error with message
+      if (!mongo) {
+        throw new Error('MongoDB Memory Server not initialized');
+      }
       const currentUri = mongo.getUri();
       
       // Disconnect database temporarily to trigger error
