@@ -1,10 +1,11 @@
 import express from 'express';
-import { authenticateToken } from './auth.middleware';;
+import mongoose from 'mongoose';
+
+import { asyncHandler } from './asyncHandler.util';
+import { authenticateToken } from './auth.middleware';
 import { messageModel } from './message.model';
 import { workspaceModel } from './workspace.model';
 import { createMessageSchema, getMessagesQuerySchema } from './message.types';
-import mongoose from 'mongoose';
-import { asyncHandler } from './asyncHandler.util';
 
 const router = express.Router();
 
