@@ -1,9 +1,8 @@
 import admin from 'firebase-admin';
-import * as path from 'path';
 import logger from './logger.util';
 
 // Initialize Firebase Admin
-const serviceAccount = require(path.resolve(__dirname, '../firebase-service-account.json'));
+const serviceAccount = JSON.parse(process.env.FIREBASE_JSON!);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)

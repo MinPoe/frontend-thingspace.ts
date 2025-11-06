@@ -16,6 +16,7 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   moduleFileExtensions: ['ts', 'js', 'json'],
+  setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
   setupFilesAfterEnv: [],
   globalSetup: undefined,
   globalTeardown: undefined,

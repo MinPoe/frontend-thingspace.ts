@@ -1,25 +1,6 @@
 /// <reference types="jest" />
-import admin from 'firebase-admin';
 import { notificationService } from '../notification.service';
-
-// Mock Firebase Admin before importing the service
-const mockSend = jest.fn();
-const mockMessaging = {
-  send: mockSend,
-};
-
-jest.mock('firebase-admin', () => {
-  return {
-    __esModule: true,
-    default: {
-      messaging: jest.fn(() => mockMessaging),
-      credential: {
-        cert: jest.fn(),
-      },
-      initializeApp: jest.fn(),
-    },
-  };
-});
+import { mockSend } from './setup';
 
 // Mock the logger to avoid console output in tests
 jest.mock('../logger.util', () => ({

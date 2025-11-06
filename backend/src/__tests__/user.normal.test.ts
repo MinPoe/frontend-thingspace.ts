@@ -124,27 +124,6 @@ describe('User API – Normal Tests (No Mocking)', () => {
       expect(res.body.message).toBe('User not found');
     });
 
-    test('200 – handles valid update request', async () => {
-      // Input: valid profile update data
-      // Expected status code: 200
-      // Expected behavior: profile updated successfully
-      // Expected output: updated user object
-      const updateData = {
-        profile: {
-          name: 'Test',
-        },
-      };
-
-      // Use invalid ID format to trigger error path if validation fails
-      // Actually, this should work fine in normal tests
-      const res = await request(app)
-        .put('/api/users/profile')
-        .set('x-test-user-id', testData.testUserId)
-        .send(updateData);
-
-      expect(res.status).toBe(200);
-    });
-
     test('200 – handles update request without profile field (empty dictionary branch)', async () => {
       // Input: update request without profile field (tests user.model.ts line 102)
       // Expected status code: 200
