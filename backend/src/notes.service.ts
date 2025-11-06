@@ -222,7 +222,7 @@ export class NoteService {
             throw new Error('Access denied: You are not a member of this workspace');
         }
 
-        const query: any = { 
+        const query: { workspaceId: string; noteType: string; tags?: { $in: string[] } } = { 
             workspaceId,
             noteType
         };

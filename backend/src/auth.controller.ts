@@ -17,7 +17,7 @@ export class AuthController {
     next: NextFunction
   ) {
     try {
-      const { idToken } = req.body;
+      const { idToken } = req.body as AuthenticateUserRequest;
 
       const data = await authService.signUpWithGoogle(idToken);
       const workspace_data = {
@@ -72,7 +72,7 @@ export class AuthController {
     next: NextFunction
   ) {
     try {
-      const { idToken } = req.body;
+      const { idToken } = req.body as AuthenticateUserRequest;
 
       const data = await authService.signInWithGoogle(idToken);
 
@@ -110,7 +110,7 @@ export class AuthController {
   // DEV ONLY - Creates a test user and returns token
   async devLogin(req: Request, res: Response, next: NextFunction) {
     try {
-      const email = req.body.email || 'test@example.com';
+      const email = (req.body.email as string | undefined) || 'test@example.com';
       
       const data = await authService.devLogin(email);
 

@@ -74,7 +74,7 @@ export class WorkspaceService {
     }
 
     async getWorkspacesForUser(userId: mongoose.Types.ObjectId, personalWorkspaceId?: mongoose.Types.ObjectId): Promise<Workspace[]> {
-        const query: any = {
+        const query: { members: mongoose.Types.ObjectId; _id?: { $ne: mongoose.Types.ObjectId } } = {
             members: userId
         };
         

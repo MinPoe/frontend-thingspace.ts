@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { workspaceService } from './workspace.service';
+import { CreateWorkspaceRequest, UpdateWorkspaceProfileRequest, UpdateWorkspacePictureRequest } from './workspace.types';
 
 export class WorkspaceController {
     async createWorkspace(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.user!._id;
 
-            const workspace = await workspaceService.createWorkspace(userId, req.body);
+            const workspace = await workspaceService.createWorkspace(userId, req.body as CreateWorkspaceRequest);
 
             res.status(201).json({
                 message: 'Workspace created successfully',
@@ -188,7 +189,7 @@ export class WorkspaceController {
             const requestingUserId = req.user!._id;
 
             const workspaceId = req.params.id;
-            const { userId } = req.body;
+            const { userId } = req.body as { userId?: string };
 
             if (!userId) {
                 res.status(400).json({ error: 'userId is required' });
@@ -328,7 +329,7 @@ export class WorkspaceController {
             const workspace = await workspaceService.updateWorkspaceProfile(
                 workspaceId, 
                 requestingUserId, 
-                req.body
+                req.body as UpdateWorkspaceProfileRequest
             );
 
             res.status(200).json({
@@ -362,7 +363,7 @@ export class WorkspaceController {
             const workspace = await workspaceService.updateWorkspacePicture(
                 workspaceId, 
                 requestingUserId, 
-                req.body.profilePicture
+                (req.body as UpdateWorkspacePictureRequest).profilePicture
             );
 
             res.status(200).json({

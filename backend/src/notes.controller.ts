@@ -82,8 +82,8 @@ export class NotesController {
     try {
       const userId = req.user!._id;
 
-      const noteId = req.params.id;
-      const { workspaceId } = req.body;
+      const noteId = req.params.id as string;
+      const { workspaceId } = req.body as { workspaceId?: string };
 
       if (!workspaceId) {
         res.status(400).json({ error: 'workspaceId is required' });
@@ -120,8 +120,8 @@ export class NotesController {
     try {
       const userId = req.user!._id;
   
-      const noteId = req.params.id;
-      const { workspaceId } = req.body;
+      const noteId = req.params.id as string;
+      const { workspaceId } = req.body as { workspaceId?: string };
   
       if (!workspaceId) {
         res.status(400).json({ error: 'workspaceId is required' });
