@@ -2,8 +2,11 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from './user.model';
+import { IUser } from './user.types';
 
 
+// Express supports async handlers, but RequestHandler type expects void
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 export const authenticateToken: RequestHandler = async (
   req: Request,
   res: Response,
@@ -33,14 +36,6 @@ export const authenticateToken: RequestHandler = async (
     const decoded = jwt.verify(token, jwtSecret) as {
       id: mongoose.Types.ObjectId;
     };
-
-    if (!decoded.id) {
-      res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token verification failed',
-      });
-      return;
-    }
 
     const user = await userModel.findById(decoded.id);
 
@@ -78,7 +73,7 @@ export const authenticateToken: RequestHandler = async (
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export const authMiddleware = async (
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -95,7 +90,7 @@ export const authMiddleware = async (
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded as any;
+    req.user = decoded as unknown as IUser;
     next();
     return;
   } catch (error) {

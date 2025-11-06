@@ -8,7 +8,9 @@ import { asyncHandler } from './asyncHandler.util';
 const router = Router();
 const userController = new UserController();
 
-router.get('/profile', userController.getProfile);
+router.get('/profile', (req, res, next) => {
+  userController.getProfile(req, res, next);
+});
 
 router.put(
   '/profile',

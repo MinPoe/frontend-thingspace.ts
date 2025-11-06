@@ -1,4 +1,5 @@
 import { Express, Request } from 'express';
+import crypto from 'crypto';
 import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
@@ -17,7 +18,10 @@ const storage = multer.diskStorage({
     cb(null, IMAGES_DIR);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    // Use crypto for secure random generation instead of Math.random()
+    // eslint-disable-next-line security/detect-non-literal-crypto
+    const randomBytes = crypto.randomBytes(4).readUInt32BE(0);
+    const uniqueSuffix = Date.now() + '-' + randomBytes;
     cb(null, `${uniqueSuffix}${path.extname(file.originalname as string)}`);
   },
 });

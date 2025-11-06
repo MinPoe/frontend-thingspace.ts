@@ -5,7 +5,7 @@ export interface INoteDocument extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   workspaceId: string;
-  fields: any[];
+  fields: unknown[];
   noteType: NoteType;
   tags: string[];
   vectorData: number[];

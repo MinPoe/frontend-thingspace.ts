@@ -102,7 +102,7 @@ export class NotesController {
         return;
       }
 
-      const noteId = req.params.id as string;
+      const noteId = req.params.id;
       const { workspaceId } = req.body as { workspaceId?: string };
 
       if (!workspaceId) {
@@ -144,7 +144,7 @@ export class NotesController {
         return;
       }
   
-      const noteId = req.params.id as string;
+      const noteId = req.params.id;
       const { workspaceId } = req.body as { workspaceId?: string };
   
       if (!workspaceId) {

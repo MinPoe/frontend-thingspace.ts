@@ -3,6 +3,8 @@ import path from 'path';
 
 import { IMAGES_DIR } from './constants';
 
+// Using static methods only - class structure for organization
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class MediaService {
   /**
    * Validates that a file path is within the IMAGES_DIR directory
@@ -14,7 +16,7 @@ export class MediaService {
     return resolvedPath.startsWith(IMAGES_DIR + path.sep) || resolvedPath === IMAGES_DIR;
   }
 
-  static async saveImage(filePath: string, userId: string): Promise<string> {
+  static saveImage(filePath: string, userId: string): Promise<string> {
     try {
       // Validate the source file path is safe (from multer, should be in temp directory)
       const resolvedFilePath = path.resolve(filePath);
@@ -32,18 +34,18 @@ export class MediaService {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.renameSync(resolvedFilePath, resolvedNewPath);
 
-      return resolvedNewPath.split(path.sep).join('/');
+      return Promise.resolve(resolvedNewPath.split(path.sep).join('/'));
     } catch (error) {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       if (fs.existsSync(filePath)) {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         fs.unlinkSync(filePath);
       }
-      throw new Error(`Failed to save profile picture: ${error instanceof Error ? error.message : String(error)}`);
+      return Promise.reject(new Error(`Failed to save profile picture: ${error instanceof Error ? error.message : String(error)}`));
     }
   }
 
-  static async deleteImage(url: string): Promise<void> {
+  static deleteImage(url: string): Promise<void> {
     try {
       // Resolve the URL to a file path and validate it's within IMAGES_DIR
       const normalizedUrl = url.replace(/\\/g, '/');
@@ -52,7 +54,7 @@ export class MediaService {
 
       // Validate path is within IMAGES_DIR before deletion
       if (!this.validatePath(filePath)) {
-        return; // Silently skip if path is invalid (security)
+        return Promise.resolve(); // Silently skip if path is invalid (security)
       }
 
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -60,8 +62,10 @@ export class MediaService {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         fs.unlinkSync(filePath);
       }
+      return Promise.resolve();
     } catch (error) {
       console.error('Failed to delete old profile picture:', error);
+      return Promise.resolve();
     }
   }
 
