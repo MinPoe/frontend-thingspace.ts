@@ -15,6 +15,19 @@ jest.mock('../auth.middleware', () => {
     ...originalModule,
     authenticateToken: (req: any, res: any, next: any) => {
       const mockUserId = req.headers['x-test-user-id'] as string;
+      const noUserId = req.headers['x-no-user-id'] === 'true';
+      
+      if (noUserId) {
+        // Set req.user but without _id to test route handler's userId check
+        req.user = {
+          googleId: 'test-google-id',
+          email: 'test@example.com',
+          profile: { name: 'Test User', imagePath: '', description: '' },
+          personalWorkspaceId: null,
+        };
+        return next();
+      }
+      
       if (mockUserId) {
         req.user = {
           _id: new mongoose.Types.ObjectId(mockUserId),
@@ -183,6 +196,20 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Not a member of this workspace');
     });
+
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests line 18 in message.routes.ts
+      const res = await request(app)
+        .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
   });
 
   describe('POST /api/messages/workspace/:workspaceId - Create Message', () => {
@@ -255,6 +282,21 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Not a member of this workspace');
+    });
+
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests line 64 in message.routes.ts
+      const res = await request(app)
+        .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
+        .set('x-no-user-id', 'true')
+        .send({ content: 'Test' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
     });
   });
 
@@ -344,6 +386,26 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Only workspace owner can delete messages');
+    });
+
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests line 109 in message.routes.ts
+      const message = await messageModel.create({
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        authorId: new mongoose.Types.ObjectId(testData.testUserId),
+        content: 'Test',
+      });
+
+      const res = await request(app)
+        .delete(`/api/messages/${message._id}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
     });
   });
 });

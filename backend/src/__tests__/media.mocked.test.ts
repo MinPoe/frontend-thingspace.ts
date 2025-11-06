@@ -146,6 +146,33 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       testData = await setupTestDatabase();
     });
 
+    test('saveImage throws error when path validation fails', async () => {
+      // Input: file path that fails validation (line 30-31)
+      // Expected behavior: validatePath returns false, error is thrown
+      // Expected output: Error "Invalid file path"
+      const testFile = path.resolve(IMAGES_DIR, 'test-validation.png');
+      fs.writeFileSync(testFile, Buffer.from('test data'));
+
+      // Mock validatePath to return false to trigger the validation error
+      const validatePathSpy = jest.spyOn(MediaService as any, 'validatePath').mockReturnValue(false);
+
+      try {
+        await expect(
+          MediaService.saveImage(testFile, testData.testUserId)
+        ).rejects.toThrow('Invalid file path');
+
+        // Verify validatePath was called
+        expect(validatePathSpy).toHaveBeenCalled();
+      } finally {
+        // Restore original function
+        validatePathSpy.mockRestore();
+        // Clean up if file still exists
+        if (fs.existsSync(testFile)) {
+          fs.unlinkSync(testFile);
+        }
+      }
+    });
+
     test('saveImage cleans up file when rename fails and file exists', async () => {
       // Input: file that exists but rename fails
       // Expected behavior: File is deleted if it exists when error occurs (line 18: fs.unlinkSync)

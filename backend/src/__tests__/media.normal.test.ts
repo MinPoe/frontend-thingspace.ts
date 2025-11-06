@@ -139,6 +139,42 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       }
     });
 
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request with file but req.user is not set
+      // Expected status code: 401
+      // Expected behavior: returns error when user is not authenticated
+      // Expected output: error message "User not authenticated"
+      // Create a custom app without auth middleware to test the controller's user check
+      const express = require('express');
+      const customApp = express();
+      customApp.use(express.json());
+      
+      const MediaController = require('../media.controller').MediaController;
+      const mediaController = new MediaController();
+      const { upload } = require('../storage');
+      
+      // Add route without auth middleware, so req.user won't be set
+      customApp.post('/api/media/upload', upload.single('media'), mediaController.uploadImage.bind(mediaController));
+
+      const testImagePath = path.resolve(IMAGES_DIR, 'test-no-auth.png');
+      if (!fs.existsSync(IMAGES_DIR)) {
+        fs.mkdirSync(IMAGES_DIR, { recursive: true });
+      }
+      fs.writeFileSync(testImagePath, Buffer.from('fake-image-data'));
+
+      const res = await request(customApp)
+        .post('/api/media/upload')
+        .attach('media', testImagePath);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('User not authenticated');
+
+      // Clean up
+      if (fs.existsSync(testImagePath)) {
+        fs.unlinkSync(testImagePath);
+      }
+    });
+
   });
 
   describe('Media Service - Direct Service Tests', () => {
@@ -203,6 +239,29 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         const url = relativePath.replace(/\\/g, '/');
 
         await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
+      });
+
+      test('deleteImage handles URL starting with slash', async () => {
+        // Input: URL that starts with '/' (tests line 52: normalizedUrl.startsWith('/') branch)
+        // Expected behavior: URL path has leading slash removed before resolution
+        // Expected output: File is deleted if it exists
+        const testFile = path.resolve(IMAGES_DIR, 'test-slash.png');
+        if (!fs.existsSync(IMAGES_DIR)) {
+          fs.mkdirSync(IMAGES_DIR, { recursive: true });
+        }
+        fs.writeFileSync(testFile, Buffer.from('test data'));
+        
+        // Create URL with leading slash
+        const relativePath = path.relative(process.cwd(), testFile);
+        const url = '/' + relativePath.replace(/\\/g, '/');
+        
+        // Verify the file exists before deletion
+        expect(fs.existsSync(testFile)).toBe(true);
+        
+        await MediaService.deleteImage(url);
+        
+        // File should be deleted
+        expect(fs.existsSync(testFile)).toBe(false);
       });
     });
 

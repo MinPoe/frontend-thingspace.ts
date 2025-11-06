@@ -153,6 +153,53 @@ describe('Error Handler Middleware', () => {
       
       loggerErrorSpy.mockRestore();
     });
+
+    test('500 – calls next when error is not an instance of Error', async () => {
+      // Input: route handler that passes non-Error value to next
+      // Expected status code: handled by subsequent error handler
+      // Expected behavior: error is logged and next is called with the non-Error value
+      const app = express();
+      app.use(express.json());
+
+      const logger = require('../logger.util').default;
+      const loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+
+      // Track if next error handler was called
+      let nextErrorHandlerCalled = false;
+      let nextErrorHandlerValue: unknown = null;
+
+      app.get('/api/non-error', (req, res, next) => {
+        next('String error');
+      });
+      // errorHandler should be called first
+      app.use(errorHandler);
+      // This error handler should catch the non-Error case after errorHandler calls next
+      app.use((error: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        nextErrorHandlerCalled = true;
+        nextErrorHandlerValue = error;
+        // Handle the non-Error case by returning a response
+        return res.status(500).json({
+          message: 'Internal server error',
+        });
+      });
+
+      const res = await request(app)
+        .get('/api/non-error')
+        .expect(500);
+
+      // Verify error was logged by errorHandler
+      expect(loggerErrorSpy).toHaveBeenCalledWith('Error:', 'String error');
+      
+      // Verify next error handler was called with the non-Error value
+      expect(nextErrorHandlerCalled).toBe(true);
+      expect(nextErrorHandlerValue).toBe('String error');
+
+      expect(res.body).toEqual({
+        message: 'Internal server error',
+      });
+      
+      loggerErrorSpy.mockRestore();
+    });
   });
 });
 

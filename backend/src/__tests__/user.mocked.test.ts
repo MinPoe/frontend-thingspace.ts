@@ -45,7 +45,7 @@ describe('User API – Mocked Tests', () => {
     jest.clearAllMocks();
   });
 
-  describe('PUT /api/users/profile - Update Profile, with mocks', () => {
+  describe('PUT /api/user/profile - Update Profile, with mocks', () => {
     test('500 – update profile handles service error', async () => {
       // Mocked behavior: userModel.update throws database connection error
       // Input: profile update data
@@ -55,7 +55,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'update').mockRejectedValueOnce(new Error('Database connection failed'));
 
       const res = await request(app)
-        .put('/api/users/profile')
+        .put('/api/user/profile')
         .set('x-test-user-id', testData.testUserId)
         .send({ profile: { name: 'Test' } });
 
@@ -72,7 +72,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'update').mockRejectedValueOnce('String error');
 
       const res = await request(app)
-        .put('/api/users/profile')
+        .put('/api/user/profile')
         .set('x-test-user-id', testData.testUserId)
         .send({ profile: { name: 'Test' } });
 
@@ -92,7 +92,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'update').mockRejectedValueOnce(errorWithoutMessage);
 
       const res = await request(app)
-        .put('/api/users/profile')
+        .put('/api/user/profile')
         .set('x-test-user-id', testData.testUserId)
         .send({ profile: { name: 'Test' } });
 
@@ -101,7 +101,7 @@ describe('User API – Mocked Tests', () => {
     });
   });
 
-  describe('DELETE /api/users/profile - Delete Profile, with mocks', () => {
+  describe('DELETE /api/user/profile - Delete Profile, with mocks', () => {
     test('500 – delete profile handles service error', async () => {
       // Mocked behavior: workspaceModel.find throws database error
       // Input: authenticated user deletion request
@@ -111,7 +111,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(workspaceModel, 'find').mockRejectedValueOnce(new Error('Database error'));
 
       const res = await request(app)
-        .delete('/api/users/profile')
+        .delete('/api/user/profile')
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBe(500);
@@ -127,7 +127,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(workspaceModel, 'find').mockRejectedValueOnce('String error');
 
       const res = await request(app)
-        .delete('/api/users/profile')
+        .delete('/api/user/profile')
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
@@ -144,7 +144,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(workspaceModel, 'find').mockRejectedValueOnce(errorWithoutMessage);
 
       const res = await request(app)
-        .delete('/api/users/profile')
+        .delete('/api/user/profile')
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBe(500);
@@ -152,7 +152,7 @@ describe('User API – Mocked Tests', () => {
     });
   });
 
-  describe('POST /api/users/fcm-token - Update FCM Token, with mocks', () => {
+  describe('POST /api/user/fcm-token - Update FCM Token, with mocks', () => {
     test('400 – update FCM token handles validation error', async () => {
       // Mocked behavior: userModel.updateFcmToken throws validation error
       // Input: fcmToken in request body
@@ -162,7 +162,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'updateFcmToken').mockRejectedValueOnce(new Error('Invalid update data'));
 
       const res = await request(app)
-        .post('/api/users/fcm-token')
+        .post('/api/user/fcm-token')
         .set('x-test-user-id', testData.testUserId)
         .send({ fcmToken: 'test-token' });
 
@@ -179,7 +179,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'updateFcmToken').mockRejectedValueOnce('String error');
 
       const res = await request(app)
-        .post('/api/users/fcm-token')
+        .post('/api/user/fcm-token')
         .set('x-test-user-id', testData.testUserId)
         .send({ fcmToken: 'test-token' });
 
@@ -197,7 +197,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'updateFcmToken').mockRejectedValueOnce(errorWithoutMessage);
 
       const res = await request(app)
-        .post('/api/users/fcm-token')
+        .post('/api/user/fcm-token')
         .set('x-test-user-id', testData.testUserId)
         .send({ fcmToken: 'test-token' });
 
@@ -206,7 +206,7 @@ describe('User API – Mocked Tests', () => {
     });
   });
 
-  describe('GET /api/users/:id - Get User By ID, with mocks', () => {
+  describe('GET /api/user/:id - Get User By ID, with mocks', () => {
     test('500 – get user by ID handles service error', async () => {
       // Mocked behavior: userModel.findById throws database error
       // Input: user ID in URL params
@@ -216,7 +216,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findById').mockRejectedValueOnce(new Error('Database error'));
 
       const res = await request(app)
-        .get(`/api/users/${testData.testUserId}`)
+        .get(`/api/user/${testData.testUserId}`)
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBe(500);
@@ -232,7 +232,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findById').mockRejectedValueOnce('String error');
 
       const res = await request(app)
-        .get(`/api/users/${testData.testUserId}`)
+        .get(`/api/user/${testData.testUserId}`)
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
@@ -249,7 +249,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findById').mockRejectedValueOnce(errorWithoutMessage);
 
       const res = await request(app)
-        .get(`/api/users/${testData.testUserId}`)
+        .get(`/api/user/${testData.testUserId}`)
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBe(500);
@@ -257,7 +257,7 @@ describe('User API – Mocked Tests', () => {
     });
   });
 
-  describe('GET /api/users/email/:email - Get User By Email, with mocks', () => {
+  describe('GET /api/user/email/:email - Get User By Email, with mocks', () => {
     test('500 – get user by email handles service error', async () => {
       // Mocked behavior: userModel.findByEmail throws database error
       // Input: email in URL params
@@ -267,7 +267,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findByEmail').mockRejectedValueOnce(new Error('Database error'));
 
       const res = await request(app)
-        .get('/api/users/email/testuser1@example.com')
+        .get('/api/user/email/testuser1@example.com')
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBe(500);
@@ -283,7 +283,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findByEmail').mockRejectedValueOnce('String error');
 
       const res = await request(app)
-        .get('/api/users/email/testuser1@example.com')
+        .get('/api/user/email/testuser1@example.com')
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
@@ -300,7 +300,7 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findByEmail').mockRejectedValueOnce(errorWithoutMessage);
 
       const res = await request(app)
-        .get('/api/users/email/testuser1@example.com')
+        .get('/api/user/email/testuser1@example.com')
         .set('x-test-user-id', testData.testUserId);
 
       expect(res.status).toBe(500);
@@ -348,12 +348,58 @@ describe('User API – Mocked Tests', () => {
       expect(res.body.error).toBe('Database error');
     });
 
+    test('userModel.findByIds throws error on database failure (covers lines 146-147)', async () => {
+      // Mocked behavior: Database connection error triggers catch block
+      // Input: array of user IDs
+      // Expected behavior: error is caught and rethrown with message
+      // Expected output: Error with message "Failed to find users"
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Temporarily disconnect mongoose to trigger a database error
+      const originalReadyState = mongoose.connection.readyState;
+      await mongoose.disconnect();
+
+      const userIds = [
+        new mongoose.Types.ObjectId(testData.testUserId),
+      ];
+
+      await expect(userModel.findByIds(userIds)).rejects.toThrow('Failed to find users');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error finding users by IDs:', expect.any(Error));
+
+      // Reconnect mongoose
+      if (originalReadyState === 1) {
+        await mongoose.connect(mongo.getUri());
+      }
+      consoleErrorSpy.mockRestore();
+    });
+
     test('userModel.findByGoogleId returns null when user not found (covers !user branch)', async () => {
       // Input: googleId that doesn't exist
       // Expected behavior: returns null
       // Expected output: null
       const result = await userModel.findByGoogleId('non-existent-google-id');
       expect(result).toBeNull();
+    });
+
+    test('userModel.findByGoogleId throws error on database failure (covers lines 161-162)', async () => {
+      // Mocked behavior: Database connection error triggers catch block
+      // Input: googleId string
+      // Expected behavior: error is caught and rethrown with message
+      // Expected output: Error with message "Failed to find user"
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Temporarily disconnect mongoose to trigger a database error
+      const originalReadyState = mongoose.connection.readyState;
+      await mongoose.disconnect();
+
+      await expect(userModel.findByGoogleId('test-google-id')).rejects.toThrow('Failed to find user');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error finding user by Google ID:', expect.any(Error));
+
+      // Reconnect mongoose
+      if (originalReadyState === 1) {
+        await mongoose.connect(mongo.getUri());
+      }
+      consoleErrorSpy.mockRestore();
     });
 
     test('userModel.findByGoogleId returns user when found', async () => {
@@ -377,6 +423,102 @@ describe('User API – Mocked Tests', () => {
       expect(result).toHaveLength(2);
       expect(result[0]._id.toString()).toBe(testData.testUserId);
       expect(result[1]._id.toString()).toBe(testData.testUser2Id);
+    });
+
+    test('userModel.update throws error when updateProfileSchema.parse fails (covers lines 113-114)', async () => {
+      // Mocked behavior: updateProfileSchema.parse throws validation error
+      // Input: invalid updateProfileReq
+      // Expected behavior: error is caught and rethrown with message
+      // Expected output: Error with message "Failed to update user"
+      const loggerErrorSpy = jest.spyOn(require('../logger.util').default, 'error').mockImplementation(() => {});
+      
+      // Mock updateProfileSchema.parse using jest.spyOn
+      const { updateProfileSchema } = require('../user.types');
+      const parseSpy = jest.spyOn(updateProfileSchema, 'parse').mockImplementation(() => {
+        throw new Error('Validation error');
+      });
+
+      await expect(
+        userModel.update(new mongoose.Types.ObjectId(testData.testUserId), {
+          profile: { name: 'Test', description: 'Test' },
+        })
+      ).rejects.toThrow('Failed to update user');
+      expect(loggerErrorSpy).toHaveBeenCalledWith('Error updating user:', expect.any(Error));
+
+      parseSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
+    });
+
+    test('userModel.delete throws error when findByIdAndDelete fails (covers lines 122-123)', async () => {
+      // Mocked behavior: this.user.findByIdAndDelete throws database error
+      // Input: userId
+      // Expected behavior: error is caught and rethrown with message
+      // Expected output: Error with message "Failed to delete user"
+      const loggerErrorSpy = jest.spyOn(require('../logger.util').default, 'error').mockImplementation(() => {});
+      
+      // Access the internal user model and mock its findByIdAndDelete method
+      const internalUserModel = (userModel as any).user;
+      const originalFindByIdAndDelete = internalUserModel.findByIdAndDelete;
+      
+      // Mock the findByIdAndDelete method using jest.fn() to properly reject
+      const mockFindByIdAndDelete = jest.fn();
+      mockFindByIdAndDelete.mockRejectedValue(new Error('Database error'));
+      internalUserModel.findByIdAndDelete = mockFindByIdAndDelete;
+
+      await expect(userModel.delete(new mongoose.Types.ObjectId(testData.testUserId))).rejects.toThrow('Failed to delete user');
+      expect(loggerErrorSpy).toHaveBeenCalledWith('Error deleting user:', expect.any(Error));
+
+      // Restore original method
+      internalUserModel.findByIdAndDelete = originalFindByIdAndDelete;
+      loggerErrorSpy.mockRestore();
+    });
+
+    test('userModel.findById throws error when findOne fails (covers lines 137-138)', async () => {
+      // Mocked behavior: this.user.findOne throws database error
+      // Input: userId
+      // Expected behavior: error is caught and rethrown with message
+      // Expected output: Error with message "Failed to find user"
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Access the internal user model and mock its findOne method
+      const internalUserModel = (userModel as any).user;
+      const originalFindOne = internalUserModel.findOne;
+      
+      // Mock the findOne method using jest.fn() to properly reject
+      const mockFindOne = jest.fn();
+      mockFindOne.mockRejectedValue(new Error('Database error'));
+      internalUserModel.findOne = mockFindOne;
+
+      await expect(userModel.findById(new mongoose.Types.ObjectId(testData.testUserId))).rejects.toThrow('Failed to find user');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error finding user by Google ID:', expect.any(Error));
+
+      // Restore original method
+      internalUserModel.findOne = originalFindOne;
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('userModel.findByEmail throws error when findOne fails (covers lines 171-172)', async () => {
+      // Mocked behavior: this.user.findOne throws database error
+      // Input: email string
+      // Expected behavior: error is caught and rethrown with message
+      // Expected output: Error with message "Failed to find user"
+      const loggerErrorSpy = jest.spyOn(require('../logger.util').default, 'error').mockImplementation(() => {});
+      
+      // Access the internal user model and mock its findOne method
+      const internalUserModel = (userModel as any).user;
+      const originalFindOne = internalUserModel.findOne;
+      
+      // Mock the findOne method using jest.fn() to properly reject
+      const mockFindOne = jest.fn();
+      mockFindOne.mockRejectedValue(new Error('Database error'));
+      internalUserModel.findOne = mockFindOne;
+
+      await expect(userModel.findByEmail('test@example.com')).rejects.toThrow('Failed to find user');
+      expect(loggerErrorSpy).toHaveBeenCalledWith('Error finding user by email:', expect.any(Error));
+
+      // Restore original method
+      internalUserModel.findOne = originalFindOne;
+      loggerErrorSpy.mockRestore();
     });
   });
 });

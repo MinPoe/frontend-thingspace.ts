@@ -8,9 +8,7 @@ import { asyncHandler } from './asyncHandler.util';
 const router = Router();
 const userController = new UserController();
 
-router.get('/profile', (req, res, next) => {
-  userController.getProfile(req, res, next);
-});
+router.get('/profile', userController.getProfile.bind(userController));
 
 router.put(
   '/profile',
@@ -26,7 +24,8 @@ router.post(
   asyncHandler(userController.updateFcmToken.bind(userController))
 );
 
-router.get('/:id', asyncHandler(userController.getUserById.bind(userController)));
+// Put specific routes before generic :id route to avoid route matching conflicts
 router.get('/email/:email', asyncHandler(userController.getUserByEmail.bind(userController)));
+router.get('/:id', asyncHandler(userController.getUserById.bind(userController)));
 
 export default router;

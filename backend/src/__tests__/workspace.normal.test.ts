@@ -39,6 +39,21 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/workspaces - Create Workspace', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 10-11 in workspace.controller.ts
+      const res = await request(app)
+        .post('/api/workspaces')
+        .set('x-no-user-id', 'true')
+        .send({ name: 'Test Workspace' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('201 – creates a workspace', async () => {
       // Input: workspaceData with name, optional description and profilePicture
       // Expected status code: 201
@@ -99,6 +114,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('GET /api/workspaces/personal - Get Personal Workspace', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 38-39 in workspace.controller.ts
+      const res = await request(app)
+        .get('/api/workspaces/personal')
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – retrieves personal workspace successfully', async () => {
       // Input: userId with personal workspace
       // Expected status code: 200
@@ -181,6 +210,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('GET /api/workspaces/user - Get Workspaces For User', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 72-73 in workspace.controller.ts
+      const res = await request(app)
+        .get('/api/workspaces/user')
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – retrieves all workspaces for user', async () => {
       // Input: userId in header
       // Expected status code: 200
@@ -229,6 +272,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('GET /api/workspaces/:id - Get Workspace', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 92-93 in workspace.controller.ts
+      const res = await request(app)
+        .get(`/api/workspaces/${testData.testWorkspaceId}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – retrieves workspace when user is a member', async () => {
       // Input: workspaceId in URL
       // Expected status code: 200
@@ -273,6 +330,19 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('GET /api/workspaces/:id/members - Get Workspace Members', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      const res = await request(app)
+        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – retrieves workspace members', async () => {
       // Input: workspaceId in URL
       // Expected status code: 200
@@ -304,6 +374,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('GET /api/workspaces/:id/tags - Get All Tags', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 159-160 in workspace.controller.ts
+      const res = await request(app)
+        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     beforeEach(async () => {
       // Create notes with tags
       await noteModel.create({
@@ -455,6 +539,21 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/workspaces/:id/members - Invite Member', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 215-216 in workspace.controller.ts
+      const res = await request(app)
+        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
+        .set('x-no-user-id', 'true')
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – adds member to workspace', async () => {
       // Input: workspaceId in URL, userId in body
       // Expected status code: 200
@@ -669,6 +768,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/workspaces/:id/leave - Leave Workspace', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 275-276 in workspace.controller.ts
+      const res = await request(app)
+        .post(`/api/workspaces/${testData.testWorkspaceId}/leave`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     beforeEach(async () => {
       // Add testUser2 as a member first
       await workspaceModel.findByIdAndUpdate(testData.testWorkspaceId, {
@@ -767,6 +880,21 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('PUT /api/workspaces/:id - Update Workspace Profile', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 364-365 in workspace.controller.ts
+      const res = await request(app)
+        .put(`/api/workspaces/${testData.testWorkspaceId}`)
+        .set('x-no-user-id', 'true')
+        .send({ name: 'Updated Name' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – updates workspace profile', async () => {
       // Input: workspaceId in URL, updateData in body
       // Expected status code: 200
@@ -828,6 +956,21 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('PUT /api/workspaces/:id/picture - Update Workspace Picture', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 401-402 in workspace.controller.ts
+      const res = await request(app)
+        .put(`/api/workspaces/${testData.testWorkspaceId}/picture`)
+        .set('x-no-user-id', 'true')
+        .send({ profilePicture: 'https://example.com/image.jpg' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – updates workspace picture', async () => {
       // Input: workspaceId in URL, profilePicture in body
       // Expected status code: 200
@@ -886,6 +1029,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('DELETE /api/workspaces/:id/members/:userId - Ban Member', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 317-318 in workspace.controller.ts
+      const res = await request(app)
+        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     beforeEach(async () => {
       // Add testUser2 as a member first
       await workspaceModel.findByIdAndUpdate(testData.testWorkspaceId, {
@@ -1043,6 +1200,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('DELETE /api/workspaces/:id - Delete Workspace', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 439-440 in workspace.controller.ts
+      const res = await request(app)
+        .delete(`/api/workspaces/${testData.testWorkspaceId}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – deletes workspace and all notes', async () => {
       // Input: workspaceId in URL
       // Expected status code: 200
@@ -1135,6 +1306,20 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('GET /api/workspaces/:id/poll - Poll For New Messages', () => {
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request without user authentication
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 476-477 in workspace.controller.ts
+      const res = await request(app)
+        .get(`/api/workspaces/${testData.testWorkspaceId}/poll`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – checks for new messages', async () => {
       // Input: workspaceId in URL
       // Expected status code: 200

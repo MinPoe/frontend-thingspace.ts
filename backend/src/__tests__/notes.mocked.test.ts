@@ -538,6 +538,47 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect([201, 500]).toContain(res.status);
     });
 
+    test('OpenAI embeddings error is caught and logged (line 43)', async () => {
+      // Mocked behavior: OpenAI embeddings.create throws error
+      // Input: noteData with fields that trigger OpenAI embeddings
+      // Expected status code: 201
+      // Expected behavior: error is caught, logged (line 43), and note created with empty vector
+      // Expected output: note created successfully
+      // This tests line 43 in notes.service.ts (console.error for embeddings failure)
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Reset the client cache and mock getClient to return a client that throws
+      (noteService as any).client = null;
+      
+      const mockClient = {
+        embeddings: {
+          create: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
+        },
+      };
+      
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
+
+      const res = await request(app)
+        .post('/api/notes')
+        .set('x-test-user-id', testData.testUserId)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['openai-error-log-test'],
+          fields: [
+            { fieldType: 'title', content: 'OpenAI Error Log Test', _id: '1' },
+            { fieldType: 'textbox', content: 'This triggers embeddings', _id: '2' },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.note).toBeDefined();
+      // Verify error was logged (line 43)
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to generate embeddings (continuing with empty vector):', expect.any(Error));
+      
+      consoleErrorSpy.mockRestore();
+    });
+
     test('404 – findOneAndUpdate returns null during share (note deleted mid-request)', async () => {
       // Mocked behavior: noteModel.findOneAndUpdate returns null (note deleted during request)
       // Input: noteId in URL, workspaceId in body
