@@ -95,11 +95,11 @@ open class DisplayViewModel @Inject constructor(
 
     protected open suspend fun searchResults(){
         val allTagsSelected = navigationStateManager.state.getAllTagsSelected()
-        val tags = if (allTagsSelected) {
-            emptyList() // Pass empty list when "All" is selected to not filter by tags
-        } else {
-            navigationStateManager.state.getSelectedTags()
-        }
+        val tags = navigationStateManager.state.getSelectedTags()//if (allTagsSelected) {
+//            emptyList() // Pass empty list when "All" is selected to not filter by tags
+//        } else {
+//            navigationStateManager.state.getSelectedTags()
+//        }
 
         val noteSearchResult = noteRepository.findNotes(
             workspaceId = navigationStateManager.state.getWorkspaceId(),

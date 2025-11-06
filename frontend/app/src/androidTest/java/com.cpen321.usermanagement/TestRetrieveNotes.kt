@@ -42,7 +42,7 @@ import java.lang.Thread.sleep
 @HiltAndroidTest
 class TestRetrieveNotes {
     companion object{
-        const val ACCT_NAME:String = "Marricc Ammerk"
+        const val ACCT_NAME:String = "Thing4G"
         const val TAG1:String = "tag1"
         const val TAG2:String = "tag2"
         const val TAG3:String = "tag3"
@@ -89,7 +89,8 @@ class TestRetrieveNotes {
         val bounds1 = composeRule.onNodeWithText(first).fetchSemanticsNode().boundsInRoot
         for (item in other){
             val boundsO = composeRule.onNodeWithText(item).fetchSemanticsNode().boundsInRoot
-            if (bounds1.bottom<boundsO.top) {
+            //the android coordinate is downwards positive, so this means if first is not first
+            if (bounds1.bottom>boundsO.top) {
                 Log.d("TEST RETRIEVE NOTES", "${bounds1.bottom},${boundsO.top}")
                 assert(false)
             }
@@ -126,7 +127,9 @@ class TestRetrieveNotes {
         composeRule.onNodeWithTag(searchTextboxString).performTextInput(QUERY)
         composeRule.onNodeWithTag(searchButtonString).performClick()
         waitForSearch(searchButtonString)
-        assessOrder(DISPLAY1, listOf(DISPLAY2, DISPLAY3, DISPLAY4))
+        //the search results should be '3' first most similar to '1' according to the API
+        //Of course, one would have to adjust this if one is to use other inputs for notes
+        assessOrder(DISPLAY3, listOf(DISPLAY1, DISPLAY2, DISPLAY4))
 
         Log.d("TEST RETRIEVE NOTES", "Testing Filter - All Checkbox")
         composeRule.onNodeWithTag(filterIcString).performClick()
@@ -160,6 +163,6 @@ class TestRetrieveNotes {
         composeRule.onNodeWithText(DISPLAY2).assertIsNotDisplayed()
         composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY4).assertIsDisplayed()
-        assessOrder(DISPLAY1, listOf(DISPLAY3, DISPLAY4))
+        assessOrder(DISPLAY3, listOf(DISPLAY1, DISPLAY4))
     }
 }
