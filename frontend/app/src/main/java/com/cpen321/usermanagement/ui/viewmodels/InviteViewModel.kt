@@ -40,7 +40,7 @@ class InviteViewModel@Inject constructor(
 
     fun onInviteClick(typedEmail: String){
         setIsLoading(true)
-        _uiState.value = _uiState.value.copy(typedEmail = typedEmail)
+        _uiState.value = _uiState.value.copy(typedEmail = typedEmail, successMessage = null, errorMessage = null)
         viewModelScope.launch {
             val profileRequest = profileRepository.getProfileByEmail(_uiState.value.typedEmail)
             if (profileRequest.isSuccess){
@@ -86,12 +86,8 @@ class InviteViewModel@Inject constructor(
         setIsLoading(false)
     }
 
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
-    }
-
-    fun clearSuccessMessage() {
-        _uiState.value = _uiState.value.copy(successMessage = null)
+    fun clearMessage(){
+        _uiState.value = _uiState.value.copy(errorMessage = null, successMessage = null)
     }
 
     fun setIsLoading(isLoading:Boolean){

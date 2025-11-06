@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
@@ -54,7 +55,8 @@ fun SearchBar(
                 placeholder = { Text(stringResource(R.string.search_placeholder)) },
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = spacing.small),
+                    .padding(end = spacing.small)
+                    .testTag(stringResource(R.string.search_textbox)),
                 singleLine = true,
                 readOnly = false,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -70,7 +72,7 @@ fun SearchBar(
                 .fillMaxWidth()
                 .padding(top = spacing.medium)
         ) {
-            Button(onClick = onSearchClick) {
+            Button(onClick = onSearchClick, modifier = Modifier.testTag(stringResource(R.string.search_button))) {
                 Text(text = stringResource(R.string.search))
             }
         }
@@ -87,7 +89,7 @@ private fun FilterActionButton(
 
     IconButton(
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
+        modifier = modifier.size(spacing.extraLarge2).testTag(stringResource(R.string.filter))
     ) {
         FilterIcon()
     }
@@ -95,6 +97,6 @@ private fun FilterActionButton(
 @Composable
 private fun FilterIcon() {
     Icon(
-        name = R.drawable.filter,
+        name = R.drawable.filter
     )
 }

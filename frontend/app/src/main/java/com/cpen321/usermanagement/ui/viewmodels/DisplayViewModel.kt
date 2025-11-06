@@ -94,15 +94,20 @@ open class DisplayViewModel @Inject constructor(
     }
 
     protected open suspend fun searchResults(){
-        val tags = navigationStateManager.state.getSelectedTags()
+        val allTagsSelected = navigationStateManager.state.getAllTagsSelected()
+        val tags = navigationStateManager.state.getSelectedTags()//if (allTagsSelected) {
+//            emptyList() // Pass empty list when "All" is selected to not filter by tags
+//        } else {
+//            navigationStateManager.state.getSelectedTags()
+//        }
 
-        val noteSearchResult = noteRepository.findNotes( //TODO: Pagination later
+        val noteSearchResult = noteRepository.findNotes(
             workspaceId = navigationStateManager.state.getWorkspaceId(),
             noteType = navigationStateManager.state.getNoteType(),
             searchQuery = navigationStateManager.state.getSearchQuery(),
             tagsToInclude = tags,
             notesPerPage = _notesPerPage
-            )
+        )
         if (noteSearchResult.isSuccess){
             val rawNotesFound = noteSearchResult.getOrNull()!!
             _notesFound = rawNotesFound.chunked(_notesPerPage)
@@ -117,7 +122,15 @@ open class DisplayViewModel @Inject constructor(
             navigationStateManager.state.getWorkspaceId())
         if (tagsRequest.isSuccess){
             val allTags = tagsRequest.getOrNull()!!
-            navigationStateManager.state.updateTagSelection(allTags, true)
+            // Always update to include all current tags when All is selected
+            val currentlyAllSelected = navigationStateManager.state.getAllTagsSelected()
+            if (currentlyAllSelected) {
+                navigationStateManager.state.updateTagSelection(allTags, true)
+            } else {
+                // Keep existing tag selection if not All
+                val currentTags = navigationStateManager.state.getSelectedTags()
+                navigationStateManager.state.updateTagSelection(currentTags, false)
+            }
         }
         else{
             navigationStateManager.state.updateTagSelection(emptyList(),

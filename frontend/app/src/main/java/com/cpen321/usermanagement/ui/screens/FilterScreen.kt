@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
@@ -139,7 +140,8 @@ private fun AllTagsCheckbox(
     ) {
         Checkbox(
             checked = isAllSelected,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.testTag(stringResource(R.string.all))
         )
         Text(
             text = stringResource(R.string.all),
@@ -175,7 +177,8 @@ private fun TagsList(
                     }
                     onSelectedTagsChange(newSelectedTags)
                     onSelectionChanged(newSelectedTags, isAllSelected)
-                }
+                },
+                modifier = Modifier.testTag(tag)
             )
             Text(
                 text = tag,

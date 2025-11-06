@@ -43,8 +43,7 @@ fun WsInviteScreen(
         wsInviteViewModel.onInviteClick(typedEmail)
     }
     val onBackClickHandler ={
-        wsInviteViewModel.clearError()
-        wsInviteViewModel.clearSuccessMessage()
+        wsInviteViewModel.clearMessage()
         onBackClick()
     }
 
@@ -53,8 +52,8 @@ fun WsInviteScreen(
         onInviteClick = onInviteClick,
         uiState = uiState,
         snackBarHostState = snackBarHostState,
-        onSuccessMessageShown = wsInviteViewModel::clearSuccessMessage,
-        onErrorMessageShown = wsInviteViewModel::clearError
+        onSuccessMessageShown = wsInviteViewModel::clearMessage,
+        onErrorMessageShown = wsInviteViewModel::clearMessage
     )
 }
 
