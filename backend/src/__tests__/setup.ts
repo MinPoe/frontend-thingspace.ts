@@ -1,4 +1,7 @@
 // Jest setup file - runs before all tests
+// Load environment variables from .env file
+import 'dotenv/config';
+
 // Set FIREBASE_JSON environment variable for all tests
 // NOTE: These are FAKE test values only
 process.env.FIREBASE_JSON = JSON.stringify({
