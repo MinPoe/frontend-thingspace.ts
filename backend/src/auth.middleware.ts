@@ -2,6 +2,7 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from './user.model';
+import { IUser } from './user.types';
 
 
 export const authenticateToken: RequestHandler = async (
@@ -78,7 +79,7 @@ export const authenticateToken: RequestHandler = async (
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export const authMiddleware = async (
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -95,7 +96,7 @@ export const authMiddleware = async (
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded as any;
+    req.user = decoded as unknown as IUser;
     next();
     return;
   } catch (error) {

@@ -32,7 +32,7 @@ export interface Note {
   _id: string;
   userId: string;
   workspaceId: string;
-  fields: any[]; // Just JSON objects as requested
+  fields: unknown[]; // Just JSON objects as requested
   noteType: NoteType;
   tags: string[];
   vectorData: number[];
