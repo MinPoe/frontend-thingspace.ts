@@ -282,13 +282,11 @@ describe('Auth Middleware – Real Middleware Tests', () => {
       jest.restoreAllMocks();
     });
 
-    test('401 – handles decoded as null (covers !decoded branch)', async () => {
-      // Input: token that decodes to null (edge case)
+    test('401 – handles token without id field (covers !decoded.id check)', async () => {
+      // Input: token that decodes but doesn't have 'id' field
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message
-      // This is tricky to test since jwt.verify will throw if invalid
-      // But we can test the decoded.id check
       const token = jwt.sign(
         { notId: 'something' }, // Token without 'id' field
         process.env.JWT_SECRET!

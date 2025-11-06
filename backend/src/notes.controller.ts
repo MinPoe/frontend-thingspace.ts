@@ -186,7 +186,8 @@ export class NotesController {
 
       // Query param is optional, default to empty string if not provided
       const q = query || '';
-      const notes = await noteService.getNotes(userId, workspaceId as string, noteType as string, tags as string[] || [], q as string);
+      const tagsArray = Array.isArray(tags) ? tags as string[] : [];
+      const notes = await noteService.getNotes(userId, workspaceId as string, noteType as string, tagsArray, q as string);
 
       res.status(200).json({
         message: 'Notes retrieved successfully',

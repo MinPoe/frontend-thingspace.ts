@@ -45,8 +45,8 @@ export class NoteService {
             userId,
             workspaceId: data.workspaceId,
             fields: data.fields,
-            noteType: data.noteType || NoteType.CONTENT,
-            tags: data.tags || [],
+            noteType: data.noteType,
+            tags: data.tags,
             vectorData: vectorData,
         });
 

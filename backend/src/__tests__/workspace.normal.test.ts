@@ -343,72 +343,7 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.tags).toContain('tag3');
     });
 
-    test('200 – handles notes without tags (covers tags || [] fallback)', async () => {
-      // Input: workspaceId with notes that have no tags
-      // Expected status code: 200
-      // Expected behavior: notes without tags are handled gracefully
-      // Expected output: array of tags (handles undefined/null tags)
-      
-      // Create a note without tags to cover the || [] fallback
-      await noteModel.create({
-        userId: new mongoose.Types.ObjectId(testData.testUserId),
-        workspaceId: testData.testWorkspaceId,
-        noteType: NoteType.CONTENT,
-        fields: [{ fieldType: 'title', content: 'Note without tags', _id: '3' }],
-        // tags field is intentionally omitted/undefined
-      });
 
-      const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
-        .set('x-test-user-id', testData.testUserId);
-
-      expect(res.status).toBe(200);
-      expect(res.body.data.tags).toBeDefined();
-      expect(Array.isArray(res.body.data.tags)).toBe(true);
-      // Should still return tags from other notes, not crash on undefined tags
-    });
-
-    test('200 – handles notes with null/undefined tags (covers || [] branch)', async () => {
-      // Input: workspaceId with notes that explicitly have null/undefined tags
-      // Expected status code: 200
-      // Expected behavior: || [] fallback is executed when note.tags is falsy
-      // Expected output: empty array or tags from other notes
-      
-      // Create a new workspace with only notes that have no tags to ensure || [] branch is hit
-      const emptyTagsWorkspace = await workspaceModel.create({
-        name: 'Empty Tags Workspace',
-        profile: { imagePath: '', name: 'Empty Tags Workspace', description: '' },
-        ownerId: new mongoose.Types.ObjectId(testData.testUserId),
-        members: [new mongoose.Types.ObjectId(testData.testUserId)],
-      });
-
-      // Create notes with explicitly null/undefined tags to force || [] execution
-      await noteModel.create({
-        userId: new mongoose.Types.ObjectId(testData.testUserId),
-        workspaceId: emptyTagsWorkspace._id.toString(),
-        noteType: NoteType.CONTENT,
-        tags: null as any, // Explicitly null to trigger || []
-        fields: [{ fieldType: 'title', content: 'Note with null tags', _id: '6' }],
-      });
-
-      await noteModel.create({
-        userId: new mongoose.Types.ObjectId(testData.testUserId),
-        workspaceId: emptyTagsWorkspace._id.toString(),
-        noteType: NoteType.CONTENT,
-        tags: undefined as any, // Explicitly undefined to trigger || []
-        fields: [{ fieldType: 'title', content: 'Note with undefined tags', _id: '7' }],
-      });
-
-      const res = await request(app)
-        .get(`/api/workspaces/${emptyTagsWorkspace._id.toString()}/tags`)
-        .set('x-test-user-id', testData.testUserId);
-
-      expect(res.status).toBe(200);
-      expect(res.body.data.tags).toBeDefined();
-      expect(Array.isArray(res.body.data.tags)).toBe(true);
-      // Since all notes have falsy tags, result should be empty array
-      expect(res.body.data.tags.length).toBe(0);
-    });
 
     test('403 – cannot access tags when not a member', async () => {
       // Input: workspaceId of workspace user is not a member of

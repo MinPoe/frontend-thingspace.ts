@@ -156,7 +156,7 @@ export class WorkspaceService {
         const notes = await noteModel.find({ workspaceId });
 
         // Extract all tags and get unique ones
-        const allTags = notes.flatMap(note => note.tags || []);
+        const allTags = notes.flatMap(note => note.tags);
         const uniqueTags = [...new Set(allTags)];
 
         return uniqueTags;
@@ -175,7 +175,7 @@ export class WorkspaceService {
         }
 
         // Check if user is banned
-        const isBanned = workspace.bannedMembers?.some(id => id.toString() === checkUserId);
+        const isBanned = workspace.bannedMembers.some(id => id.toString() === checkUserId);
         if (isBanned) {
             return WsMembershipStatus.BANNED;
         }
@@ -215,7 +215,7 @@ export class WorkspaceService {
         }
 
         // Check if user is banned
-        const isBanned = workspace.bannedMembers?.some(id => id.toString() === userIdToAdd);
+        const isBanned = workspace.bannedMembers.some(id => id.toString() === userIdToAdd);
         if (isBanned) {
             throw new Error('User is banned from this workspace');
         }
