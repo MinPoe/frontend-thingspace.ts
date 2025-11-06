@@ -3,6 +3,8 @@ import path from 'path';
 
 import { IMAGES_DIR } from './constants';
 
+// Using static methods only - class structure for organization
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class MediaService {
   /**
    * Validates that a file path is within the IMAGES_DIR directory

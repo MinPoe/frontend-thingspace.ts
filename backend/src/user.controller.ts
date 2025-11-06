@@ -102,7 +102,10 @@ export class UserController {
 
   async updateFcmToken(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = req.user!;
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
       const validatedData = updateFcmTokenSchema.parse(req.body);
 
       const updatedUser = await userModel.updateFcmToken(

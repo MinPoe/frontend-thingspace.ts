@@ -42,14 +42,14 @@ export interface Note {
 
 export interface CreateNoteRequest {
   tags: string[];
-  fields: any[]; // Just JSON objects as requested
+  fields: unknown[]; // Just JSON objects as requested
   noteType: NoteType;
   workspaceId: string;
 }
 
 export interface UpdateNoteRequest {
   tags: string[];
-  fields: any[]; // Just JSON objects as requested
+  fields: unknown[]; // Just JSON objects as requested
 }
 
 export interface GetNoteRequest {

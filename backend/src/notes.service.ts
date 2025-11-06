@@ -101,11 +101,13 @@ export class NoteService {
 
     async getNote(noteId: string, userId: mongoose.Types.ObjectId): Promise<Note | null> {
         const note = await noteModel.findOne({ _id: noteId, userId });
-        return note ? {
-            ...note.toObject(),
-            _id: note._id.toString(),
-            userId: note.userId.toString(),
-        } as Note : null;
+        return note
+            ? {
+                ...note.toObject(),
+                _id: note._id.toString(),
+                userId: note.userId.toString(),
+            } as Note
+            : null;
     }
 
 
@@ -171,7 +173,7 @@ export class NoteService {
         }
 
         // Create a copy of the note
-        const noteCopy = new noteModel({
+        const noteCopy = await noteModel.create({
             userId: note.userId,
             workspaceId: new mongoose.Types.ObjectId(workspaceId),
             dateCreation: new Date(),

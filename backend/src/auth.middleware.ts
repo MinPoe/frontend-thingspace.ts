@@ -5,6 +5,8 @@ import { userModel } from './user.model';
 import { IUser } from './user.types';
 
 
+// Express supports async handlers, but RequestHandler type expects void
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 export const authenticateToken: RequestHandler = async (
   req: Request,
   res: Response,
@@ -34,14 +36,6 @@ export const authenticateToken: RequestHandler = async (
     const decoded = jwt.verify(token, jwtSecret) as {
       id: mongoose.Types.ObjectId;
     };
-
-    if (!decoded.id) {
-      res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token verification failed',
-      });
-      return;
-    }
 
     const user = await userModel.findById(decoded.id);
 

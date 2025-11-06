@@ -16,7 +16,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('*', notFoundHandler);
 app.use(errorHandler);
 
-connectDB();
+void connectDB();
 app.listen(PORT, () => {
   // PORT is from environment variable, not user input
   // eslint-disable-next-line security/detect-crlf

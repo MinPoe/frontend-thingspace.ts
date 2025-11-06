@@ -24,6 +24,8 @@ export interface AuthResult {
   user: IUser;
 }
 
+// Express namespace augmentation needed for type extension
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
   namespace Express {
     interface Request {
