@@ -3,7 +3,6 @@ package com.cpen321.usermanagement
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -16,12 +15,26 @@ import org.junit.Rule
 import org.junit.Test
 import java.lang.Thread.sleep
 
+/*
+* Please log in to the below account on your emulator:
+* thing4g@gmail.com
+* Passwords as in attachments.
+* Fill in the bio's of the account (with anything, just not empty).
+*
+* To run the test, make sure that you are signed out of the application.
+*
+* It might happen the UI Automator picks the wrong button on sign in. In this case:
+* 1) run the app regularly, sign in to any account
+* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
+* 3) run the test again (this time should work)
+* */
+
 @HiltAndroidTest
 class TestReachWithTwoClicks {
     companion object{
-        const val ACCT_NAME:String = "Marricc Ammerk"
-        const val PERSONAL_WS_NAME:String = "Marricc Ammerk's Personal Workspace"
-        const val WS_NAME:String = "kmn"
+        const val ACCT_NAME:String = "Thing4G"
+        const val PERSONAL_WS_NAME:String = "Thing4G's Personal Workspace"
+        const val WS_NAME:String = "test2clicks"
     }
 
     @get:Rule(order = 0)
@@ -76,7 +89,7 @@ class TestReachWithTwoClicks {
 
         uiAutomator { onElement { textAsString()=="Allow" }.click() }
         waitForVm(1000)
-        signIn(signInString = signInString, TestRetrieveNotes.Companion.ACCT_NAME)
+        signIn(signInString = signInString, ACCT_NAME)
         waitForVm(1000)
 
         Log.d("TEST REACH W\\2", "Moving the same workspace")

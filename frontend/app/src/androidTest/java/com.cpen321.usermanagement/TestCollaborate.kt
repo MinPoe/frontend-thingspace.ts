@@ -37,7 +37,20 @@ import java.lang.Thread.sleep
 import javax.inject.Inject
 
 /*
-* Make sure you have the google account that will carry the tests signed up in your emulator!!!
+* Please log in to the below accounts on your emulator:
+* vanaukstinfriedrich@gmail.com
+* thing4g@gmail.com
+* Passwords as in attachments.
+* Fill in the bio's of the accounts (with anything, just not empty).
+*
+* To run the test, make sure that you are signed out of the application.
+* In case this test case fails, there might be a ghost Study v2 workspace in Friedrich van Aukstin's
+* workspaces. Please manually remove it before re-running the test.
+*
+* It might happen the UI Automator picks the wrong button on sign in. In this case:
+* 1) run the app regularly, sign in to any account
+* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
+* 3) run the test again (this time should work)
 * */
 
 
@@ -48,9 +61,9 @@ class TestCollaborate {
         const val ACCT_NAME="Friedrich van Aukstin"
         const val ACCT_GMAIL="vanaukstinfriedrich@gmail.com"
         const val ACCT_WS="Friedrich van Aukstin's Personal Workspace"
-        const val MEMBER_ACCT_NAME="Marricc Ammerk"
-        const val MEMBER_ACCT_GMAIL="marricc7@gmail.com"
-        const val MEMBER_ACCT_WS = "Marricc Ammerk's Personal Workspace"
+        const val MEMBER_ACCT_NAME="Thing4G"
+        const val MEMBER_ACCT_GMAIL="thing4g@gmail.com"
+        const val MEMBER_ACCT_WS = "Thing4G's Personal Workspace"
 
         //Error/Success messages
         const val saveConfirmString = "Profile updated successfully!"
@@ -89,7 +102,7 @@ class TestCollaborate {
             onElement { textAsString() == acctName }.click()
             Log.d("TEST_SIGN_IN", "Sign in user selected")
         }
-        composeRule.waitForIdle()
+        waitForVm(2000)
     }
 
     @Test
@@ -127,7 +140,6 @@ class TestCollaborate {
             onElement { textAsString() == "Allow" }.click()
         }
         signIn(signInString, ACCT_GMAIL)
-        waitForVm(2000)
         Log.d("TEST COLLABORATE","Workspace Creation Tests")
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(1000)
@@ -274,7 +286,6 @@ class TestCollaborate {
         waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
         waitForVm(2000)
-        composeRule.onNodeWithText(signInString).performClick()
         signIn(signInString, ACCT_NAME)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(1000)

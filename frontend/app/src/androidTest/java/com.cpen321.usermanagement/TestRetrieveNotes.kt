@@ -27,11 +27,17 @@ import java.lang.Thread.sleep
 
 
 /*
-* One needs four notes created:
-* note 1 with TAG1 and displaying as DISPLAY1
-* note 2 with TAG2 and displaying as DISPLAY2
-* note 3 with TAG3 and displaying as DISPLAY3
-* note 4 with TAG1 and TAG2 displaying as DISPLAY4
+* Please log in to the below account on your emulator:
+* thing4g@gmail.com
+* Passwords as in attachments.
+* Fill in the bio's of the account (with anything, just not empty).
+*
+* To run the test, make sure that you are signed out of the application.
+*
+* It might happen the UI Automator picks the wrong button on sign in. In this case:
+* 1) run the app regularly, sign in to any account
+* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
+* 3) run the test again (this time should work)
 * */
 @HiltAndroidTest
 class TestRetrieveNotes {
@@ -149,7 +155,7 @@ class TestRetrieveNotes {
         composeRule.onNodeWithTag(TAG2).assertIsOff()
         composeRule.onNodeWithTag(TAG3).assertIsOn()
         composeRule.onNodeWithContentDescription(backIcString).performClick()
-        waitForVm(1000)
+        waitForSearch(searchButtonString)
         composeRule.onNodeWithText(DISPLAY1).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY2).assertIsNotDisplayed()
         composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
