@@ -14,7 +14,7 @@ response = requests.post(dev_login_url, json=dev_login_body)
 print(response.json())
 
 
-bearer_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MGJkM2ZlNzgyOWY4YjFhOTgwMTM2NyIsImlhdCI6MTc2MjM4Mjg0NiwiZXhwIjoxNzYyNDUxMjQ2fQ.MXG7hgVXm1IVvEVxILwVxkt_gOuuaievX8ZTV1gMF1o"
+bearer_token = None
 
 '''
 
