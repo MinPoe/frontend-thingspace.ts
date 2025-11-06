@@ -39,7 +39,7 @@ export class MediaService {
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         fs.unlinkSync(filePath);
       }
-      throw new Error(`Failed to save profile picture: ${error}`);
+      throw new Error(`Failed to save profile picture: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
