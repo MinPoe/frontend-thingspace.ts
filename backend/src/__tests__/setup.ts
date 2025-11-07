@@ -2,6 +2,14 @@
 // Load environment variables from .env file
 import 'dotenv/config';
 
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
+}
+
+if (!process.env.GOOGLE_CLIENT_ID) {
+  process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
+}
+
 // Set FIREBASE_JSON environment variable for all tests
 // NOTE: These are FAKE test values only
 process.env.FIREBASE_JSON = JSON.stringify({
