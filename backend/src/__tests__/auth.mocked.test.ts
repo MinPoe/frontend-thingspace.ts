@@ -714,9 +714,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
 
       // Clear module cache and re-import to get fresh JWT_SECRET value
       jest.resetModules();
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { AuthService: FreshAuthService } = require('../auth.service');
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { userModel: freshUserModel } = require('../user.model');
       const serviceInstance = new FreshAuthService();
 
@@ -756,9 +754,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       }
       jest.resetModules();
       // Re-import to restore
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('../auth.service');
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('../user.model');
     });
 

@@ -264,10 +264,7 @@ export class NoteService {
             let normA = 0;
             let normB = 0;
             for (let i = 0; i < len; i++) {
-                // Array indexing is safe - not object property access
-                // eslint-disable-next-line security/detect-object-injection
                 const va = a[i];
-                // eslint-disable-next-line security/detect-object-injection
                 const vb = b[i];
                 dot += va * vb;
                 normA += va * va;

@@ -11,7 +11,6 @@ const mediaController = new MediaController();
 router.post(
   '/upload',
   authenticateToken,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   upload.single('media'),
   asyncHandler(mediaController.uploadImage.bind(mediaController))
 );

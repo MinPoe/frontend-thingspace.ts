@@ -4,7 +4,6 @@ import path from 'path';
 import { IMAGES_DIR } from './constants';
 
 // Using static methods only - class structure for organization
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class MediaService {
   /**
    * Validates that a file path is within the IMAGES_DIR directory
@@ -31,14 +30,11 @@ export class MediaService {
         throw new Error('Invalid file path');
       }
 
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.renameSync(resolvedFilePath, resolvedNewPath);
 
       return Promise.resolve(resolvedNewPath.split(path.sep).join('/'));
     } catch (error) {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       if (fs.existsSync(filePath)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         fs.unlinkSync(filePath);
       }
       return Promise.reject(new Error(`Failed to save profile picture: ${error instanceof Error ? error.message : String(error)}`));
@@ -57,9 +53,7 @@ export class MediaService {
         return Promise.resolve(); // Silently skip if path is invalid (security)
       }
 
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       if (fs.existsSync(filePath)) {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         fs.unlinkSync(filePath);
       }
       return Promise.resolve();
@@ -71,12 +65,10 @@ export class MediaService {
 
   static async deleteAllUserImages(userId: string): Promise<void> {
     try {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       if (!fs.existsSync(IMAGES_DIR)) {
         return;
       }
 
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const files = fs.readdirSync(IMAGES_DIR);
       const userFiles = files.filter(file => file.startsWith(userId + '-'));
 

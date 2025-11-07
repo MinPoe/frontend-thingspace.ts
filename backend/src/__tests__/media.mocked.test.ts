@@ -166,7 +166,6 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       try {
         jest.isolateModules(() => {
           // Re-require storage module so the top-level directory creation runs with our spies
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
           require('../storage');
         });
 

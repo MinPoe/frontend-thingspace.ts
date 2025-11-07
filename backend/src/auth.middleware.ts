@@ -6,7 +6,6 @@ import { IUser } from './user.types';
 
 
 // Express supports async handlers, but RequestHandler type expects void
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 export const authenticateToken: RequestHandler = async (
   req: Request,
   res: Response,

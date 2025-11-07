@@ -7,9 +7,7 @@ import path from 'path';
 import { IMAGES_DIR, MAX_FILE_SIZE } from './constants';
 
 // IMAGES_DIR is a constant resolved from constants.ts, safe to use
-// eslint-disable-next-line security/detect-non-literal-fs-filename
 if (!fs.existsSync(IMAGES_DIR)) {
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
 }
 
@@ -19,7 +17,6 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     // Use crypto for secure random generation instead of Math.random()
-    // eslint-disable-next-line security/detect-non-literal-crypto
     const randomBytes = crypto.randomBytes(4).readUInt32BE(0);
     const uniqueSuffix = Date.now() + '-' + randomBytes;
     cb(null, `${uniqueSuffix}${path.extname(file.originalname as string)}`);
