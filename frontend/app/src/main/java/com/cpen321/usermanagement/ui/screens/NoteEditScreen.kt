@@ -208,6 +208,9 @@ private fun NoteEditTopBar(
     onShareClick: () -> Unit,
     onCopyClick: () -> Unit
 ) {
+    val shareDesc = stringResource(R.string.share)
+    val copyDesc = stringResource(R.string.copy)
+
     TopAppBar(
         title = {
             Text(
@@ -223,10 +226,16 @@ private fun NoteEditTopBar(
         },
         actions = {
             IconButton(onClick = onShareClick) {
-                Icon(name = R.drawable.ic_share_note)
+                Icon(
+                    name = R.drawable.ic_share_note,
+                    contentDescription = shareDesc
+                )
             }
             IconButton(onClick = onCopyClick) {
-                Icon(name = R.drawable.ic_copy)
+                Icon(
+                    name = R.drawable.ic_copy,
+                    contentDescription = copyDesc
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

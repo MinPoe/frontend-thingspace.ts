@@ -107,6 +107,10 @@ private fun NoteTopBar(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
+    val backDesc = stringResource(R.string.back_icon_description)
+    val editDesc = stringResource(R.string.edit)
+    val deleteDesc = stringResource(R.string.delete)
+
     TopAppBar(
         title = {
             Text(
@@ -117,15 +121,24 @@ private fun NoteTopBar(
         },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(name = R.drawable.ic_arrow_back)
+                Icon(
+                    name = R.drawable.ic_arrow_back,
+                    contentDescription = backDesc
+                )
             }
         },
         actions = {
             IconButton(onClick = onEditClick) {
-                Icon(name = R.drawable.ic_edit)
+                Icon(
+                    name = R.drawable.ic_edit,
+                    contentDescription = editDesc
+                )
             }
             IconButton(onClick = onDeleteClick) {
-                Icon(name = R.drawable.ic_delete_forever)
+                Icon(
+                    name = R.drawable.ic_delete_forever,
+                    contentDescription = deleteDesc
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

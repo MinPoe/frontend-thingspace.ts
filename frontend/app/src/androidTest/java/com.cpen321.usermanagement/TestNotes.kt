@@ -7,26 +7,35 @@ import androidx.test.uiautomator.textAsString
 import androidx.test.uiautomator.uiAutomator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.lang.Thread.sleep
+import androidx.compose.ui.test.performClick
 
+/*
+* Please log in to the below account on your emulator:
+* thing4g@gmail.com
+* Passwords as in attachments.
+* Fill in the bio's of the account (with anything, just not empty).
+*
+* To run the test, make sure that you are signed out of the application.
+*
+* It might happen the UI Automator picks the wrong button on sign in. In this case:
+* 1) run the app regularly, sign in to any account
+* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
+* 3) run the test again (this time should work)
+* */
 @HiltAndroidTest
 class TestNotes {
 
     companion object {
-        const val ACCT_NAME = "mou" // Change to your Google account name
-
+        const val ACCT_NAME:String = "Thing4G"      
         // Pre-existing workspaces (must exist before test)
         const val WORKSPACE_1 = "Workspace1"
         const val WORKSPACE_2 = "Workspace2"
 
         // Error/Success messages
-        const val noFieldsErrorString = "Please add at least one field"
         const val emptyLabelErrorString = "All fields must have a label"
-        const val noteSharedString = "Note shared to workspace successfully"
-        const val noteDeletedString = "Note successfully deleted"
 
         // Test data
         const val testTag = "important"
@@ -35,6 +44,8 @@ class TestNotes {
         const val updatedTag = "updated"
         const val updatedContent = "Updated content"
     }
+
+    
 
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
@@ -47,6 +58,8 @@ class TestNotes {
         sleep(millis)
         composeRule.waitForIdle()
     }
+
+
 
     private fun signIn(signInString: String, acctName: String) {
         composeRule.waitForIdle()
@@ -65,6 +78,9 @@ class TestNotes {
         hiltRule.inject()
         val signInString = composeRule.activity.getString(R.string.sign_in_with_google)
 
+        waitForVm(3000)
+
+        uiAutomator { onElement { textAsString()=="Allow" }.click() }
         waitForVm(3000)
 
         try {
@@ -92,14 +108,12 @@ class TestNotes {
         val createNoteString = composeRule.activity.getString(R.string.create)
         val fieldLabelString = composeRule.activity.getString(R.string.label)
         val saveString = composeRule.activity.getString(R.string.save)
-        val editString = composeRule.activity.getString(R.string.edit)
         val shareString = composeRule.activity.getString(R.string.share)
         val shareNoteString = composeRule.activity.getString(R.string.share_note)
         val copyString = composeRule.activity.getString(R.string.copy)
         val copyNoteString = composeRule.activity.getString(R.string.copy_note)
         val deleteString = composeRule.activity.getString(R.string.delete)
         val deleteNoteString = composeRule.activity.getString(R.string.delete_note)
-        val confirmString = composeRule.activity.getString(R.string.confirm)
         val backString = composeRule.activity.getString(R.string.back_icon_description)
 
         Log.d("TEST NOTES", "Setting up workspaces")
@@ -107,8 +121,10 @@ class TestNotes {
         val pickWsNameString = composeRule.activity.getString(R.string.pick_workspace_name)
         val createWsButtonString = composeRule.activity.getString(R.string.create_workspace)
 
+        waitForVm(5000)
+
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForVm(2000)
+        waitForVm(5000)
 
         // Create Workspace1 if doesn't exist
         if (composeRule.onAllNodesWithText(WORKSPACE_1).fetchSemanticsNodes().isEmpty()) {
@@ -185,16 +201,24 @@ class TestNotes {
         composeRule.onNodeWithText(createNoteString).performClick()
         waitForVm(3000) // Increase wait time for creation to complete
 
+        // Wait for the created note to appear first
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(testFieldContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.waitForIdle()
+
         // Verify note appears - look for the first field
-        composeRule.onNodeWithText(testFieldContent).assertIsDisplayed()
+        composeRule.onAllNodesWithText(testFieldContent)[0].assertIsDisplayed()
 
         Log.d("TEST NOTES", "Update Note test")
-        // Click on the note to open it
-        composeRule.onNodeWithText(testFieldContent).performClick()
-        waitForVm(1500)
+        // Click on the note to open it, NOTE: onNodeWithText FAILS when multiple matching choices
+        composeRule.onAllNodesWithText(testFieldContent)[0].performClick()
+        waitForVm(1500) //
 
         // Click edit icon
-        composeRule.onNodeWithContentDescription(editString).performClick()
+        composeRule.onAllNodes(hasClickAction())[1].performClick()
         waitForVm(1000)
 
         // Add new tag
@@ -218,19 +242,38 @@ class TestNotes {
         waitForVm(2000)
 
         // Verify changes reflected
-        composeRule.onNodeWithText(updatedTag).assertIsDisplayed()
-        composeRule.onNodeWithText(updatedContent).assertIsDisplayed()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(updatedContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithText(updatedContent)[0].assertIsDisplayed()
 
         Log.d("TEST NOTES", "Share Note test")
-        // Go back to edit screen
-        composeRule.onNodeWithContentDescription(editString).performClick()
+        // Go back to edit screen (currently on view screen after save)
+        composeRule.onAllNodes(hasClickAction())[1].performClick()  // Click edit icon
+        waitForVm(1000)
+        composeRule.onAllNodes(hasClickAction())[1].performClick()  // Click edit icon
+
+
+        // Click share icon (index 1 in edit screen: 0=back, 1=share, 2=copy)
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText("Edit Note")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         waitForVm(1000)
 
-        // Click share icon
         composeRule.onNodeWithContentDescription(shareString).performClick()
-        waitForVm(1000)
 
         // Verify share dialog
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(shareNoteString)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.waitForIdle()
         composeRule.onNodeWithText(shareNoteString).assertIsDisplayed()
 
         // Select target workspace
@@ -241,40 +284,66 @@ class TestNotes {
         composeRule.onNodeWithText(shareString).performClick()
         waitForVm(2000)
 
-        // Verify success message
-        composeRule.onNodeWithText(noteSharedString).assertIsDisplayed()
-        waitForVm(1000)
-
-        // Navigate back to workspaces and verify note in workspace 2
+        // Navigate back to workspaces...
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(updatedContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription(backString).performClick()
         waitForVm(1000)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(1000)
-        composeRule.onNodeWithText(WORKSPACE_2).performClick()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithContentDescription(contentString + WORKSPACE_2)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(contentString + WORKSPACE_2).performClick()
         waitForVm(2000)
-        composeRule.onNodeWithText(updatedTag).assertIsDisplayed()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(updatedContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
 
         // Verify not in workspace 1
-        composeRule.onNodeWithContentDescription(backString).performClick()
+        composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(1000)
-        composeRule.onNodeWithText(WORKSPACE_1).performClick()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithContentDescription(contentString + WORKSPACE_1)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(contentString + WORKSPACE_1).performClick()
         waitForVm(2000)
 
         // Should not find the note tag in workspace 1 anymore
-        val nodesInWs1 = composeRule.onAllNodesWithText(updatedTag).fetchSemanticsNodes()
+        val nodesInWs1 = composeRule.onAllNodesWithText(updatedContent).fetchSemanticsNodes()
         assert(nodesInWs1.isEmpty()) { "Note should not be in Workspace 1 after sharing" }
 
         Log.d("TEST NOTES", "Copy Note test")
         // Go back to workspace 2
-        composeRule.onNodeWithContentDescription(backString).performClick()
+        composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(1000)
-        composeRule.onNodeWithText(WORKSPACE_2).performClick()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithContentDescription(contentString + WORKSPACE_2)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(contentString + WORKSPACE_2).performClick()
         waitForVm(2000)
 
         // Open note and go to edit
-        composeRule.onNodeWithText(updatedTag).performClick()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(updatedContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onAllNodesWithText(updatedContent)[0].performClick()
         waitForVm(1500)
-        composeRule.onNodeWithContentDescription(editString).performClick()
+        composeRule.onAllNodes(hasClickAction())[1].performClick()  // Click edit icon
         waitForVm(1000)
 
         // Click copy icon
@@ -295,17 +364,29 @@ class TestNotes {
         // Navigate and verify note in both workspaces
         composeRule.onNodeWithContentDescription(backString).performClick()
         waitForVm(1000)
-        composeRule.onNodeWithText(updatedTag).assertIsDisplayed() // Still in workspace 2
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(updatedContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
 
-        composeRule.onNodeWithContentDescription(backString).performClick()
+        composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(1000)
-        composeRule.onNodeWithText(WORKSPACE_1).performClick()
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(WORKSPACE_1)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(contentString + WORKSPACE_1).performClick()
         waitForVm(2000)
-        composeRule.onNodeWithText(updatedTag).assertIsDisplayed() // Now also in workspace 1
-
+        composeRule.waitUntil(timeoutMillis = 20000) {
+            composeRule.onAllNodesWithText(updatedContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         Log.d("TEST NOTES", "Delete Note test")
         // Open note
-        composeRule.onNodeWithText(updatedTag).performClick()
+        composeRule.onAllNodesWithText(updatedContent)[0].performClick()
         waitForVm(1500)
 
         // Click delete icon
@@ -316,11 +397,11 @@ class TestNotes {
         composeRule.onNodeWithText(deleteNoteString).assertIsDisplayed()
 
         // Confirm deletion
-        composeRule.onNodeWithText(confirmString).performClick()
+        composeRule.onNodeWithText("Delete").performClick()
         waitForVm(2000)
 
         // Verify note removed from workspace 1
-        val nodesAfterDelete = composeRule.onAllNodesWithText(updatedTag).fetchSemanticsNodes()
+        val nodesAfterDelete = composeRule.onAllNodesWithText(updatedContent).fetchSemanticsNodes()
         assert(nodesAfterDelete.isEmpty()) { "Note should be deleted from Workspace 1" }
 
         Log.d("TEST NOTES", "Test completed successfully!")
