@@ -6,6 +6,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { workspaceModel } from '../workspace.model';
 import { userModel } from '../user.model';
 import { noteModel } from '../note.model';
+import { WorkspaceController } from '../workspace.controller';
+import { workspaceService } from '../workspace.service';
 import { NoteType } from '../notes.types';
 import { notificationService } from '../notification.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
@@ -241,6 +243,34 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
 
       expect(res.status).toBe(404);
       expect(res.body.error).toContain('personal workspace');
+    });
+
+    test('404 – controller surfaces "User not found" error from service', async () => {
+      // Input: controller invoked with req.user but service throws "User not found"
+      // Expected status code: 404
+      // Expected behaviour: controller catches service error and returns 404 response
+      // Expected output: JSON error "User not found"
+      const controller = new WorkspaceController();
+      const req = {
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as unknown as import('express').Request;
+      const statusMock = jest.fn().mockReturnThis();
+      const jsonMock = jest.fn();
+      const res = {
+        status: statusMock,
+        json: jsonMock,
+      } as unknown as import('express').Response;
+
+      const serviceSpy = jest
+        .spyOn(workspaceService, 'getPersonalWorkspaceForUser')
+        .mockRejectedValueOnce(new Error('User not found'));
+
+      await controller.getPersonalWorkspace(req, res);
+
+      expect(statusMock).toHaveBeenCalledWith(404);
+      expect(jsonMock).toHaveBeenCalledWith({ error: 'User not found' });
+
+      serviceSpy.mockRestore();
     });
 
     test('401 – invalid token (user not found)', async () => {
