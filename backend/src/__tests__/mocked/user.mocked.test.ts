@@ -103,6 +103,23 @@ describe('User API – Mocked Tests', () => {
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Failed to update user info');
     });
+
+    test('404 when userModel.update returns null (line 39)', async () => {
+      // Input: update request where userModel.update returns null
+      // Expected status code: 404
+      // Expected behavior: returns "User not found" error
+      // Expected output: error message
+      // This tests line 39 in user.controller.ts
+      jest.spyOn(userModel, 'update').mockResolvedValueOnce(null);
+
+      const res = await request(app)
+        .put('/api/user/profile')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ profile: { name: 'Test' } });
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('User not found');
+    });
   });
 
   describe('DELETE /api/user/profile - Delete Profile, with mocks', () => {
@@ -208,6 +225,23 @@ describe('User API – Mocked Tests', () => {
       expect(res.status).toBe(400);
       expect(res.body.message).toBe('Failed to update FCM token');
     });
+
+    test('404 when userModel.updateFcmToken returns null (line 117)', async () => {
+      // Input: FCM token update where userModel.updateFcmToken returns null
+      // Expected status code: 404
+      // Expected behavior: returns "User not found" error
+      // Expected output: error message
+      // This tests line 117 in user.controller.ts
+      jest.spyOn(userModel, 'updateFcmToken').mockResolvedValueOnce(null);
+
+      const res = await request(app)
+        .post('/api/user/fcm-token')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ fcmToken: 'test-token' });
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('User not found');
+    });
   });
 
   describe('GET /api/user/:id - Get User By ID, with mocks', () => {
@@ -258,6 +292,81 @@ describe('User API – Mocked Tests', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Internal server error');
+    });
+
+    test('next(error) called when non-Error is thrown (direct controller call, lines 161-169)', async () => {
+      // Input: non-Error value thrown
+      // Expected behavior: logger.error called, then next(error) called for non-Error (lines 161-169)
+      // Expected output: next receives the non-Error value
+      // This tests lines 161-169 in user.controller.ts by calling controller directly
+      const req = {
+        params: { id: testData.testUserId },
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as any;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as any;
+      const next = jest.fn();
+
+      // Mock userModel.findById to throw a non-Error value
+      jest.spyOn(userModel, 'findById').mockRejectedValueOnce({ custom: 'error object' });
+
+      await userController.getUserById(req, res, next);
+
+      // Verify that next was called with the non-Error object
+      expect(next).toHaveBeenCalledWith({ custom: 'error object' });
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('error.message || fallback works when Error has no message (line 165 - direct controller call)', async () => {
+      // Input: Error instance without message property
+      // Expected behavior: fallback message is used (line 164-165)
+      // Expected output: 500 with fallback message
+      // Must call controller directly to avoid asyncHandler intercepting
+      const req = {
+        params: { id: testData.testUserId },
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as any;
+      const jsonMock = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jsonMock,
+      } as any;
+      const next = jest.fn();
+
+      const errorWithoutMessage = new Error();
+      delete (errorWithoutMessage as any).message;
+      jest.spyOn(userModel, 'findById').mockRejectedValueOnce(errorWithoutMessage);
+
+      await userController.getUserById(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Failed to get user' });
+    });
+
+    test('Error with message is handled properly (line 164 - direct controller call)', async () => {
+      // Input: Error instance with a message
+      // Expected behavior: error message is returned (line 164)
+      // Expected output: 500 with error message
+      // Must call controller directly to test line 164
+      const req = {
+        params: { id: testData.testUserId },
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as any;
+      const jsonMock = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jsonMock,
+      } as any;
+      const next = jest.fn();
+
+      jest.spyOn(userModel, 'findById').mockRejectedValueOnce(new Error('Custom error'));
+
+      await userController.getUserById(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Custom error' });
     });
   });
 
@@ -613,119 +722,6 @@ describe('User API – Mocked Tests', () => {
 
       expect(res.status).toBe(401);
       expect(res.body.message).toBe('User not authenticated');
-    });
-  });
-
-  describe('User controller - null return value edge cases', () => {
-    test('PUT /api/user/profile - 404 when userModel.update returns null (line 39)', async () => {
-      // Input: update request where userModel.update returns null
-      // Expected status code: 404
-      // Expected behavior: returns "User not found" error
-      // Expected output: error message
-      // This tests line 39 in user.controller.ts
-      jest.spyOn(userModel, 'update').mockResolvedValueOnce(null);
-
-      const res = await request(app)
-        .put('/api/user/profile')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({ profile: { name: 'Test' } });
-
-      expect(res.status).toBe(404);
-      expect(res.body.message).toBe('User not found');
-    });
-
-    test('POST /api/user/fcm-token - 404 when userModel.updateFcmToken returns null (line 117)', async () => {
-      // Input: FCM token update where userModel.updateFcmToken returns null
-      // Expected status code: 404
-      // Expected behavior: returns "User not found" error
-      // Expected output: error message
-      // This tests line 117 in user.controller.ts
-      jest.spyOn(userModel, 'updateFcmToken').mockResolvedValueOnce(null);
-
-      const res = await request(app)
-        .post('/api/user/fcm-token')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({ fcmToken: 'test-token' });
-
-      expect(res.status).toBe(404);
-      expect(res.body.message).toBe('User not found');
-    });
-  });
-
-  describe('GET /api/user/:id - getUserById non-Error handling (lines 161-169)', () => {
-    test('next(error) called when non-Error is thrown (direct controller call)', async () => {
-      // Input: non-Error value thrown
-      // Expected behavior: logger.error called, then next(error) called for non-Error (lines 161-169)
-      // Expected output: next receives the non-Error value
-      // This tests lines 161-169 in user.controller.ts by calling controller directly
-      const req = {
-        params: { id: testData.testUserId },
-        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
-      } as any;
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn().mockReturnThis(),
-      } as any;
-      const next = jest.fn();
-
-      // Mock userModel.findById to throw a non-Error value
-      jest.spyOn(userModel, 'findById').mockRejectedValueOnce({ custom: 'error object' });
-
-      await userController.getUserById(req, res, next);
-
-      // Verify that next was called with the non-Error object
-      expect(next).toHaveBeenCalledWith({ custom: 'error object' });
-      expect(res.status).not.toHaveBeenCalled();
-    });
-
-    test('error.message || fallback works when Error has no message (line 165 - direct controller call)', async () => {
-      // Input: Error instance without message property
-      // Expected behavior: fallback message is used (line 164-165)
-      // Expected output: 500 with fallback message
-      // Must call controller directly to avoid asyncHandler intercepting
-      const req = {
-        params: { id: testData.testUserId },
-        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
-      } as any;
-      const jsonMock = jest.fn();
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jsonMock,
-      } as any;
-      const next = jest.fn();
-
-      const errorWithoutMessage = new Error();
-      delete (errorWithoutMessage as any).message;
-      jest.spyOn(userModel, 'findById').mockRejectedValueOnce(errorWithoutMessage);
-
-      await userController.getUserById(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(jsonMock).toHaveBeenCalledWith({ message: 'Failed to get user' });
-    });
-
-    test('Error with message is handled properly (line 164 - direct controller call)', async () => {
-      // Input: Error instance with a message
-      // Expected behavior: error message is returned (line 164)
-      // Expected output: 500 with error message
-      // Must call controller directly to test line 164
-      const req = {
-        params: { id: testData.testUserId },
-        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
-      } as any;
-      const jsonMock = jest.fn();
-      const res = {
-        status: jest.fn().mockReturnThis(),
-        json: jsonMock,
-      } as any;
-      const next = jest.fn();
-
-      jest.spyOn(userModel, 'findById').mockRejectedValueOnce(new Error('Specific database error'));
-
-      await userController.getUserById(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(jsonMock).toHaveBeenCalledWith({ message: 'Specific database error' });
     });
   });
 });

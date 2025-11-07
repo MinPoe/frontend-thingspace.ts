@@ -48,22 +48,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
     testData = await setupTestDatabase(app);
   });
 
-  describe('Mocked – Database/Service failures', () => {
-    let noteId: string;
-
-    beforeEach(async () => {
-      const create = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['mock-test'],
-          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
-        });
-      noteId = create.body.data.note._id;
-    });
-
+  describe('POST /api/notes - Create Note, with mocks', () => {
     test('500 – create note handles service error', async () => {
       // Mocked behavior: noteService.createNote throws database connection error
       // Input: noteData with workspaceId, noteType, tags, fields
@@ -86,6 +71,150 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect(res.body.error).toBeDefined();
     });
 
+    test('500 – create note handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.createNote throws non-Error value (string)
+      // Input: noteData with workspaceId, noteType, tags, fields
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to create note"
+      jest.spyOn(noteService, 'createNote').mockRejectedValue('String error');
+
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['test'],
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to create note');
+    });
+
+    test('OpenAI success path creates note with embeddings', async () => {
+      // Mocked behavior: OpenAI API call succeeds and returns embeddings
+      // Input: noteData with fields that trigger OpenAI embeddings
+      // Expected status code: 201
+      // Expected behavior: note created with vector embeddings
+      // Expected output: note created successfully
+      const mockEmbedding = [0.1, 0.2, 0.3, 0.4, 0.5];
+      
+      // Reset the client cache and mock getClient to return a fake client
+      (noteService as any).client = null;
+      
+      const mockClient = {
+        embeddings: {
+          create: jest.fn().mockResolvedValue({
+            data: [{ embedding: mockEmbedding }],
+          }),
+        },
+      };
+      
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
+
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['openai-success-test'],
+          fields: [
+            { fieldType: 'title', content: 'OpenAI Success Test', _id: '1' },
+            { fieldType: 'textbox', content: 'This creates embeddings', _id: '2' },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.note).toBeDefined();
+      expect(res.body.data.note.vectorData).toBeDefined();
+    });
+
+    test('OpenAI failure path does not crash create flow (service decides behavior)', async () => {
+      // Mocked behavior: OpenAI API call fails (implicitly, service handles)
+      // Input: noteData with fields that would trigger OpenAI
+      // Expected status code: 201 or 500 (service decides)
+      // Expected behavior: service catches OpenAI errors gracefully
+      // Expected output: note created or error message
+      // This assumes your service catches OpenAI errors and proceeds with empty vectors.
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['openai-error-test'],
+          fields: [
+            { fieldType: 'title', content: 'OpenAI Error Test', _id: '1' },
+            { fieldType: 'textbox', content: 'This should still work even if OpenAI fails', _id: '2' },
+          ],
+        });
+
+      // Expect success if service swallows OpenAI errors; otherwise 500.
+      // Adjust to your implementation contract if needed.
+      expect([201, 500]).toContain(res.status);
+    });
+
+    test('OpenAI embeddings error is caught and logged (line 43)', async () => {
+      // Mocked behavior: OpenAI embeddings.create throws error
+      // Input: noteData with fields that trigger OpenAI embeddings
+      // Expected status code: 201
+      // Expected behavior: error is caught, logged (line 43), and note created with empty vector
+      // Expected output: note created successfully
+      // This tests line 43 in notes.service.ts (console.error for embeddings failure)
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Reset the client cache and mock getClient to return a client that throws
+      (noteService as any).client = null;
+      
+      const mockClient = {
+        embeddings: {
+          create: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
+        },
+      };
+      
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
+
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['openai-error-log-test'],
+          fields: [
+            { fieldType: 'title', content: 'OpenAI Error Log Test', _id: '1' },
+            { fieldType: 'textbox', content: 'This triggers embeddings', _id: '2' },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.note).toBeDefined();
+      // Verify error was logged (line 43)
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to generate embeddings (continuing with empty vector):', expect.any(Error));
+      
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('PUT /api/notes/:id - Update Note, with mocks', () => {
+    let noteId: string;
+
+    beforeEach(async () => {
+      const create = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['mock-test'],
+          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
+        });
+      noteId = create.body.data.note._id;
+    });
+
     test('500 – update note handles service error', async () => {
       // Mocked behavior: noteService.updateNote throws database write error
       // Input: noteId in URL, updated tags and fields
@@ -103,6 +232,40 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect(res.body.error).toBeDefined();
     });
 
+    test('500 – update note handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.updateNote throws non-Error value (object)
+      // Input: noteId in URL, updated tags and fields
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to update note"
+      jest.spyOn(noteService, 'updateNote').mockRejectedValue({ code: 'UNKNOWN' });
+
+      const res = await request(app)
+        .put(`/api/notes/${noteId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ tags: ['updated'], fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }] });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to update note');
+    });
+  });
+
+  describe('GET /api/notes/:id - Get Single Note, with mocks', () => {
+    let noteId: string;
+
+    beforeEach(async () => {
+      const create = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['mock-test'],
+          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
+        });
+      noteId = create.body.data.note._id;
+    });
+
     test('500 – get single note handles service error', async () => {
       // Mocked behavior: noteService.getNote throws database lookup error
       // Input: noteId in URL
@@ -115,6 +278,37 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
+    });
+
+    test('500 – get note handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.getNote throws non-Error value (null)
+      // Input: noteId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to retrieve note"
+      jest.spyOn(noteService, 'getNote').mockRejectedValue(null);
+
+      const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to retrieve note');
+    });
+  });
+
+  describe('DELETE /api/notes/:id - Delete Note, with mocks', () => {
+    let noteId: string;
+
+    beforeEach(async () => {
+      const create = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['mock-test'],
+          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
+        });
+      noteId = create.body.data.note._id;
     });
 
     test('500 – delete note handles service error', async () => {
@@ -131,6 +325,22 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect(res.body.error).toBeDefined();
     });
 
+    test('500 – delete note handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.deleteNote throws non-Error value (string)
+      // Input: noteId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to delete note"
+      jest.spyOn(noteService, 'deleteNote').mockRejectedValue('String error');
+
+      const res = await request(app).delete(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to delete note');
+    });
+  });
+
+  describe('GET /api/notes - Find Notes, with mocks', () => {
     test('500 – get notes handles service error', async () => {
       // Mocked behavior: noteService.getNotes throws database query error
       // Input: workspaceId and noteType in query params
@@ -281,6 +491,148 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       });
     });
 
+    test('500 – find notes handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.getNotes throws non-Error value (number)
+      // Input: workspaceId and noteType in query params
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to retrieve notes"
+      jest.spyOn(noteService, 'getNotes').mockRejectedValue(123);
+
+      const res = await request(app)
+        .get('/api/notes')
+        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to retrieve notes');
+    });
+
+    test('500 – workspace findById returns null during getNotes (workspace not found)', async () => {
+      // Mocked behavior: workspaceModel.findById returns null during getNotes
+      // Input: workspaceId and noteType in query params
+      // Expected status code: 500
+      // Expected behavior: error message returned
+      // Expected output: "Workspace not found"
+      const findByIdSpy = jest.spyOn(workspaceModel, 'findById').mockResolvedValueOnce(null as any);
+
+      const res = await request(app)
+        .get('/api/notes')
+        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Workspace not found');
+      expect(findByIdSpy).toHaveBeenCalled();
+      
+      findByIdSpy.mockRestore();
+    });
+
+    test('cosineSimilarity handles sparse arrays with undefined values (lines 268-269)', async () => {
+      // Input: note with sparse vector data (arrays with undefined values)
+      // Expected behavior: .at() returns undefined for sparse array elements, ?? operator provides default 0
+      // Expected output: notes returned with similarity scores
+      // This tests lines 268-269 in notes.service.ts
+      
+      // Create a sparse array with undefined values
+      const sparseArray = new Array(100);
+      sparseArray[0] = 0.5;
+      sparseArray[50] = 0.3;
+      sparseArray[99] = 0.1;
+      // Most elements are undefined (sparse array)
+
+      // Create a note with sparse vector data
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        noteType: NoteType.CONTENT,
+        tags: ['sparse-test'],
+        fields: [{ fieldType: 'title', content: 'Sparse Vector Note', _id: '1' }],
+        vectorData: sparseArray,
+      });
+
+      // Mock OpenAI to return an embedding with undefined values too
+      const mockEmbedding = new Array(100);
+      mockEmbedding[10] = 0.2;
+      mockEmbedding[60] = 0.4;
+      
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue({
+        embeddings: {
+          create: jest.fn().mockResolvedValue({
+            data: [{ embedding: mockEmbedding }],
+          }),
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .query({ 
+          workspaceId: testData.testWorkspaceId, 
+          noteType: NoteType.CONTENT,
+          query: 'test sparse'
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.notes).toBeDefined();
+      expect(Array.isArray(res.body.data.notes)).toBe(true);
+    });
+
+    test('cosineSimilarity with arrays containing explicit undefined values', async () => {
+      // Input: note with vector data containing explicit undefined
+      // Expected behavior: handles undefined values gracefully via ?? operator
+      // Expected output: returns notes with similarity scores
+      const vectorWithUndefined = [0.1, undefined, 0.3, undefined, 0.5];
+      
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        noteType: NoteType.CONTENT,
+        tags: ['undefined-test'],
+        fields: [{ fieldType: 'title', content: 'Undefined Vector Note', _id: '1' }],
+        vectorData: vectorWithUndefined as any,
+      });
+
+      const mockEmbeddingWithUndefined = [undefined, 0.2, undefined, 0.4, 0.6];
+
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue({
+        embeddings: {
+          create: jest.fn().mockResolvedValue({
+            data: [{ embedding: mockEmbeddingWithUndefined }],
+          }),
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .query({ 
+          workspaceId: testData.testWorkspaceId, 
+          noteType: NoteType.CONTENT,
+          query: 'test undefined'
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.notes).toBeDefined();
+    });
+  });
+
+  describe('GET /api/notes/:id/workspaces - Get Workspace for Note, with mocks', () => {
+    let noteId: string;
+
+    beforeEach(async () => {
+      const create = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['mock-test'],
+          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
+        });
+      noteId = create.body.data.note._id;
+    }); 
+
     test('500 – get workspace for note handles service error', async () => {
       // Mocked behavior: noteService.getWorkspacesForNote throws database lookup error
       // Input: noteId in URL
@@ -293,6 +645,37 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
+    });
+
+    test('500 – get workspace handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.getWorkspacesForNote throws non-Error value (undefined)
+      // Input: noteId in URL
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to retrieve workspace"
+      jest.spyOn(noteService, 'getWorkspacesForNote').mockRejectedValue(undefined);
+
+      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to retrieve workspace');
+    });
+  });
+
+  describe('POST /api/notes/:id/share - Share Note to Workspace, with mocks', () => {
+    let noteId: string;
+
+    beforeEach(async () => {
+      const create = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['mock-test'],
+          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
+        });
+      noteId = create.body.data.note._id;
     });
 
     test('500 – share note handles service error', async () => {
@@ -310,6 +693,88 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
+    });
+
+    test('500 – share note handles non-Error thrown value', async () => {
+      // Mocked behavior: noteService.shareNoteToWorkspace throws non-Error value (string)
+      // Input: noteId in URL, workspaceId in body
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully, falls back to generic message
+      // Expected output: generic error message "Failed to share note"
+      jest.spyOn(noteService, 'shareNoteToWorkspace').mockRejectedValue('String error');
+
+      const res = await request(app)
+        .post(`/api/notes/${noteId}/share`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ workspaceId: testData.testWorkspaceId });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('Failed to share note');
+    });
+
+    test('404 – findOneAndUpdate returns null during share (note deleted mid-request)', async () => {
+      // Mocked behavior: noteModel.findOneAndUpdate returns null (note deleted during request)
+      // Input: noteId in URL, workspaceId in body
+      // Expected status code: 404
+      // Expected behavior: error message returned
+      // Expected output: "Note not found"
+      await workspaceModel.findByIdAndUpdate(testData.testWorkspace2Id, {
+        $push: { members: new mongoose.Types.ObjectId(testData.testUserId) },
+      });
+
+      // Mock findOneAndUpdate to return null after initial checks pass
+      const findOneAndUpdateSpy = jest.spyOn(noteModel, 'findOneAndUpdate').mockResolvedValueOnce(null as any);
+
+      const res = await request(app)
+        .post(`/api/notes/${noteId}/share`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ workspaceId: testData.testWorkspace2Id });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Note not found');
+      expect(findOneAndUpdateSpy).toHaveBeenCalled();
+      
+      findOneAndUpdateSpy.mockRestore();
+    });
+
+    test('500 – workspace lookup throws during share', async () => {
+      // Mocked behavior: workspaceModel.findById throws workspace service error
+      // Input: noteId in URL, workspaceId in body
+      // Expected status code: 500
+      // Expected behavior: error handled gracefully
+      // Expected output: None
+      jest.spyOn(workspaceModel, 'findById').mockImplementation(() => {
+        throw new Error('Workspace service unavailable');
+      });
+
+      await workspaceModel.findByIdAndUpdate(testData.testWorkspace2Id, {
+        $push: { members: new mongoose.Types.ObjectId(testData.testUserId) },
+      });
+
+      const res = await request(app)
+        .post(`/api/notes/${noteId}/share`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ workspaceId: testData.testWorkspace2Id });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBeDefined();
+    });
+  });
+
+  describe('POST /api/notes/:id/copy - Copy Note to Workspace, with mocks', () => {
+    let noteId: string;
+
+    beforeEach(async () => {
+      const create = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['mock-test'],
+          fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
+        });
+      noteId = create.body.data.note._id;
     });
 
     test('404 – copy note handles Note not found', async () => {
@@ -346,121 +811,6 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect(res.body.error).toBeDefined();
     });
 
-    test('500 – create note handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.createNote throws non-Error value (string)
-      // Input: noteData with workspaceId, noteType, tags, fields
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to create note"
-      jest.spyOn(noteService, 'createNote').mockRejectedValue('String error');
-
-      const res = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['test'],
-          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
-        });
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to create note');
-    });
-
-    test('500 – update note handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.updateNote throws non-Error value (object)
-      // Input: noteId in URL, updated tags and fields
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to update note"
-      jest.spyOn(noteService, 'updateNote').mockRejectedValue({ code: 'UNKNOWN' });
-
-      const res = await request(app)
-        .put(`/api/notes/${noteId}`)
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({ tags: ['updated'], fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }] });
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to update note');
-    });
-
-    test('500 – delete note handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.deleteNote throws non-Error value (string)
-      // Input: noteId in URL
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to delete note"
-      jest.spyOn(noteService, 'deleteNote').mockRejectedValue('String error');
-
-      const res = await request(app).delete(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to delete note');
-    });
-
-    test('500 – get note handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.getNote throws non-Error value (null)
-      // Input: noteId in URL
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to retrieve note"
-      jest.spyOn(noteService, 'getNote').mockRejectedValue(null);
-
-      const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to retrieve note');
-    });
-
-    test('500 – find notes handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.getNotes throws non-Error value (number)
-      // Input: workspaceId and noteType in query params
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to retrieve notes"
-      jest.spyOn(noteService, 'getNotes').mockRejectedValue(123);
-
-      const res = await request(app)
-        .get('/api/notes')
-        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('Authorization', `Bearer ${testData.testUserToken}`);
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to retrieve notes');
-    });
-
-    test('500 – get workspace handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.getWorkspacesForNote throws non-Error value (undefined)
-      // Input: noteId in URL
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to retrieve workspace"
-      jest.spyOn(noteService, 'getWorkspacesForNote').mockRejectedValue(undefined);
-
-      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('Authorization', `Bearer ${testData.testUserToken}`);
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to retrieve workspace');
-    });
-
-    test('500 – share note handles non-Error thrown value', async () => {
-      // Mocked behavior: noteService.shareNoteToWorkspace throws non-Error value (string)
-      // Input: noteId in URL, workspaceId in body
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully, falls back to generic message
-      // Expected output: generic error message "Failed to share note"
-      jest.spyOn(noteService, 'shareNoteToWorkspace').mockRejectedValue('String error');
-
-      const res = await request(app)
-        .post(`/api/notes/${noteId}/share`)
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({ workspaceId: testData.testWorkspaceId });
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Failed to share note');
-    });
-
     test('500 – copy note handles non-Error thrown value', async () => {
       // Mocked behavior: noteService.copyNoteToWorkspace throws non-Error value (string)
       // Input: noteId in URL, workspaceId in body
@@ -476,136 +826,6 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to copy note');
-    });
-
-    test('OpenAI success path creates note with embeddings', async () => {
-      // Mocked behavior: OpenAI API call succeeds and returns embeddings
-      // Input: noteData with fields that trigger OpenAI embeddings
-      // Expected status code: 201
-      // Expected behavior: note created with vector embeddings
-      // Expected output: note created successfully
-      const mockEmbedding = [0.1, 0.2, 0.3, 0.4, 0.5];
-      
-      // Reset the client cache and mock getClient to return a fake client
-      (noteService as any).client = null;
-      
-      const mockClient = {
-        embeddings: {
-          create: jest.fn().mockResolvedValue({
-            data: [{ embedding: mockEmbedding }],
-          }),
-        },
-      };
-      
-      jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
-
-      const res = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['openai-success-test'],
-          fields: [
-            { fieldType: 'title', content: 'OpenAI Success Test', _id: '1' },
-            { fieldType: 'textbox', content: 'This creates embeddings', _id: '2' },
-          ],
-        });
-
-      expect(res.status).toBe(201);
-      expect(res.body.data.note).toBeDefined();
-      expect(res.body.data.note.vectorData).toBeDefined();
-    });
-
-    test('OpenAI failure path does not crash create flow (service decides behavior)', async () => {
-      // Mocked behavior: OpenAI API call fails (implicitly, service handles)
-      // Input: noteData with fields that would trigger OpenAI
-      // Expected status code: 201 or 500 (service decides)
-      // Expected behavior: service catches OpenAI errors gracefully
-      // Expected output: note created or error message
-      // This assumes your service catches OpenAI errors and proceeds with empty vectors.
-      const res = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['openai-error-test'],
-          fields: [
-            { fieldType: 'title', content: 'OpenAI Error Test', _id: '1' },
-            { fieldType: 'textbox', content: 'This should still work even if OpenAI fails', _id: '2' },
-          ],
-        });
-
-      // Expect success if service swallows OpenAI errors; otherwise 500.
-      // Adjust to your implementation contract if needed.
-      expect([201, 500]).toContain(res.status);
-    });
-
-    test('OpenAI embeddings error is caught and logged (line 43)', async () => {
-      // Mocked behavior: OpenAI embeddings.create throws error
-      // Input: noteData with fields that trigger OpenAI embeddings
-      // Expected status code: 201
-      // Expected behavior: error is caught, logged (line 43), and note created with empty vector
-      // Expected output: note created successfully
-      // This tests line 43 in notes.service.ts (console.error for embeddings failure)
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
-      // Reset the client cache and mock getClient to return a client that throws
-      (noteService as any).client = null;
-      
-      const mockClient = {
-        embeddings: {
-          create: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
-        },
-      };
-      
-      jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
-
-      const res = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['openai-error-log-test'],
-          fields: [
-            { fieldType: 'title', content: 'OpenAI Error Log Test', _id: '1' },
-            { fieldType: 'textbox', content: 'This triggers embeddings', _id: '2' },
-          ],
-        });
-
-      expect(res.status).toBe(201);
-      expect(res.body.data.note).toBeDefined();
-      // Verify error was logged (line 43)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to generate embeddings (continuing with empty vector):', expect.any(Error));
-      
-      consoleErrorSpy.mockRestore();
-    });
-
-    test('404 – findOneAndUpdate returns null during share (note deleted mid-request)', async () => {
-      // Mocked behavior: noteModel.findOneAndUpdate returns null (note deleted during request)
-      // Input: noteId in URL, workspaceId in body
-      // Expected status code: 404
-      // Expected behavior: error message returned
-      // Expected output: "Note not found"
-      await workspaceModel.findByIdAndUpdate(testData.testWorkspace2Id, {
-        $push: { members: new mongoose.Types.ObjectId(testData.testUserId) },
-      });
-
-      // Mock findOneAndUpdate to return null after initial checks pass
-      const findOneAndUpdateSpy = jest.spyOn(noteModel, 'findOneAndUpdate').mockResolvedValueOnce(null as any);
-
-      const res = await request(app)
-        .post(`/api/notes/${noteId}/share`)
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({ workspaceId: testData.testWorkspace2Id });
-
-      expect(res.status).toBe(404);
-      expect(res.body.error).toBe('Note not found');
-      expect(findOneAndUpdateSpy).toHaveBeenCalled();
-      
-      findOneAndUpdateSpy.mockRestore();
     });
 
     test('404 – findById returns null during copy (note not found)', async () => {
@@ -626,66 +846,6 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect(findByIdSpy).toHaveBeenCalled();
       
       findByIdSpy.mockRestore();
-    });
-
-    test('500 – workspace findById returns null during getNotes (workspace not found)', async () => {
-      // Mocked behavior: workspaceModel.findById returns null during getNotes
-      // Input: workspaceId and noteType in query params
-      // Expected status code: 500
-      // Expected behavior: error message returned
-      // Expected output: "Workspace not found"
-      const findByIdSpy = jest.spyOn(workspaceModel, 'findById').mockResolvedValueOnce(null as any);
-
-      const res = await request(app)
-        .get('/api/notes')
-        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('Authorization', `Bearer ${testData.testUserToken}`);
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Workspace not found');
-      expect(findByIdSpy).toHaveBeenCalled();
-      
-      findByIdSpy.mockRestore();
-    });
-  });
-
-  describe('Mocked – Workspace model failure', () => {
-    let noteId: string;
-
-    beforeEach(async () => {
-      const create = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['workspace-test'],
-          fields: [{ fieldType: 'title', content: 'Workspace Test', _id: '1' }],
-        });
-      noteId = create.body.data.note._id;
-    });
-
-    test('500 – workspace lookup throws during share', async () => {
-      // Mocked behavior: workspaceModel.findById throws workspace service error
-      // Input: noteId in URL, workspaceId in body
-      // Expected status code: 500
-      // Expected behavior: error handled gracefully
-      // Expected output: None
-      jest.spyOn(workspaceModel, 'findById').mockImplementation(() => {
-        throw new Error('Workspace service unavailable');
-      });
-
-      await workspaceModel.findByIdAndUpdate(testData.testWorkspace2Id, {
-        $push: { members: new mongoose.Types.ObjectId(testData.testUserId) },
-      });
-
-      const res = await request(app)
-        .post(`/api/notes/${noteId}/share`)
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({ workspaceId: testData.testWorkspace2Id });
-
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBeDefined();
     });
   });
 
@@ -833,96 +993,6 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(401);
       expect(res.body.error).toBe('User not authenticated');
-    });
-  });
-
-  describe('NoteService - cosineSimilarity edge cases', () => {
-    test('cosineSimilarity handles sparse arrays with undefined values (lines 268-269)', async () => {
-      // Input: note with sparse vector data (arrays with undefined values)
-      // Expected behavior: .at() returns undefined for sparse array elements, ?? operator provides default 0
-      // Expected output: notes returned with similarity scores
-      // This tests lines 268-269 in notes.service.ts
-      
-      // Create a sparse array with undefined values
-      const sparseArray = new Array(100);
-      sparseArray[0] = 0.5;
-      sparseArray[50] = 0.3;
-      sparseArray[99] = 0.1;
-      // Most elements are undefined (sparse array)
-
-      // Create a note with sparse vector data
-      await noteModel.create({
-        userId: new mongoose.Types.ObjectId(testData.testUserId),
-        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
-        noteType: NoteType.CONTENT,
-        tags: ['sparse-test'],
-        fields: [{ fieldType: 'title', content: 'Sparse Vector Note', _id: '1' }],
-        vectorData: sparseArray,
-      });
-
-      // Mock OpenAI to return an embedding with undefined values too
-      const mockEmbedding = new Array(100);
-      mockEmbedding[10] = 0.2;
-      mockEmbedding[60] = 0.4;
-      
-      jest.spyOn(noteService as any, 'getClient').mockReturnValue({
-        embeddings: {
-          create: jest.fn().mockResolvedValue({
-            data: [{ embedding: mockEmbedding }],
-          }),
-        },
-      });
-
-      const res = await request(app)
-        .get('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .query({ 
-          workspaceId: testData.testWorkspaceId, 
-          noteType: NoteType.CONTENT,
-          query: 'test sparse'
-        });
-
-      expect(res.status).toBe(200);
-      expect(res.body.data.notes).toBeDefined();
-      expect(Array.isArray(res.body.data.notes)).toBe(true);
-    });
-
-    test('cosineSimilarity with arrays containing explicit undefined values', async () => {
-      // Input: note with vector data containing explicit undefined
-      // Expected behavior: handles undefined values gracefully via ?? operator
-      // Expected output: returns notes with similarity scores
-      const vectorWithUndefined = [0.1, undefined, 0.3, undefined, 0.5];
-      
-      await noteModel.create({
-        userId: new mongoose.Types.ObjectId(testData.testUserId),
-        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
-        noteType: NoteType.CONTENT,
-        tags: ['undefined-test'],
-        fields: [{ fieldType: 'title', content: 'Undefined Vector Note', _id: '1' }],
-        vectorData: vectorWithUndefined as any,
-      });
-
-      const mockEmbeddingWithUndefined = [undefined, 0.2, undefined, 0.4, 0.6];
-
-      jest.spyOn(noteService as any, 'getClient').mockReturnValue({
-        embeddings: {
-          create: jest.fn().mockResolvedValue({
-            data: [{ embedding: mockEmbeddingWithUndefined }],
-          }),
-        },
-      });
-
-      const res = await request(app)
-        .get('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .query({ 
-          workspaceId: testData.testWorkspaceId, 
-          noteType: NoteType.CONTENT,
-          query: 'test undefined'
-        });
-
-      expect(res.status).toBe(200);
-      expect(res.body.data.notes).toBeDefined();
     });
   });
 });
