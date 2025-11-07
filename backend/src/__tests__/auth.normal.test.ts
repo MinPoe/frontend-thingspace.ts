@@ -4,6 +4,7 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
 
+import logger from '../logger.util';
 import { userModel } from '../user.model';
 import { workspaceModel } from '../workspace.model';
 import { authService } from '../auth.service';
@@ -265,6 +266,51 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
 
       expect(res.status).toBe(500);
       expect(res.text).toContain('String error');
+    });
+  });
+
+  describe('Global error handling', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('404 – returns structured response for unknown routes', async () => {
+      // Input: GET request to unknown /api path with valid auth token
+      // Expected status code: 404
+      // Expected behaviour: notFoundHandler formats response with route details
+      // Expected output: JSON containing error, message, path, method, timestamp
+      const res = await request(app)
+        .get('/api/route-that-does-not-exist')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .expect(404);
+
+      expect(res.body).toMatchObject({
+        error: 'Route not found',
+        message: 'Cannot GET /api/route-that-does-not-exist',
+        path: '/api/route-that-does-not-exist',
+        method: 'GET',
+      });
+      expect(typeof res.body.timestamp).toBe('string');
+    });
+
+    test('500 – falls back to generic message when controller throws', async () => {
+      // Input: POST /api/auth/signup where service layer throws
+      // Expected status code: 500
+      // Expected behaviour: global error handler logs and returns generic payload
+      // Expected output: { message: 'Internal server error' }
+      const loggerSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+      const signUpSpy = jest
+        .spyOn(authService, 'signUpWithGoogle')
+        .mockRejectedValue(new Error('Simulated failure'));
+
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ idToken: 'valid-token' })
+        .expect(500);
+
+      expect(res.body).toEqual({ message: 'Internal server error' });
+      expect(loggerSpy).toHaveBeenCalledWith('Error:', expect.any(Error));
+      expect(signUpSpy).toHaveBeenCalledWith('valid-token');
     });
   });
 });
