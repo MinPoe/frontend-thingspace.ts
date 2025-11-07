@@ -16,10 +16,10 @@ export class MediaService {
   }
 
   static saveImage(filePath: string, userId: string): Promise<string> {
+    // Validate the source file path is safe (from multer, should be in temp directory)
+    const resolvedFilePath = path.resolve(filePath);
+    
     try {
-      // Validate the source file path is safe (from multer, should be in temp directory)
-      const resolvedFilePath = path.resolve(filePath);
-      
       const fileExtension = path.extname(resolvedFilePath);
       const fileName = `${userId}-${Date.now()}${fileExtension}`;
       const newPath = path.join(IMAGES_DIR, fileName);
@@ -34,10 +34,9 @@ export class MediaService {
 
       return Promise.resolve(resolvedNewPath.split(path.sep).join('/'));
     } catch (error) {
-      // Clean up the uploaded file if it exists, with path validation
-      const resolvedCleanupPath = path.resolve(filePath);
-      if (fs.existsSync(resolvedCleanupPath)) {
-        fs.unlinkSync(resolvedCleanupPath);
+      // Clean up the uploaded file if it exists
+      if (fs.existsSync(resolvedFilePath)) {
+        fs.unlinkSync(resolvedFilePath);
       }
       return Promise.reject(new Error(`Failed to save profile picture: ${error instanceof Error ? error.message : String(error)}`));
     }
