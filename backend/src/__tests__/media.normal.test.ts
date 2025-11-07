@@ -6,6 +6,10 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
+import type { Request, Response } from 'express';
+
+import { MediaController } from '../media.controller';
+import * as sanitizeModule from '../sanitizeInput.util';
 import { IMAGES_DIR, MAX_FILE_SIZE } from '../constants';
 import { MediaService } from '../media.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
@@ -72,6 +76,9 @@ describe('Media API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/media/upload - Upload Image', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
     test('200 – uploads image successfully', async () => {
       // Input: image file in multipart/form-data
       // Expected status code: 200
@@ -85,6 +92,8 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       }
       fs.writeFileSync(testImagePath, Buffer.from('fake-image-data'));
 
+      const sanitizeSpy = jest.spyOn(sanitizeModule, 'sanitizeInput');
+
       const res = await request(app)
         .post('/api/media/upload')
         .set('Authorization', `Bearer ${testData.testUserToken}`)
@@ -93,6 +102,11 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Image uploaded successfully');
       expect(res.body.data.image).toBeDefined();
+      expect(sanitizeSpy).toHaveBeenCalled();
+      sanitizeSpy.mock.calls.forEach(([filePath]) => {
+        expect(typeof filePath).toBe('string');
+        expect(filePath).not.toMatch(/\r|\n/);
+      });
 
       // Clean up uploaded file and test file
       if (fs.existsSync(testImagePath)) {
@@ -101,6 +115,8 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       if (res.body.data.image && fs.existsSync(res.body.data.image)) {
         fs.unlinkSync(res.body.data.image);
       }
+
+      sanitizeSpy.mockRestore();
     });
 
     test('400 – returns 400 when no file uploaded', async () => {
@@ -166,29 +182,46 @@ describe('Media API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user is not authenticated', async () => {
-      // Input: request with file but no authentication token
+      // Input: request without authentication token
       // Expected status code: 401
-      // Expected behavior: returns error when user is not authenticated
-      // Expected output: error message
-      const testImagePath = path.resolve(IMAGES_DIR, 'test-no-auth.png');
-      if (!fs.existsSync(IMAGES_DIR)) {
-        fs.mkdirSync(IMAGES_DIR, { recursive: true });
-      }
-      fs.writeFileSync(testImagePath, Buffer.from('fake-image-data'));
-
+      // Expected behavior: authenticateToken middleware blocks request
       const res = await request(app)
-        .post('/api/media/upload')
-        .attach('media', testImagePath);
+        .post('/api/media/upload');
 
       expect(res.status).toBe(401);
       expect(res.body.error).toBeDefined();
-
-      // Clean up
-      if (fs.existsSync(testImagePath)) {
-        fs.unlinkSync(testImagePath);
-      }
     });
 
+    test('500 – returns 500 when sanitizeInput rejects CRLF path', async () => {
+      // Input: calling controller with CRLF-laced file path (simulates API failure branch)
+      // Expected status code: 500
+      // Expected behavior: sanitizeInput throws error, controller responds 500, saveImage never called
+      const maliciousPath = 'C:/temp/evil\r\nfile.png';
+
+      const req = {
+        file: { path: maliciousPath },
+        user: { _id: new mongoose.Types.ObjectId() },
+      } as unknown as Request;
+
+      const jsonMock = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jsonMock,
+      } as unknown as Response;
+
+      const next = jest.fn();
+      const saveImageSpy = jest.spyOn(MediaService, 'saveImage');
+
+      const controller = new MediaController();
+      await controller.uploadImage(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'CRLF injection attempt detected' });
+      expect(saveImageSpy).not.toHaveBeenCalled();
+      expect(next).not.toHaveBeenCalled();
+
+      saveImageSpy.mockRestore();
+    });
   });
 
   describe('Media Service - Direct Service Tests', () => {
