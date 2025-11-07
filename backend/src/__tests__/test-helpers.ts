@@ -54,9 +54,11 @@ export interface TestData {
  * Uses dev-login endpoint to get real JWT tokens for authentication.
  */
 export async function setupTestDatabase(app: express.Application): Promise<TestData> {
-  // Fresh DB state
+  // Fresh DB state - ensure all collections are dropped and resources released
   if (mongoose.connection.db) {
     await mongoose.connection.db.dropDatabase();
+    // Force garbage collection of any pending operations
+    await new Promise(resolve => setImmediate(resolve));
   }
 
   // Ensure JWT_SECRET is set for token generation
@@ -126,5 +128,21 @@ export async function setupTestDatabase(app: express.Application): Promise<TestD
     testUserToken,
     testUser2Token
   };
+}
+
+/**
+ * Cleans up test database resources properly to prevent memory leaks
+ */
+export async function cleanupTestDatabase(): Promise<void> {
+  // Remove all event listeners to prevent memory leaks
+  mongoose.connection.removeAllListeners();
+  
+  // Close all connections in the pool
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.connection.close();
+  }
+  
+  // Force garbage collection tick
+  await new Promise(resolve => setImmediate(resolve));
 }
 
