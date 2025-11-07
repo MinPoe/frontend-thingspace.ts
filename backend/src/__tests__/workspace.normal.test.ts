@@ -41,6 +41,54 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/workspace - Create Workspace', () => {
+    test('400 – returns validation error when name is missing', async () => {
+      // Input: request body without name
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when name is empty string', async () => {
+      // Input: request body with empty name
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (min(1) validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ name: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths).toContain('name');
+    });
+
+    test('400 – returns validation error when name has wrong type', async () => {
+      // Input: request body with non-string name
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ name: 12345 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -879,6 +927,23 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('PUT /api/workspace/:id - Update Workspace Profile', () => {
+    test('400 – returns validation error when name is empty string', async () => {
+      // Input: request body with empty name
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (min(1) validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ name: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths).toContain('name');
+    });
+
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -954,6 +1019,39 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
   });
 
   describe('PUT /api/workspace/:id/picture - Update Workspace Picture', () => {
+    test('400 – returns validation error when profilePicture is missing', async () => {
+      // Input: request body without profilePicture
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when profilePicture is empty string', async () => {
+      // Input: request body with empty profilePicture
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (min(1) validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ profilePicture: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths).toContain('profilePicture');
+    });
+
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401

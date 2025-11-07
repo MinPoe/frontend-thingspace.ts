@@ -51,6 +51,71 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
     testData = await setupTestDatabase(app);
   });
 
+  describe('POST /api/auth/signup - Sign Up (Validation)', () => {
+    test('400 – returns validation error when idToken is missing', async () => {
+      // Input: request body without idToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+      expect(Array.isArray(res.body.details)).toBe(true);
+    });
+
+    test('400 – returns validation error when idToken is empty string', async () => {
+      // Input: request body with empty idToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (min(1) validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ idToken: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths).toContain('idToken');
+    });
+
+    test('400 – returns validation error when idToken is wrong type', async () => {
+      // Input: request body with non-string idToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ idToken: 12345 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+  });
+
+  describe('POST /api/auth/signin - Sign In (Validation)', () => {
+    test('400 – returns validation error when idToken is missing', async () => {
+      // Input: request body without idToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/auth/signin')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+  });
+
   describe('POST /api/auth/dev-login - Dev Login', () => {
     test('200 – creates new test user and returns token', async () => {
       // Input: email in request body (optional, defaults to test@example.com)

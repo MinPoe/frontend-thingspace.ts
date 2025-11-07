@@ -54,6 +54,33 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
   });
 
   describe('POST /api/auth/signup - Sign Up, with mocks', () => {
+    test('500 – returns 500 when validation middleware encounters non-ZodError', async () => {
+      // Mocked behavior: schema.parse throws non-ZodError exception
+      // Input: request body (doesn't matter, mock will intercept)
+      // Expected status code: 500
+      // Expected behavior: validation middleware catches non-ZodError and returns 500
+      // Expected output: error message "Validation processing failed"
+      // This tests the non-ZodError catch branch in validation.middleware.ts
+      const { authenticateUserSchema } = require('../auth.types');
+      const originalParse = authenticateUserSchema.parse;
+      
+      jest.spyOn(authenticateUserSchema, 'parse').mockImplementation(() => {
+        throw new Error('Unexpected validation error');
+      });
+
+      try {
+        const res = await request(app)
+          .post('/api/auth/signup')
+          .send({ idToken: 'any-token' });
+
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Internal server error');
+        expect(res.body.message).toBe('Validation processing failed');
+      } finally {
+        authenticateUserSchema.parse = originalParse;
+      }
+    });
+
     test('401 – returns 401 when Google token is invalid', async () => {
       // Mocked behavior: authService.signUpWithGoogle throws Invalid Google token error
       // Input: invalid Google idToken
