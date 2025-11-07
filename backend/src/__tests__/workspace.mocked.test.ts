@@ -5,7 +5,10 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 import { workspaceService } from '../workspace.service';
 import { workspaceModel } from '../workspace.model';
+import { notificationService } from '../notification.service';
+import { userModel } from '../user.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
+import { mockSend } from './setup';
 
 // ---------------------------
 // Test suite
@@ -41,6 +44,192 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
   // Fresh DB state before each test
   beforeEach(async () => {
     testData = await setupTestDatabase(app);
+  });
+
+  describe('Notification Service Direct Tests', () => {
+    beforeEach(() => {
+      mockSend.mockClear();
+    });
+
+    test('notification service module initialization throws error when FIREBASE_JSON is not set', () => {
+      // Input: FIREBASE_JSON environment variable not set
+      // Expected behavior: Module throws error during initialization (line 7)
+      // Expected output: Error with message "FIREBASE_JSON environment variable is not set"
+      // Save the original value
+      const originalFirebaseJson = process.env.FIREBASE_JSON;
+      
+      // Temporarily delete FIREBASE_JSON
+      delete process.env.FIREBASE_JSON;
+      
+      // Clear the module cache to force re-import
+      const notificationServicePath = require.resolve('../notification.service');
+      delete require.cache[notificationServicePath];
+      
+      // Also clear firebase-admin from cache
+      const firebaseAdminPath = require.resolve('firebase-admin');
+      delete require.cache[firebaseAdminPath];
+      
+      try {
+        // Try to import the module and expect it to throw
+        expect(() => {
+          jest.isolateModules(() => {
+            require('../notification.service');
+          });
+        }).toThrow('FIREBASE_JSON environment variable is not set');
+      } finally {
+        // Restore the original value
+        process.env.FIREBASE_JSON = originalFirebaseJson;
+        
+        // Clear cache again to reload with correct env var
+        delete require.cache[notificationServicePath];
+        delete require.cache[firebaseAdminPath];
+        
+        // Re-import to restore normal state
+        require('../notification.service');
+      }
+    });
+
+    test('isTokenValid returns true for valid token', async () => {
+      // Mocked behavior: admin.messaging().send succeeds (via mockSend)
+      // Input: valid FCM token
+      // Expected behavior: isTokenValid returns true
+      // Expected output: true
+  
+      mockSend.mockResolvedValueOnce('success');
+
+      const result = await notificationService.isTokenValid('valid-token');
+
+      expect(result).toBe(true);
+      expect(mockSend).toHaveBeenCalledWith(
+        {
+          token: 'valid-token',
+          notification: { title: '', body: '' }
+        },
+        true // dry run
+      );
+    });
+
+    test('isTokenValid returns false for invalid token', async () => {
+      // Mocked behavior: admin.messaging().send rejects (via mockSend)
+      // Input: invalid FCM token
+      // Expected behavior: isTokenValid returns false (catch block line 62-63)
+      // Expected output: false
+      mockSend.mockRejectedValueOnce(new Error('Invalid token'));
+
+      const result = await notificationService.isTokenValid('invalid-token');
+
+      expect(result).toBe(false);
+      expect(mockSend).toHaveBeenCalledWith(
+        {
+          token: 'invalid-token',
+          notification: { title: '', body: '' }
+        },
+        true // dry run
+      );
+    });
+
+    test('sendNotification returns true when sending succeeds', async () => {
+      // Mocked behavior: admin.messaging().send succeeds (via mockSend)
+      // Input: FCM token, title, body
+      // Expected behavior: sendNotification returns true (line 42-44)
+      // Expected output: true
+      mockSend.mockResolvedValueOnce('mock-message-id');
+
+      const result = await notificationService.sendNotification(
+        'test-token',
+        'Test Title',
+        'Test Body'
+      );
+
+      expect(result).toBe(true);
+      expect(mockSend).toHaveBeenCalledWith({
+        token: 'test-token',
+        notification: {
+          title: 'Test Title',
+          body: 'Test Body',
+        },
+        data: {},
+        android: {
+          priority: 'high',
+          notification: {
+            sound: 'default',
+            channelId: 'workspace_invites',
+          },
+        },
+      });
+    });
+
+    test('sendNotification returns false when sending fails', async () => {
+      // Mocked behavior: admin.messaging().send rejects (via mockSend)
+      // Input: FCM token, title, body
+      // Expected behavior: sendNotification returns false (catch block line 45-47)
+      // Expected output: false
+      mockSend.mockRejectedValueOnce(new Error('Send failed'));
+
+      const result = await notificationService.sendNotification(
+        'test-token',
+        'Test Title',
+        'Test Body'
+      );
+
+      expect(result).toBe(false);
+      expect(mockSend).toHaveBeenCalled();
+    });
+
+    test('sendNotification includes data payload when provided', async () => {
+      // Mocked behavior: admin.messaging().send succeeds with data
+      // Input: FCM token, title, body, data object
+      // Expected behavior: sendNotification sends message with data (line 32: data ?? {})
+      // Expected output: true, mockSend called with data payload
+      mockSend.mockResolvedValueOnce('mock-message-id');
+
+      const data = { workspaceId: '123', type: 'invite' };
+      const result = await notificationService.sendNotification(
+        'test-token',
+        'Test Title',
+        'Test Body',
+        data
+      );
+
+      expect(result).toBe(true);
+      expect(mockSend).toHaveBeenCalledWith({
+        token: 'test-token',
+        notification: {
+          title: 'Test Title',
+          body: 'Test Body',
+        },
+        data: data,
+        android: {
+          priority: 'high',
+          notification: {
+            sound: 'default',
+            channelId: 'workspace_invites',
+          },
+        },
+      });
+    });
+
+    test('sendNotification uses empty object when data is undefined', async () => {
+      // Mocked behavior: admin.messaging().send succeeds
+      // Input: FCM token, title, body, no data parameter
+      // Expected behavior: sendNotification uses ?? operator to default to {} (line 32)
+      // Expected output: true, mockSend called with data: {}
+      mockSend.mockResolvedValueOnce('mock-message-id');
+
+      const result = await notificationService.sendNotification(
+        'test-token',
+        'Test Title',
+        'Test Body'
+        // No data parameter
+      );
+
+      expect(result).toBe(true);
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {},
+        })
+      );
+    });
   });
 
   describe('POST /api/workspace - Create Workspace, with mocks', () => {
@@ -370,6 +559,114 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to add member');
+    });
+
+    test('200 – invite member sends notification successfully', async () => {
+      // Mocked behavior: notificationService.sendNotification succeeds
+      // Input: workspaceId in URL, userId in body for user with FCM token
+      // Expected status code: 200
+      // Expected behavior: member added and notification sent
+      // Expected output: member added successfully, notification sent
+      // Set FCM token for user2
+      await userModel.updateFcmToken(
+        new mongoose.Types.ObjectId(testData.testUser2Id),
+        'test-fcm-token-123'
+      );
+
+      const sendNotificationSpy = jest.spyOn(notificationService, 'sendNotification').mockResolvedValue(true);
+
+      const res = await request(app)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member added successfully');
+      expect(sendNotificationSpy).toHaveBeenCalledWith(
+        'test-fcm-token-123',
+        'Workspace Invitation',
+        expect.stringContaining('added you to'),
+        expect.objectContaining({
+          type: 'workspace_invite',
+          workspaceId: testData.testWorkspaceId,
+        })
+      );
+    });
+
+    test('200 – invite member succeeds even if notification fails', async () => {
+      // Mocked behavior: notificationService.sendNotification fails
+      // Input: workspaceId in URL, userId in body for user with FCM token
+      // Expected status code: 200
+      // Expected behavior: member added despite notification failure
+      // Expected output: member added successfully
+      // Set FCM token for user2
+      await userModel.updateFcmToken(
+        new mongoose.Types.ObjectId(testData.testUser2Id),
+        'test-fcm-token-456'
+      );
+
+      const sendNotificationSpy = jest.spyOn(notificationService, 'sendNotification').mockResolvedValue(false);
+
+      const res = await request(app)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member added successfully');
+      expect(sendNotificationSpy).toHaveBeenCalled();
+    });
+
+    test('200 – invite member without FCM token does not send notification', async () => {
+      // Mocked behavior: user2 has no FCM token
+      // Input: workspaceId in URL, userId in body for user without FCM token
+      // Expected status code: 200
+      // Expected behavior: member added, no notification sent
+      // Expected output: member added successfully
+      const sendNotificationSpy = jest.spyOn(notificationService, 'sendNotification');
+
+      const res = await request(app)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Member added successfully');
+      expect(sendNotificationSpy).not.toHaveBeenCalled();
+    });
+
+    test('200 – invite member with notification data payload', async () => {
+      // Mocked behavior: notificationService.sendNotification sends notification with data
+      // Input: workspaceId in URL, userId in body
+      // Expected status code: 200
+      // Expected behavior: notification sent with correct data payload including workspaceId, workspaceName, inviterId
+      // Expected output: member added and notification with data sent
+      // Set FCM token for user2
+      await userModel.updateFcmToken(
+        new mongoose.Types.ObjectId(testData.testUser2Id),
+        'test-fcm-token-789'
+      );
+
+      const sendNotificationSpy = jest.spyOn(notificationService, 'sendNotification').mockResolvedValue(true);
+
+      const res = await request(app)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ userId: testData.testUser2Id });
+
+      expect(res.status).toBe(200);
+      // Verify notification was called with data payload
+      expect(sendNotificationSpy).toHaveBeenCalledWith(
+        'test-fcm-token-789',
+        'Workspace Invitation',
+        expect.any(String),
+        expect.objectContaining({
+          type: 'workspace_invite',
+          workspaceId: testData.testWorkspaceId,
+          workspaceName: 'Test Workspace',
+          inviterId: testData.testUserId,
+        })
+      );
     });
   });
 
