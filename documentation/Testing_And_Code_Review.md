@@ -143,13 +143,18 @@ This includes the non-functional requirement that every note/message containing 
 `./frontend/app/src/androidTest/java/com.cpen321.usermanagement`
 
 ### 4.2. Tests Included
+#### TestCollaborate.kt – Collaborate Feature
+- **Prerequisites**
+  - Two user accounts: a workspace manager and a workspace member
+  - The manager account must have a workspace named `Test`
+  - The manager account must not have access to workspaces named `Study` or `Study v2`
 
 | Use Case | Test File |
 |---|---|
-Collaborate | `TestCollaborate.kt` |
-Manage Notes | `TestNotes.kt` |
-Retrieve Notes | `TestRetrieveNotes.kt` |
-Reach Note Screens in ≤2 Clicks | `TestReachWith2Clicks.kt` |
+| Collaborate | `TestCollaborate.kt` |
+| Manage Notes | `TestNotes.kt` |
+| Retrieve Notes | `TestRetrieveNotes.kt` |
+| Reach Note Screens in ≤2 Clicks | `TestReachWith2Clicks.kt` |
 
 Logs:
 
