@@ -2,10 +2,12 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import type { Request, Response, NextFunction } from 'express';
 
 import { workspaceService } from '../workspace.service';
 import { workspaceModel } from '../workspace.model';
 import { notificationService } from '../notification.service';
+import * as authMiddleware from '../auth.middleware';
 import { userModel } from '../user.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 import { mockSend } from './setup';
@@ -859,6 +861,290 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to poll for new messages');
+    });
+  });
+
+  describe('Workspace routes - user authentication edge cases', () => {
+    const buildAppWithMockedAuth = async (userMock: any) => {
+      jest.resetModules();
+
+      // Mock authenticateToken before requiring routes
+      jest.doMock('../auth.middleware', () => ({
+        authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
+          req.user = userMock;
+          next();
+        },
+      }));
+
+      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      return helpers.createTestApp();
+    };
+
+    afterEach(() => {
+      jest.resetModules();
+      jest.dontMock('../auth.middleware');
+    });
+
+    test('POST /api/workspace - 401 when req.user is undefined (lines 10-11)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 10-11 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .post('/api/workspace')
+        .set('Authorization', 'Bearer fake-token')
+        .send({ name: 'Test Workspace' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/workspace/personal - 401 when req.user is undefined (lines 40-41)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 40-41 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .get('/api/workspace/personal')
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/workspace/user - 401 when req.user is undefined (lines 76-77)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 76-77 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .get('/api/workspace/user')
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/workspace/:id - 401 when req.user is undefined (lines 96-97)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 96-97 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const validWorkspaceId = new mongoose.Types.ObjectId().toString();
+
+      const res = await request(appInstance)
+        .get(`/api/workspace/${validWorkspaceId}`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/workspace/:id/members - 401 when req.user is undefined (lines 132-133)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 132-133 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const validWorkspaceId = new mongoose.Types.ObjectId().toString();
+
+      const res = await request(appInstance)
+        .get(`/api/workspace/${validWorkspaceId}/members`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/workspace/:id/tags - 401 when req.user is undefined (lines 165-166)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 165-166 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const validWorkspaceId = new mongoose.Types.ObjectId().toString();
+
+      const res = await request(appInstance)
+        .get(`/api/workspace/${validWorkspaceId}/tags`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('POST /api/workspace/:id/members - 401 when req.user is undefined (lines 223-224)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 223-224 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const validWorkspaceId = new mongoose.Types.ObjectId().toString();
+
+      const res = await request(appInstance)
+        .post(`/api/workspace/${validWorkspaceId}/members`)
+        .set('Authorization', 'Bearer fake-token')
+        .send({ userId: new mongoose.Types.ObjectId().toString() });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('POST /api/workspace/:id/leave - 401 when req.user is undefined (lines 285-286)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 285-286 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .post(`/api/workspace/${testData.testWorkspaceId}/leave`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('DELETE /api/workspace/:id/members/:userId - 401 when req.user is undefined (lines 329-330)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 329-330 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      // Use a valid ObjectId to avoid validation errors
+      const validWorkspaceId = new mongoose.Types.ObjectId().toString();
+      const validUserId = new mongoose.Types.ObjectId().toString();
+
+      const res = await request(appInstance)
+        .delete(`/api/workspace/${validWorkspaceId}/members/${validUserId}`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('PUT /api/workspace/:id - 401 when req.user is undefined (lines 378-379)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 378-379 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      // Use a valid ObjectId to avoid validation errors
+      const validWorkspaceId = new mongoose.Types.ObjectId().toString();
+
+      const res = await request(appInstance)
+        .put(`/api/workspace/${validWorkspaceId}`)
+        .set('Authorization', 'Bearer fake-token')
+        .send({ name: 'Test' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('PUT /api/workspace/:id/picture - 401 when req.user is undefined (lines 417-418)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 417-418 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', 'Bearer fake-token')
+        .send({ profilePicture: '/path/to/image.jpg' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('DELETE /api/workspace/:id - 401 when req.user is undefined (lines 457-458)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 457-458 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .delete(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/workspace/:id/poll - 401 when req.user is undefined (lines 496-497)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 496-497 in workspace.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .get(`/api/workspace/${testData.testWorkspaceId}/poll`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+  });
+
+  describe('WorkspaceService - getPersonalWorkspaceForUser user not found (line 50)', () => {
+    test('throws User not found error when userModel.findById returns null', async () => {
+      // Input: userId that doesn't exist
+      // Expected behavior: userModel.findById returns null, throws "User not found" (line 50)
+      // Expected output: Error with message "User not found"
+      // This tests line 50 in workspace.service.ts
+      jest.spyOn(userModel, 'findById').mockResolvedValueOnce(null);
+
+      const userId = new mongoose.Types.ObjectId();
+      
+      await expect(
+        workspaceService.getPersonalWorkspaceForUser(userId)
+      ).rejects.toThrow('User not found');
+    });
+
+    test('GET /api/workspace/personal - 404 when user not found via service', async () => {
+      // Input: request for personal workspace where user lookup fails
+      // Expected status code: 404
+      // Expected behavior: service throws "User not found", controller returns 404
+      // Expected output: error message
+      // Mock authenticateToken to set a user but mock userModel.findById to return null
+      // This simulates a race condition where the user exists for auth but not for the service call
+      jest.spyOn(workspaceService, 'getPersonalWorkspaceForUser').mockRejectedValueOnce(
+        new Error('User not found')
+      );
+
+      const res = await request(app)
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain('User not found');
     });
   });
 });
