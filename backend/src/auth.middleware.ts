@@ -69,6 +69,8 @@ export const authenticateToken = async (
   }
 };
 
+const moduleHadJwtSecret = process.env.JWT_SECRET !== undefined;
+
 export const authMiddleware = (
   req: Request,
   res: Response,
@@ -81,10 +83,16 @@ export const authMiddleware = (
       return res.status(401).json({ error: 'No token provided' });
     }
 
+    if (!moduleHadJwtSecret) {
+      next(new Error('JWT_SECRET not configured'));
+      return;
+    }
+
     const jwtSecret = process.env.JWT_SECRET;
 
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET not configured');
+      next(new Error('JWT_SECRET not configured'));
+      return;
     }
 
     const decoded = jwt.verify(token, jwtSecret);
@@ -93,6 +101,7 @@ export const authMiddleware = (
     return;
   } catch (error) {
     // Handle JWT_SECRET configuration error
+    // Configuration error should have been handled before try-catch, but keep fallback
     if (error instanceof Error && error.message === 'JWT_SECRET not configured') {
       next(error);
       return;
