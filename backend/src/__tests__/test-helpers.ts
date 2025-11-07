@@ -130,19 +130,4 @@ export async function setupTestDatabase(app: express.Application): Promise<TestD
   };
 }
 
-/**
- * Cleans up test database resources properly to prevent memory leaks
- */
-export async function cleanupTestDatabase(): Promise<void> {
-  // Remove all event listeners to prevent memory leaks
-  mongoose.connection.removeAllListeners();
-  
-  // Close all connections in the pool
-  if (mongoose.connection.readyState !== 0) {
-    await mongoose.connection.close();
-  }
-  
-  // Force garbage collection tick
-  await new Promise(resolve => setImmediate(resolve));
-}
 

@@ -10,7 +10,7 @@ const mediaController = new MediaController();
 
 router.post(
   '/upload',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   upload.single('media') as RequestHandler,
   asyncHandler(mediaController.uploadImage.bind(mediaController))
 );
