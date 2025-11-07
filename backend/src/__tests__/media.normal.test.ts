@@ -47,7 +47,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
     
     // Stop MongoDB memory server
     if (mongo) {
-      await mongo.stop();
+      await mongo.stop({ doCleanup: true, force: true });
     }
 
     // Clean up test images

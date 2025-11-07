@@ -45,7 +45,7 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
       await mongoose.disconnect();
     }
     if (mongo) {
-      await mongo.stop();
+      await mongo.stop({ doCleanup: true, force: true });
     }
   });
 

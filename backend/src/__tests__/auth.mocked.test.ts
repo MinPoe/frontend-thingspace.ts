@@ -46,7 +46,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
   // Tear down DB
   afterAll(async () => {
     await mongoose.disconnect();
-    await mongo.stop();
+    await mongo.stop({ doCleanup: true, force: true });
   });
 
   // Fresh DB state before each test
@@ -854,7 +854,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       } finally {
         process.env.MONGODB_URI = originalMongoUri;
         if (testMongo) {
-          await testMongo.stop();
+          await testMongo.stop({ doCleanup: true, force: true });
         }
       }
     });
@@ -935,7 +935,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
         process.env.MONGODB_URI = originalMongoUri;
         consoleErrorSpy.mockRestore();
         if (testMongo) {
-          await testMongo.stop();
+          await testMongo.stop({ doCleanup: true, force: true });
         }
       }
     });
@@ -967,7 +967,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
         process.env.MONGODB_URI = originalMongoUri;
         consoleLogSpy.mockRestore();
         if (testMongo) {
-          await testMongo.stop();
+          await testMongo.stop({ doCleanup: true, force: true });
         }
       }
     });
@@ -1009,7 +1009,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
         process.exitCode = originalExitCode;
         consoleLogSpy.mockRestore();
         if (testMongo) {
-          await testMongo.stop();
+          await testMongo.stop({ doCleanup: true, force: true });
         }
       }
     });
@@ -1053,7 +1053,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
         consoleLogSpy.mockRestore();
         consoleErrorSpy.mockRestore();
         if (testMongo) {
-          await testMongo.stop();
+          await testMongo.stop({ doCleanup: true, force: true });
         }
       }
     });

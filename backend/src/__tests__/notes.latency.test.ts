@@ -111,7 +111,7 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
   // Tear down DB
   afterAll(async () => {
     await mongoose.disconnect();
-    await mongo.stop();
+    await mongo.stop({ doCleanup: true, force: true });
   });
 
   // Fresh DB state and note creation before each test

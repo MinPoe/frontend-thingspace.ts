@@ -1,7 +1,8 @@
 // Jest setup file - runs before all tests
 // Load environment variables from .env file
 import 'dotenv/config';
-
+process.env.MONGOMS_VERSION = '6.0.4';
+process.env.MONGOMS_SKIP_MD5 = '1';
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
 }

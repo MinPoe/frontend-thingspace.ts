@@ -43,7 +43,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
   // Tear down DB
   afterAll(async () => {
     await mongoose.disconnect();
-    await mongo.stop();
+    await mongo.stop({ doCleanup: true, force: true });
   });
 
   // Fresh DB state before each test
