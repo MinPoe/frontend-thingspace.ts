@@ -24,12 +24,4 @@ export interface AuthResult {
   user: IUser;
 }
 
-// Express namespace augmentation needed for type extension
-// This is the only way to extend Express Request type in TypeScript
-declare global {
-  namespace Express {
-    interface Request {
-      user?: IUser;
-    }
-  }
-}
+// Note: Express Request type augmentation moved to express.d.ts

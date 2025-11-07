@@ -3,10 +3,14 @@ import { sanitizeArgs, sanitizeInput } from './sanitizeInput.util';
 const logger = {
   info: (message: string, ...args: unknown[]) => {
     // Input is already sanitized via sanitizeInput and sanitizeArgs
-    console.log('[INFO]', sanitizeInput(message), ...sanitizeArgs(args));
+    const sanitizedArgs = sanitizeArgs(args);
+    const logMessage = ['[INFO]', sanitizeInput(message), ...sanitizedArgs].join(' ');
+    console.log(logMessage);
   },
   error: (message: string, ...args: unknown[]) => {
-    console.error('[ERROR]', sanitizeInput(message), ...sanitizeArgs(args));
+    const sanitizedArgs = sanitizeArgs(args);
+    const logMessage = ['[ERROR]', sanitizeInput(message), ...sanitizedArgs].join(' ');
+    console.error(logMessage);
   },
 };
 
