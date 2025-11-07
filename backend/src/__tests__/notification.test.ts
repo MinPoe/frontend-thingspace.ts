@@ -1,25 +1,6 @@
 /// <reference types="jest" />
-import admin from 'firebase-admin';
 import { notificationService } from '../notification.service';
-
-// Mock Firebase Admin before importing the service
-const mockSend = jest.fn();
-const mockMessaging = {
-  send: mockSend,
-};
-
-jest.mock('firebase-admin', () => {
-  return {
-    __esModule: true,
-    default: {
-      messaging: jest.fn(() => mockMessaging),
-      credential: {
-        cert: jest.fn(),
-      },
-      initializeApp: jest.fn(),
-    },
-  };
-});
+import { mockSend } from './setup';
 
 // Mock the logger to avoid console output in tests
 jest.mock('../logger.util', () => ({
@@ -31,6 +12,30 @@ jest.mock('../logger.util', () => ({
 }));
 
 describe('notification.service', () => {
+  // Test for FIREBASE_JSON environment variable check (line 7)
+  describe('Module initialization', () => {
+    test('throws error when FIREBASE_JSON is not set (covers line 7)', () => {
+      // Save the original value
+      const originalFirebaseJson = process.env.FIREBASE_JSON;
+      
+      // Temporarily delete FIREBASE_JSON
+      delete process.env.FIREBASE_JSON;
+      
+      // Clear the module cache so it re-imports
+      delete require.cache[require.resolve('../notification.service')];
+      
+      // Try to import the module and expect it to throw
+      expect(() => {
+        // Use jest.isolateModules to import in isolation
+        jest.isolateModules(() => {
+          require('../notification.service');
+        });
+      }).toThrow('FIREBASE_JSON environment variable is not set');
+      
+      // Restore the original value
+      process.env.FIREBASE_JSON = originalFirebaseJson;
+    });
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockSend.mockClear();

@@ -22,9 +22,9 @@ export class WorkspaceService {
         const newWorkspace = await workspaceModel.create({
             name: data.name,
             profile: {
-                imagePath: data.profilePicture || '',
+                imagePath: data.profilePicture ?? '',
                 name: data.name,
-                description: data.description || ''
+                description: data.description ?? ''
             },
             ownerId: userId,
             members: [userId] // Owner is automatically a member
@@ -74,7 +74,7 @@ export class WorkspaceService {
     }
 
     async getWorkspacesForUser(userId: mongoose.Types.ObjectId, personalWorkspaceId?: mongoose.Types.ObjectId): Promise<Workspace[]> {
-        const query: any = {
+        const query: { members: mongoose.Types.ObjectId; _id?: { $ne: mongoose.Types.ObjectId } } = {
             members: userId
         };
         
@@ -122,7 +122,7 @@ export class WorkspaceService {
         };
     }
 
-    async getWorkspaceMembers(workspaceId: string, userId: mongoose.Types.ObjectId): Promise<IUser[]> {
+    async getWorkspaceMembers(workspaceId: string): Promise<IUser[]> {
         // 1. Fetch workspace
         const workspace = await workspaceModel.findById(workspaceId);
         
@@ -156,7 +156,7 @@ export class WorkspaceService {
         const notes = await noteModel.find({ workspaceId });
 
         // Extract all tags and get unique ones
-        const allTags = notes.flatMap(note => note.tags || []);
+        const allTags = notes.flatMap(note => note.tags);
         const uniqueTags = [...new Set(allTags)];
 
         return uniqueTags;
@@ -175,7 +175,7 @@ export class WorkspaceService {
         }
 
         // Check if user is banned
-        const isBanned = workspace.bannedMembers?.some(id => id.toString() === checkUserId);
+        const isBanned = workspace.bannedMembers.some(id => id.toString() === checkUserId);
         if (isBanned) {
             return WsMembershipStatus.BANNED;
         }
@@ -215,7 +215,7 @@ export class WorkspaceService {
         }
 
         // Check if user is banned
-        const isBanned = workspace.bannedMembers?.some(id => id.toString() === userIdToAdd);
+        const isBanned = workspace.bannedMembers.some(id => id.toString() === userIdToAdd);
         if (isBanned) {
             throw new Error('User is banned from this workspace');
         }
@@ -241,7 +241,7 @@ export class WorkspaceService {
                     `${invitingUser.profile.name} added you to "${workspace.name}"`,
                     {
                         type: 'workspace_invite',
-                        workspaceId: workspaceId,
+                        workspaceId,
                         workspaceName: workspace.name,
                         inviterId: requestingUserId.toString()
                     }

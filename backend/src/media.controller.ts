@@ -18,8 +18,13 @@ export class MediaController {
         });
       }
 
-      const user = req.user!;
-      const sanitizedFilePath = sanitizeInput(req.file.path);
+      const sanitizedFilePath = sanitizeInput(req.file.path as string);
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({
+          message: 'User not authenticated',
+        });
+      }
       const image = await MediaService.saveImage(
         sanitizedFilePath,
         user._id.toString()

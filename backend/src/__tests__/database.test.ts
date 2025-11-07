@@ -21,6 +21,8 @@ describe('Database Connection', () => {
   afterEach(async () => {
     // Restore original env
     process.env = originalEnv;
+    // Remove all SIGINT listeners to avoid interference between tests
+    process.removeAllListeners('SIGINT');
     // Clean up connections
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
@@ -87,6 +89,107 @@ describe('Database Connection', () => {
       
       connectSpy.mockRestore();
       consoleErrorSpy.mockRestore();
+    });
+
+    test('handles MongoDB connection error event', async () => {
+      // Input: MongoDB connection that emits an error event
+      // Expected behavior: error handler logs the error
+      mongo = await MongoMemoryServer.create();
+      process.env.MONGODB_URI = mongo.getUri();
+
+      // Mock console.error to verify error is logged
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      await connectDB();
+
+      // Verify connection is established
+      expect(mongoose.connection.readyState).toBe(1);
+
+      // Emit an error event to trigger the error handler
+      const testError = new Error('Test connection error');
+      mongoose.connection.emit('error', testError);
+
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ MongoDB connection error:', testError);
+      
+      consoleErrorSpy.mockRestore();
+      
+      // Clean up
+      await mongoose.disconnect();
+    });
+
+    test('handles SIGINT signal and closes connection successfully', async () => {
+      // Input: SIGINT signal sent to process
+      // Expected behavior: closes MongoDB connection and sets exit code
+      mongo = await MongoMemoryServer.create();
+      process.env.MONGODB_URI = mongo.getUri();
+
+      // Mock console.log to verify messages are logged
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      await connectDB();
+      expect(mongoose.connection.readyState).toBe(1);
+
+      // Mock connection.close to resolve successfully
+      const closeSpy = jest.spyOn(mongoose.connection, 'close').mockResolvedValueOnce(undefined);
+
+      // Emit SIGINT signal
+      process.emit('SIGINT', 'SIGINT');
+
+      // Wait for the async close operation
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify connection.close was called
+      expect(closeSpy).toHaveBeenCalled();
+      
+      // Verify exit message was logged
+      expect(consoleLogSpy).toHaveBeenCalledWith('MongoDB connection closed through app termination');
+      
+      // Verify process.exitCode was set
+      expect(process.exitCode).toBe(0);
+
+      closeSpy.mockRestore();
+      consoleLogSpy.mockRestore();
+      
+      // Clean up
+      await mongoose.disconnect();
+    });
+
+    test('handles SIGINT signal when connection.close fails', async () => {
+      // Input: SIGINT signal sent to process, but connection.close fails
+      // Expected behavior: logs error and handles failure gracefully
+      mongo = await MongoMemoryServer.create();
+      process.env.MONGODB_URI = mongo.getUri();
+
+      // Mock console methods to verify messages are logged
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      await connectDB();
+      expect(mongoose.connection.readyState).toBe(1);
+
+      // Mock connection.close to reject with an error
+      const closeError = new Error('Failed to close connection');
+      const closeSpy = jest.spyOn(mongoose.connection, 'close').mockRejectedValueOnce(closeError);
+
+      // Emit SIGINT signal
+      process.emit('SIGINT', 'SIGINT');
+
+      // Wait for the async close operation
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify connection.close was called
+      expect(closeSpy).toHaveBeenCalled();
+      
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error closing MongoDB connection on SIGINT:', closeError);
+
+      closeSpy.mockRestore();
+      consoleLogSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+      
+      // Clean up
+      await mongoose.disconnect();
     });
   });
 

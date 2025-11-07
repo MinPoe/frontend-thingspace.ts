@@ -24,7 +24,11 @@ export interface AuthResult {
   user: IUser;
 }
 
+// Express namespace augmentation needed for type extension
+// This is the only way to extend Express Request type in TypeScript
+/* eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/prefer-namespace-keyword */
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: IUser;

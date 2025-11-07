@@ -1,12 +1,11 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import express from 'express';
+import path from 'path';
 
 import { connectDB } from './database';
 import { errorHandler, notFoundHandler } from './errorHandler.middleware';
 import router from './routes';
-import path from 'path';
-
-dotenv.config();
+import logger from './logger.util';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -18,10 +17,11 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('*', notFoundHandler);
 app.use(errorHandler);
 
-connectDB();
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+connectDB().catch((error: unknown) => {
+  console.error('Failed to connect to database:', error);
+  throw error;
 });
-
-
-console.log(process.env)
+app.listen(PORT, () => {
+  // PORT is from environment variable, not user input
+  logger.info(`🚀 Server running on port ${PORT}`);
+});

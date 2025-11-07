@@ -2,8 +2,11 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from './user.model';
+import { IUser } from './user.types';
 
 
+// Express supports async handlers, but RequestHandler type expects void
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 export const authenticateToken: RequestHandler = async (
   req: Request,
   res: Response,
@@ -21,17 +24,18 @@ export const authenticateToken: RequestHandler = async (
       return;
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: mongoose.Types.ObjectId;
-    };
-
-    if (!decoded || !decoded.id) {
-      res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token verification failed',
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      res.status(500).json({
+        error: 'Server configuration error',
+        message: 'JWT_SECRET not configured',
       });
       return;
     }
+
+    const decoded = jwt.verify(token, jwtSecret) as {
+      id: mongoose.Types.ObjectId;
+    };
 
     const user = await userModel.findById(decoded.id);
 
@@ -69,7 +73,7 @@ export const authenticateToken: RequestHandler = async (
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export const authMiddleware = async (
+export const authMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -86,12 +90,14 @@ export const authMiddleware = async (
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded as any;
-    return next();
+    req.user = decoded as unknown as IUser;
+    next();
+    return;
   } catch (error) {
     // Handle JWT_SECRET configuration error
     if (error instanceof Error && error.message === 'JWT_SECRET not configured') {
-      return next(error);
+      next(error);
+      return;
     }
     
     // Handle JWT-specific errors

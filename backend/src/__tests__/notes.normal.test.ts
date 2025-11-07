@@ -36,6 +36,26 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/notes - Create Note', () => {
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 10-11 in notes.controller.ts
+      const res = await request(app)
+        .post('/api/notes')
+        .set('x-no-user-id', 'true')
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['test'],
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('201 – creates a CONTENT note', async () => {
       // Input: noteData with workspaceId, noteType CONTENT, tags, and fields array
       // Expected status code: 201
@@ -59,6 +79,30 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.note.noteType).toBe(NoteType.CONTENT);
       expect(res.body.data.note.workspaceId).toBe(testData.testWorkspaceId);
       expect(res.body.data.note.fields).toHaveLength(2);
+    });
+
+    test('201 – creates note with field content as null/undefined (tests ?? operator branch)', async () => {
+      // Input: noteData with field where content property exists but is null/undefined
+      // Expected status code: 201
+      // Expected behavior: note created successfully, nullish coalescing operator handles null/undefined
+      // Expected output: note created with empty string for null/undefined content
+      // This tests the ?? operator branch on line 27 of notes.service.ts
+      const noteData = {
+        workspaceId: testData.testWorkspaceId,
+        noteType: NoteType.CONTENT,
+        tags: ['test'],
+        fields: [
+          { fieldType: 'title', content: null, _id: '1' },
+          { fieldType: 'textbox', content: undefined, _id: '2' },
+          { fieldType: 'textbox', _id: '3' }, // No content property
+        ],
+      };
+
+      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
+
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe('Note created successfully');
+      expect(res.body.data.note).toBeDefined();
     });
 
     test('500 – missing workspaceId (validation mocked out)', async () => {
@@ -148,6 +192,24 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       noteId = create.body.data.note._id;
     });
 
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 33-34 in notes.controller.ts
+      const res = await request(app)
+        .put(`/api/notes/${noteId}`)
+        .set('x-no-user-id', 'true')
+        .send({
+          tags: ['updated'],
+          fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }],
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – updates an existing note', async () => {
       // Input: noteId in URL, updated tags and fields in body
       // Expected status code: 200
@@ -210,6 +272,20 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       noteId = create.body.data.note._id;
     });
 
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 56-57 in notes.controller.ts
+      const res = await request(app)
+        .delete(`/api/notes/${noteId}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('200 – deletes an existing note', async () => {
       // Input: noteId in URL
       // Expected status code: 200
@@ -259,6 +335,20 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
           fields: [{ fieldType: 'title', content: 'Fetch This', _id: '1' }],
         });
       noteId = create.body.data.note._id;
+    });
+
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 76-77 in notes.controller.ts
+      const res = await request(app)
+        .get(`/api/notes/${noteId}`)
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
     });
 
     test('200 – fetches a note', async () => {
@@ -354,6 +444,40 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.status).toBe(200);
       const urgentNotes = res.body.data.notes.filter((note: any) => note.tags.includes('urgent'));
       expect(urgentNotes.length).toBeGreaterThan(0);
+    });
+
+    test('200 – filters by multiple tags', async () => {
+      // Input: workspaceId, noteType, and multiple tags in query params
+      // Expected status code: 200
+      // Expected behavior: notes filtered by tags (tags.length > 0 branch in notes.service.ts line 236)
+      // Expected output: array of notes with matching tags
+      const res = await request(app)
+        .get('/api/notes')
+        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT, tags: ['important', 'urgent'] })
+        .set('x-test-user-id', testData.testUserId);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.notes.length).toBeGreaterThan(0);
+      // Verify all returned notes have at least one of the requested tags
+      res.body.data.notes.forEach((note: any) => {
+        const hasMatchingTag = note.tags.some((tag: string) => ['important', 'urgent'].includes(tag));
+        expect(hasMatchingTag).toBe(true);
+      });
+    });
+
+    test('401 – returns 401 when user._id is not set', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 200-201 in notes.controller.ts
+      const res = await request(app)
+        .get('/api/notes')
+        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
+        .set('x-no-user-id', 'true');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
     });
 
     test('400 – missing workspaceId', async () => {
@@ -478,6 +602,21 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.body.error).toBe('Note not found');
     });
 
+    test('401 – returns 401 when user._id is not set (shareNoteToWorkspace)', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 100-102 in notes.controller.ts
+      const res = await request(app)
+        .post(`/api/notes/${noteId}/share`)
+        .set('x-no-user-id', 'true')
+        .send({ workspaceId: testData.testWorkspace2Id });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
     test('403 – cannot share another user\'s note (not owner)', async () => {
       // Input: noteId of another user's note, workspaceId, different userId
       // Expected status code: 403
@@ -599,6 +738,21 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('workspaceId is required');
+    });
+
+    test('401 – returns 401 when user._id is not set (copyNoteToWorkspace)', async () => {
+      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Expected status code: 401
+      // Expected behavior: error message returned
+      // Expected output: error message "User not authenticated"
+      // This tests lines 143-144 in notes.controller.ts
+      const res = await request(app)
+        .post(`/api/notes/${noteId}/copy`)
+        .set('x-no-user-id', 'true')
+        .send({ workspaceId: testData.testWorkspace2Id });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
     });
   });
 

@@ -146,6 +146,33 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       testData = await setupTestDatabase();
     });
 
+    test('saveImage throws error when path validation fails', async () => {
+      // Input: file path that fails validation (line 30-31)
+      // Expected behavior: validatePath returns false, error is thrown
+      // Expected output: Error "Invalid file path"
+      const testFile = path.resolve(IMAGES_DIR, 'test-validation.png');
+      fs.writeFileSync(testFile, Buffer.from('test data'));
+
+      // Mock validatePath to return false to trigger the validation error
+      const validatePathSpy = jest.spyOn(MediaService as any, 'validatePath').mockReturnValue(false);
+
+      try {
+        await expect(
+          MediaService.saveImage(testFile, testData.testUserId)
+        ).rejects.toThrow('Invalid file path');
+
+        // Verify validatePath was called
+        expect(validatePathSpy).toHaveBeenCalled();
+      } finally {
+        // Restore original function
+        validatePathSpy.mockRestore();
+        // Clean up if file still exists
+        if (fs.existsSync(testFile)) {
+          fs.unlinkSync(testFile);
+        }
+      }
+    });
+
     test('saveImage cleans up file when rename fails and file exists', async () => {
       // Input: file that exists but rename fails
       // Expected behavior: File is deleted if it exists when error occurs (line 18: fs.unlinkSync)
@@ -184,8 +211,10 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: No error thrown, error logged
       const testFile = path.resolve(IMAGES_DIR, 'test-delete-error.png');
       fs.writeFileSync(testFile, Buffer.from('test data'));
-      const url = `${IMAGES_DIR}/test-delete-error.png`.replace(/\\/g, '/');
-      const constructedPath = path.join(process.cwd(), url.substring(1));
+      // Use relative path from process.cwd() as deleteImage expects
+      const relativePath = path.relative(process.cwd(), testFile);
+      const url = relativePath.replace(/\\/g, '/');
+      const constructedPath = path.resolve(process.cwd(), url);
       
       // Create file at the path that will be checked
       if (!fs.existsSync(path.dirname(constructedPath))) {
@@ -193,8 +222,13 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       }
       fs.writeFileSync(constructedPath, Buffer.from('test data'));
 
+      // Mock validatePath to return true (so we can test the error handling)
+      // We need to access the private method via bracket notation or spy on the class
+      const validatePathSpy = jest.spyOn(MediaService as any, 'validatePath').mockReturnValue(true);
+      
       // Mock fs.unlinkSync to throw error
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const existsSyncSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       const unlinkSyncSpy = jest.spyOn(fs, 'unlinkSync').mockImplementation(() => {
         throw new Error('Unlink failed');
       });
@@ -203,11 +237,13 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
         // deleteImage should catch the error and log it
         await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
         
-        // Verify error was logged - line 33
+        // Verify error was logged
         expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to delete old profile picture:', expect.any(Error));
         expect(unlinkSyncSpy).toHaveBeenCalled();
       } finally {
         // Restore
+        validatePathSpy.mockRestore();
+        existsSyncSpy.mockRestore();
         unlinkSyncSpy.mockRestore();
         consoleErrorSpy.mockRestore();
         // Clean up

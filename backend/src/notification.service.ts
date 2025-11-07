@@ -1,9 +1,12 @@
 import admin from 'firebase-admin';
-import * as path from 'path';
 import logger from './logger.util';
 
 // Initialize Firebase Admin
-const serviceAccount = require(path.resolve(__dirname, '../firebase-service-account.json'));
+const firebaseJson = process.env.FIREBASE_JSON;
+if (!firebaseJson) {
+  throw new Error('FIREBASE_JSON environment variable is not set');
+}
+const serviceAccount = JSON.parse(firebaseJson);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -26,7 +29,7 @@ export class NotificationService {
           title,
           body,
         },
-        data: data || {},
+        data: data ?? {},
         android: {
           priority: 'high',
           notification: {

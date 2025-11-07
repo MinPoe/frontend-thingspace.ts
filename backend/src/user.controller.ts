@@ -10,7 +10,11 @@ import { noteModel } from './note.model';
 
 export class UserController {
   getProfile(req: Request, res: Response<GetProfileResponse>) {
-    const user = req.user!;
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
 
     res.status(200).json({
       message: 'Profile fetched successfully',
@@ -24,7 +28,10 @@ export class UserController {
     next: NextFunction
   ) {
     try {
-      const user = req.user!;
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
 
       const updatedUser = await userModel.update(user._id, req.body);
 
@@ -53,21 +60,24 @@ export class UserController {
 
   async deleteProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = req.user!;
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
 
       const ownedWorkspaces = await workspaceModel.find({ ownerId: user._id });
 
       for (const workspace of ownedWorkspaces) {
         await noteModel.deleteMany({ workspaceId: workspace._id.toString() });
         await workspaceModel.findByIdAndDelete(workspace._id);
-        logger.info(`Deleted workspace ${workspace._id} for user: ${user._id}`);
+        logger.info(`Deleted workspace ${workspace._id.toString()} for user: ${user._id.toString()}`);
       }
 
       await workspaceModel.updateMany(
         { members: user._id },
         { $pull: { members: user._id } }
       );
-      logger.info(`Removed user ${user._id} from all member workspaces`);
+      logger.info(`Removed user ${user._id.toString()} from all member workspaces`);
 
       await MediaService.deleteAllUserImages(user._id.toString());
 
@@ -92,19 +102,22 @@ export class UserController {
 
   async updateFcmToken(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = req.user!;
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
       const validatedData = updateFcmTokenSchema.parse(req.body);
 
       const updatedUser = await userModel.updateFcmToken(
         user._id,
-        validatedData.fcmToken
+        validatedData.fcmToken as string
       );
 
       if (!updatedUser) {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      logger.info(`FCM token updated for user: ${user._id}`);
+      logger.info(`FCM token updated for user: ${user._id.toString()}`);
       res.status(200).json({ 
         message: 'FCM token updated successfully',
         data: { user: updatedUser }

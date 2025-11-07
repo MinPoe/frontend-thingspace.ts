@@ -1,17 +1,22 @@
 import express from 'express';
-import { authenticateToken } from './auth.middleware';;
+import mongoose from 'mongoose';
+
+import { asyncHandler } from './asyncHandler.util';
+import { authenticateToken } from './auth.middleware';
 import { messageModel } from './message.model';
 import { workspaceModel } from './workspace.model';
 import { createMessageSchema, getMessagesQuerySchema } from './message.types';
-import mongoose from 'mongoose';
 
 const router = express.Router();
 
 // Get messages for a workspace
-router.get('/workspace/:workspaceId', authenticateToken, async (req, res) => {
+router.get('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { workspaceId } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     // Validate query params
     const queryResult = getMessagesQuerySchema.safeParse(req.query);
@@ -31,16 +36,16 @@ router.get('/workspace/:workspaceId', authenticateToken, async (req, res) => {
     }
 
     // Build query
-    const query: any = { workspaceId: new mongoose.Types.ObjectId(workspaceId) };
+    const query: { workspaceId: mongoose.Types.ObjectId; createdAt?: { $lt: Date } } = { workspaceId: new mongoose.Types.ObjectId(workspaceId) };
     if (before) {
-      query.createdAt = { $lt: new Date(before) };
+      query.createdAt = { $lt: new Date(before as string) };
     }
 
     // Fetch messages
     const messages = await messageModel
       .find(query)
       .sort({ createdAt: -1 })
-      .limit(limit)
+      .limit(limit as number)
       .lean();
 
     res.json(messages);
@@ -48,13 +53,16 @@ router.get('/workspace/:workspaceId', authenticateToken, async (req, res) => {
     console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
-});
+}));
 
 // Create a message
-router.post('/workspace/:workspaceId', authenticateToken, async (req, res) => {
+router.post('/workspace/:workspaceId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { workspaceId } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     // Validate request body
     const bodyResult = createMessageSchema.safeParse(req.body);
@@ -90,13 +98,16 @@ router.post('/workspace/:workspaceId', authenticateToken, async (req, res) => {
     console.error('Error creating message:', error);
     res.status(500).json({ error: 'Failed to create message' });
   }
-});
+}));
 
 // Delete a message (workspace owner only)
-router.delete('/:messageId', authenticateToken, async (req, res) => {
+router.delete('/:messageId', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { messageId } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
 
     const message = await messageModel.findById(messageId);
     if (!message) {
@@ -119,6 +130,6 @@ router.delete('/:messageId', authenticateToken, async (req, res) => {
     console.error('Error deleting message:', error);
     res.status(500).json({ error: 'Failed to delete message' });
   }
-});
+}));
 
 export const messageRouter = router;

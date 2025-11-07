@@ -42,9 +42,17 @@ export class AuthService {
   }
 
   private generateAccessToken(user: IUser): string {
-    return jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET not configured');
+    }
+    const token = jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: '19h',
     });
+    if (typeof token !== 'string') {
+      throw new Error('Failed to generate token');
+    }
+    return token;
   }
 
   async signUpWithGoogle(idToken: string): Promise<AuthResult> {
@@ -105,7 +113,7 @@ export class AuthService {
       const consistentGoogleId = `dev-${email.replace(/[^a-zA-Z0-9]/g, '-')}`;
       const testUserInfo: GoogleUserInfo = {
         googleId: consistentGoogleId,
-        email: email,
+        email,
         name: 'Test User',
         profilePicture: 'https://via.placeholder.com/150',
       };

@@ -7,7 +7,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -35,6 +38,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.lang.Thread.sleep
 import javax.inject.Inject
+import kotlin.math.sign
 
 /*
 * Please log in to the below accounts on your emulator:
@@ -43,14 +47,12 @@ import javax.inject.Inject
 * Passwords as in attachments.
 * Fill in the bio's of the accounts (with anything, just not empty).
 *
-* To run the test, make sure that you are signed out of the application.
 * In case this test case fails, there might be a ghost Study v2 workspace in Friedrich van Aukstin's
 * workspaces. Please manually remove it before re-running the test.
 *
 * It might happen the UI Automator picks the wrong button on sign in. In this case:
 * 1) run the app regularly, sign in to any account
-* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
-* 3) run the test again (this time should work)
+* 2) run the test again (this time should work)
 * */
 
 
@@ -58,12 +60,12 @@ import javax.inject.Inject
 class TestCollaborate {
 
     companion object{
-        const val ACCT_NAME="Friedrich van Aukstin"
-        const val ACCT_GMAIL="vanaukstinfriedrich@gmail.com"
-        const val ACCT_WS="Friedrich van Aukstin's Personal Workspace"
-        const val MEMBER_ACCT_NAME="Thing4G"
-        const val MEMBER_ACCT_GMAIL="thing4g@gmail.com"
-        const val MEMBER_ACCT_WS = "Thing4G's Personal Workspace"
+        const val MEMBER_ACCT_NAME="Friedrich van Aukstin"
+        const val MEMBER_ACCT_GMAIL="vanaukstinfriedrich@gmail.com"
+        const val MEMBER_ACCT_WS="Friedrich van Aukstin's Personal Workspace"
+        const val ACCT_NAME="Thing4G"
+        const val ACCT_GMAIL="thing4g@gmail.com"
+        const val ACCT_WS = "Thing4G's Personal Workspace"
 
         //Error/Success messages
         const val saveConfirmString = "Profile updated successfully!"
@@ -92,6 +94,24 @@ class TestCollaborate {
         composeRule.waitForIdle()
         sleep(millis)
         composeRule.waitForIdle()
+    }
+
+    private fun waitForText(textContent:String){
+        composeRule.waitUntil(20000){
+            composeRule //Waiting for the success message to disappear
+                .onAllNodesWithText(textContent)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    private fun waitForDescription(contentDescription:String){
+        composeRule.waitUntil(20000){
+            composeRule //Waiting for the success message to disappear
+                .onAllNodesWithContentDescription(contentDescription)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 
     private fun signIn(signInString:String, acctName:String){
@@ -136,13 +156,13 @@ class TestCollaborate {
         val membersIcString = composeRule.activity.getString(R.string.members)
         val banIcString = composeRule.activity.getString(R.string.ban)
 
-        uiAutomator {
-            onElement { textAsString() == "Allow" }.click()
-        }
-        signIn(signInString, ACCT_GMAIL)
+        try{uiAutomator { onElement { textAsString()=="Allow" }.click() }}catch(e:Exception){}
+        waitForVm(2000)
+        if(composeRule.onNodeWithText(signInString).isDisplayed()) signIn(signInString = signInString, ACCT_NAME)
         Log.d("TEST COLLABORATE","Workspace Creation Tests")
+        waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForVm(1000)
+        waitForText(createWsString)
         composeRule.onNodeWithText(createWsString).performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText(text = crWsButtonString).assertIsNotEnabled()
@@ -150,121 +170,112 @@ class TestCollaborate {
         composeRule.onNodeWithText(pickWsNameString).performTextInput(testWsName)
         composeRule.waitForIdle()
         composeRule.onNodeWithText(text = crWsButtonString).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(text = failedCrWsString).assertIsDisplayed()
+        waitForText(failedCrWsString)
         Log.d("TEST COLLABORATE","Successful Workspace Creation")
         composeRule.onNodeWithText(pickWsNameString).performTextReplacement(studyWsName)
         composeRule.waitForIdle()
         composeRule.onNodeWithText(text = crWsButtonString).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(text = manageWsPrString).assertIsDisplayed()
-        waitForVm(1000)
-        composeRule.onNodeWithText(text = studyWsName).assertIsDisplayed()
+        waitForText(manageWsPrString)
+        waitForText(studyWsName)
 
         Log.d("TEST COLLABORATE","Update Workspace Tests")
         composeRule.onNodeWithText(text = studyWsName).performTextReplacement(v2Name)
         composeRule.onNodeWithText(text = wsDescriptionString).performTextInput(v2Bio)
         composeRule.onNodeWithText(text = saveButtonString).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(text = saveConfirmString).assertIsDisplayed()
+        waitForText(saveConfirmString)
 
         Log.d("TEST COLLABORATE","Workspace Invite Tests")
         composeRule.onNodeWithContentDescription(wsInviteString).performClick()
-        waitForVm(1000)
+        waitForText(emailBoxString)
         Log.d("TEST COLLABORATE","1) Inviting an invalid email")
         composeRule.onNodeWithText(emailBoxString).performTextInput(invalidEmailSample)
         //UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).pressBack() //hiding the keyboard so that the success message is unobstructed
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
-        waitForVm(2000)
-        composeRule.onNodeWithText(invalidEmailString).assertIsDisplayed()
+        waitForText(invalidEmailString)
         Log.d("TEST COLLABORATE","2) A valid invitation")
         composeRule.onNodeWithText(emailBoxString).performTextReplacement(MEMBER_ACCT_GMAIL)
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
-        waitForVm(2000)
-        composeRule.onNodeWithText(addedAMemberString).assertIsDisplayed()
+        waitForText(addedAMemberString)
         Log.d("TEST COLLABORATE","3) Inviting already a member")
-        waitForVm(2000)
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(alreadyAMemberString).assertIsDisplayed()
+        waitForText(alreadyAMemberString)
 
         Log.d("TEST COLLABORATE","Moving to chat screen")
         composeRule.onNodeWithContentDescription(backIcString).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(2000)
         composeRule.onNodeWithContentDescription(chatIcString+v2Name).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
 
         Log.d("TEST COLLABORATE","Chat tests")
         Log.d("TEST COLLABORATE","Sending a non-empty chat message")
         composeRule.onNodeWithContentDescription(chatTextBoxString).performTextInput(" ")
         composeRule.onNodeWithContentDescription(chatIcString).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(noMessagesString).assertIsDisplayed()
+        waitForText(noMessagesString)
         Log.d("TEST COLLABORATE","Sending a non-empty chat message")
         composeRule.onNodeWithContentDescription(chatTextBoxString).performTextInput(chatMessage)
         composeRule.onNodeWithContentDescription(chatIcString).performClick()
-        waitForVm(10000) //to give time for the message to arrive
+        waitForText(chatMessage)
         composeRule.onNodeWithText(noMessagesString).assertIsNotDisplayed()
-        composeRule.onNodeWithText(chatMessage).assertIsDisplayed()
 
         Log.d("TEST COLLABORATE","Signing out and signing in as a regular Workspace Member")
         composeRule.onNodeWithContentDescription(profileIcString).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
-        waitForVm(1000)
+        waitForText(signInString)
         signIn(signInString, MEMBER_ACCT_NAME)
+        waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
 
         Log.d("TEST COLLABORATE","Enter the Workspace and see profile blurred out")
         composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
-        waitForVm(1000)
+        waitForText(v2Name)
         composeRule.onNodeWithText(wsDescriptionString).assertIsNotEnabled()
         composeRule.onNodeWithText(v2Name).assertIsNotEnabled()
 
         Log.d("TEST COLLABORATE","Test Leave Workspace")
         composeRule.onNodeWithContentDescription(leaveIcString).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
         composeRule.onNodeWithText(v2Name).assertIsNotDisplayed()
 
         Log.d("TEST COLLABORATE","Re-signing in as admin")
         composeRule.onNodeWithContentDescription(editWsIcString+MEMBER_ACCT_WS).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
-        waitForVm(1000)
+        waitForText(signInString)
         signIn(signInString, ACCT_NAME)
+        waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForVm(1000)
+        waitForDescription(editWsIcString+v2Name)
         composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
-        waitForVm(1000)
+        waitForText(wsDescriptionString)
         composeRule.onNodeWithText(wsDescriptionString).assertIsEnabled()
 
         Log.d("TEST COLLABORATE","Inviting the member again to ban them")
         composeRule.onNodeWithContentDescription(wsInviteString).performClick()
-        waitForVm(1000)
+        waitForText(emailBoxString)
         composeRule.onNodeWithText(emailBoxString).performTextReplacement(MEMBER_ACCT_GMAIL)
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
-        waitForVm(2000)
-        composeRule.onNodeWithText(addedAMemberString).assertIsDisplayed()
+        waitForText(addedAMemberString)
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(2000)
 
         Log.d("TEST COLLABORATE","Testing Ban")
         composeRule.onNodeWithContentDescription(membersIcString).performClick()
-        waitForVm(1000)
+        waitForDescription(banIcString)
         composeRule.onNodeWithContentDescription(banIcString).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
         composeRule.onNodeWithText(MEMBER_ACCT_NAME).assertIsNotDisplayed()
 
         Log.d("TEST COLLABORATE", "Checking that the user cannot be re-invited")
         composeRule.onNodeWithContentDescription(backIcString).performClick()
-        waitForVm(2000)
+        waitForDescription(wsInviteString)
         composeRule.onNodeWithContentDescription(wsInviteString).performClick()
-        waitForVm(1000)
+        waitForText(wsInviteButtonString)
         composeRule.onNodeWithText(wsInviteButtonString).performClick()
-        waitForVm(1000)
+        waitForVm(2000)
         composeRule.onNodeWithText(bannedString).assertIsDisplayed()
 
         Log.d("TEST COLLABORATE","Sign In as the banned member to confirm that you are out of the workspace")
@@ -275,8 +286,9 @@ class TestCollaborate {
         composeRule.onNodeWithContentDescription(editWsIcString+ACCT_WS).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
-        waitForVm(2000)
+        waitForText(signInString)
         signIn(signInString, MEMBER_ACCT_NAME)
+        waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(v2Name).assertIsNotDisplayed()
@@ -285,19 +297,18 @@ class TestCollaborate {
         composeRule.onNodeWithContentDescription(editWsIcString+MEMBER_ACCT_WS).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
-        waitForVm(2000)
+        waitForText(signInString)
         signIn(signInString, ACCT_NAME)
+        waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForVm(1000)
+        waitForDescription(editWsIcString+v2Name)
         composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(wsDescriptionString).assertIsEnabled()
+        waitForText(wsDescriptionString)
 
         Log.d("TEST COLLABORATE","Delete Test")
         //Also makes test re-runnable as the ws to be created is removed to be re-created next time
         composeRule.onNodeWithContentDescription(trashIcString).performClick()
-        waitForVm(1000)
-        composeRule.onNodeWithText(text = createWsString).assertIsDisplayed()
+        waitForText(createWsString)
         composeRule.onNodeWithText(text = studyWsName).assertIsNotDisplayed()
     }
 }

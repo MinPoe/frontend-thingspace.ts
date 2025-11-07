@@ -3,6 +3,7 @@ import { authenticateToken } from './auth.middleware';
 import { WorkspaceController } from './workspace.controller';
 import { validateBody } from './validation.middleware';
 import { CreateWorkspaceRequest, UpdateWorkspaceProfileRequest, UpdateWorkspacePictureRequest, createWorkspaceSchema, updateWorkspaceProfileSchema, updateWorkspacePictureSchema } from './workspace.types';
+import { asyncHandler } from './asyncHandler.util';
 
 const router = Router();
 const workspaceController = new WorkspaceController();
@@ -11,49 +12,49 @@ const workspaceController = new WorkspaceController();
 router.get(
   '/user',
   authenticateToken,
-  workspaceController.getWorkspacesForUser
+  asyncHandler(workspaceController.getWorkspacesForUser.bind(workspaceController))
 );
 
 // Get a user's personal workspace
 router.get(
   '/personal',
   authenticateToken,
-  workspaceController.getPersonalWorkspace
+  asyncHandler(workspaceController.getPersonalWorkspace.bind(workspaceController))
 );
 
 // Get members of a workspace
 router.get(
   '/:id/members',
   authenticateToken,
-  workspaceController.getWorkspaceMembers
+  asyncHandler(workspaceController.getWorkspaceMembers.bind(workspaceController))
 );
 
 // Get all tags in a workspace, NOTE: Lowkey idk wut this one rly means, right now it jsut checks all teh tagged notes
 router.get(
   '/:id/tags',
   authenticateToken,
-  workspaceController.getAllTags
+  asyncHandler(workspaceController.getAllTags.bind(workspaceController))
 );
 
 // Get membership status for a user
 router.get(
   '/:id/membership/:userId',
   authenticateToken,
-  workspaceController.getMembershipStatus
+  asyncHandler(workspaceController.getMembershipStatus.bind(workspaceController))
 );
 
 // Poll for new chat messages
 router.get(
   '/:id/poll',
   authenticateToken,
-  workspaceController.pollForNewMessages
+  asyncHandler(workspaceController.pollForNewMessages.bind(workspaceController))
 );
 
 // Get a single workspace
 router.get(
   '/:id',
   authenticateToken,
-  workspaceController.getWorkspace
+  asyncHandler(workspaceController.getWorkspace.bind(workspaceController))
 );
 
 // Create a new workspace
@@ -61,14 +62,14 @@ router.post(
   '/',
   authenticateToken,
   validateBody<CreateWorkspaceRequest>(createWorkspaceSchema),
-  workspaceController.createWorkspace
+  asyncHandler(workspaceController.createWorkspace.bind(workspaceController))
 );
 
 // Add member to workspace
 router.post(
   '/:id/members',
   authenticateToken,
-  workspaceController.inviteMember
+  asyncHandler(workspaceController.inviteMember.bind(workspaceController))
 );
 
 // Update workspace profile
@@ -76,7 +77,7 @@ router.put(
   '/:id',
   authenticateToken,
   validateBody<UpdateWorkspaceProfileRequest>(updateWorkspaceProfileSchema),
-  workspaceController.updateWorkspaceProfile
+  asyncHandler(workspaceController.updateWorkspaceProfile.bind(workspaceController))
 );
 
 // Update workspace picture
@@ -84,35 +85,35 @@ router.put(
   '/:id/picture',
   authenticateToken,
   validateBody<UpdateWorkspacePictureRequest>(updateWorkspacePictureSchema),
-  workspaceController.updateWorkspacePicture
+  asyncHandler(workspaceController.updateWorkspacePicture.bind(workspaceController))
 );
 
 // Ban member from workspace
 router.delete(
   '/:id/members/:userId',
   authenticateToken,
-  workspaceController.banMember
+  asyncHandler(workspaceController.banMember.bind(workspaceController))
 );
 
 // Leave workspace (user removes themselves)
 router.post(
   '/:id/leave',
   authenticateToken,
-  workspaceController.leaveWorkspace.bind(workspaceController)
+  asyncHandler(workspaceController.leaveWorkspace.bind(workspaceController))
 );
 
 // Delete workspace
 router.delete(
   '/:id',
   authenticateToken,
-  workspaceController.deleteWorkspace
+  asyncHandler(workspaceController.deleteWorkspace.bind(workspaceController))
 );
 
 // Get a specific workspace by ID
 router.get(
   '/:id',
   authenticateToken,
-  workspaceController.getWorkspace
+  asyncHandler(workspaceController.getWorkspace.bind(workspaceController))
 );
 
 

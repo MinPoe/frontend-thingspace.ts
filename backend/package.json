@@ -8,6 +8,9 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
+    "test:verbose": "jest --verbose --no-coverage",
+    "test:quiet": "jest --no-coverage",
+    "test:with-logs": "set TEST_VERBOSE=1&& jest --no-coverage",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=html",
     "format": "prettier --check \"src/**/*.{ts,js,json}\"",
     "format:fix": "prettier --write \"src/**/*.{ts,js,json}\""

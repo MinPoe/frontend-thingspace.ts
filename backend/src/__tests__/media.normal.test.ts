@@ -33,20 +33,35 @@ describe('Media API – Normal Tests (No Mocking)', () => {
 
   // Tear down DB
   afterAll(async () => {
-    await mongoose.disconnect();
-    await mongo.stop();
+    // Ensure mongoose connection is properly closed
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+    
+    // Stop MongoDB memory server
+    if (mongo) {
+      await mongo.stop();
+    }
 
     // Clean up test images
-    if (fs.existsSync(IMAGES_DIR)) {
-      const files = fs.readdirSync(IMAGES_DIR);
-      files.forEach(file => {
-        const filePath = path.join(IMAGES_DIR, file);
-        if (fs.statSync(filePath).isFile()) {
-          fs.unlinkSync(filePath);
-        }
-      });
+    try {
+      if (fs.existsSync(IMAGES_DIR)) {
+        const files = fs.readdirSync(IMAGES_DIR);
+        files.forEach(file => {
+          const filePath = path.join(IMAGES_DIR, file);
+          try {
+            if (fs.statSync(filePath).isFile()) {
+              fs.unlinkSync(filePath);
+            }
+          } catch (error) {
+            // Ignore errors during cleanup
+          }
+        });
+      }
+    } catch (error) {
+      // Ignore errors during cleanup
     }
-  });
+  }, 10000); // 10 second timeout for cleanup
 
   // Fresh DB state before each test
   beforeEach(async () => {
@@ -124,6 +139,42 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       }
     });
 
+    test('401 – returns 401 when user is not authenticated', async () => {
+      // Input: request with file but req.user is not set
+      // Expected status code: 401
+      // Expected behavior: returns error when user is not authenticated
+      // Expected output: error message "User not authenticated"
+      // Create a custom app without auth middleware to test the controller's user check
+      const express = require('express');
+      const customApp = express();
+      customApp.use(express.json());
+      
+      const MediaController = require('../media.controller').MediaController;
+      const mediaController = new MediaController();
+      const { upload } = require('../storage');
+      
+      // Add route without auth middleware, so req.user won't be set
+      customApp.post('/api/media/upload', upload.single('media'), mediaController.uploadImage.bind(mediaController));
+
+      const testImagePath = path.resolve(IMAGES_DIR, 'test-no-auth.png');
+      if (!fs.existsSync(IMAGES_DIR)) {
+        fs.mkdirSync(IMAGES_DIR, { recursive: true });
+      }
+      fs.writeFileSync(testImagePath, Buffer.from('fake-image-data'));
+
+      const res = await request(customApp)
+        .post('/api/media/upload')
+        .attach('media', testImagePath);
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('User not authenticated');
+
+      // Clean up
+      if (fs.existsSync(testImagePath)) {
+        fs.unlinkSync(testImagePath);
+      }
+    });
+
   });
 
   describe('Media Service - Direct Service Tests', () => {
@@ -142,158 +193,116 @@ describe('Media API – Normal Tests (No Mocking)', () => {
     });
 
     describe('deleteImage', () => {
-      test('deleteImage deletes file when URL starts with IMAGES_DIR and file exists', async () => {
-        // Input: URL that starts with IMAGES_DIR and file exists
-        // Expected behavior: File is deleted (line 29: fs.unlinkSync)
+      test('deleteImage deletes file when URL resolves to a valid path within IMAGES_DIR', async () => {
+        // Input: URL that resolves to a file within IMAGES_DIR
+        // Expected behavior: File is deleted (line 61: fs.unlinkSync)
         // Expected output: File no longer exists
+        
+        // Create test file in IMAGES_DIR
         const testFile = path.resolve(IMAGES_DIR, 'test-delete.png');
+        if (!fs.existsSync(IMAGES_DIR)) {
+          fs.mkdirSync(IMAGES_DIR, { recursive: true });
+        }
         fs.writeFileSync(testFile, Buffer.from('test data'));
         
-        // The implementation does: path.join(process.cwd(), url.substring(1))
-        // So if url is 'uploads/images/test.png', substring(1) = 'ploads/images/test.png' (wrong)
-        // But if we construct the path correctly, we need to match what the code actually does
-        // Since url.startsWith(IMAGES_DIR) where IMAGES_DIR='uploads/images'
-        // We need url='uploads/images/test.png', then url.substring(1)='ploads/images/test.png'
-        // Then path.join(process.cwd(), 'ploads/images/test.png') creates wrong path
-        // To test the actual delete branch (line 29), we need the file to exist at the constructed path
-        const url = `${IMAGES_DIR}/test-delete.png`.replace(/\\/g, '/');
-        const constructedPath = path.join(process.cwd(), url.substring(1));
+        // The new implementation resolves the URL from process.cwd()
+        // So we need a relative path from process.cwd() to the file
+        // IMAGES_DIR is now an absolute path, so we need to get the relative path
+        const relativePath = path.relative(process.cwd(), testFile);
+        const url = relativePath.replace(/\\/g, '/');
         
-        // Create file at the path that will actually be checked
-        if (!fs.existsSync(path.dirname(constructedPath))) {
-          fs.mkdirSync(path.dirname(constructedPath), { recursive: true });
-        }
-        fs.writeFileSync(constructedPath, Buffer.from('test data'));
+        // Verify the file exists before deletion
+        expect(fs.existsSync(testFile)).toBe(true);
         
         await MediaService.deleteImage(url);
         
-        // File should be deleted at the constructed path
-        expect(fs.existsSync(constructedPath)).toBe(false);
-        
-        // Clean up test file if it still exists
-        if (fs.existsSync(testFile)) {
-          fs.unlinkSync(testFile);
-        }
+        // File should be deleted
+        expect(fs.existsSync(testFile)).toBe(false);
       });
 
-      test('deleteImage does nothing when URL does not start with IMAGES_DIR', async () => {
-        // Input: URL that does not start with IMAGES_DIR
-        // Expected behavior: No operation performed (branch tested)
-        // Expected output: No error thrown
-        const url = 'some/other/path/image.png';
+      test('deleteImage does nothing when URL resolves outside IMAGES_DIR', async () => {
+        // Input: URL that resolves to a path outside IMAGES_DIR
+        // Expected behavior: validatePath returns false, method returns early
+        // Expected output: No error thrown, no file deleted
+        const url = '../../some/other/path/image.png';
 
         await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
       });
 
       test('deleteImage handles errors gracefully when file operation fails', async () => {
         // Input: URL that causes error during file operation
-        // Expected behavior: Error is caught and logged (line 33: console.error)
+        // Expected behavior: Error is caught and logged (line 63-65: console.error)
         // Expected output: No error thrown
-        // Create a file that will cause unlinkSync to fail (e.g., make it read-only or use invalid path)
-        const invalidUrl = `${IMAGES_DIR}/invalid\0path.png`.replace(/\\/g, '/');
+        // Use a valid path within IMAGES_DIR that might cause issues
+        const testFile = path.resolve(IMAGES_DIR, 'test-invalid.png');
+        const relativePath = path.relative(process.cwd(), testFile);
+        const url = relativePath.replace(/\\/g, '/');
 
-        await expect(MediaService.deleteImage(invalidUrl)).resolves.not.toThrow();
+        await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
+      });
+
+      test('deleteImage handles URL starting with slash', async () => {
+        // Input: URL that starts with '/' (tests line 52: normalizedUrl.startsWith('/') branch)
+        // Expected behavior: URL path has leading slash removed before resolution
+        // Expected output: File is deleted if it exists
+        const testFile = path.resolve(IMAGES_DIR, 'test-slash.png');
+        if (!fs.existsSync(IMAGES_DIR)) {
+          fs.mkdirSync(IMAGES_DIR, { recursive: true });
+        }
+        fs.writeFileSync(testFile, Buffer.from('test data'));
+        
+        // Create URL with leading slash
+        const relativePath = path.relative(process.cwd(), testFile);
+        const url = '/' + relativePath.replace(/\\/g, '/');
+        
+        // Verify the file exists before deletion
+        expect(fs.existsSync(testFile)).toBe(true);
+        
+        await MediaService.deleteImage(url);
+        
+        // File should be deleted
+        expect(fs.existsSync(testFile)).toBe(false);
       });
     });
 
     describe('deleteAllUserImages', () => {
-      test('deleteAllUserImages filters user files and attempts deletion', async () => {
+      test('deleteAllUserImages filters user files and deletes them', async () => {
         // Input: userId with multiple images
-        // Expected behavior: Method filters files by userId prefix and calls deleteImage
-        // Expected output: Method completes (note: deleteImage won't delete due to URL format issue)
-        // Note: deleteAllUserImages passes just filenames to deleteImage, which expects full URLs
-        // So the files won't actually be deleted, but we test the branch coverage
+        // Expected behavior: Method filters files by userId prefix and deletes them via deleteImage
+        // Expected output: User files deleted, other files remain
         const userId = testData.testUserId;
         const file1 = path.resolve(IMAGES_DIR, `${userId}-1.png`);
         const file2 = path.resolve(IMAGES_DIR, `${userId}-2.png`);
         const otherFile = path.resolve(IMAGES_DIR, 'other-user-1.png');
 
+        // Ensure IMAGES_DIR exists
+        if (!fs.existsSync(IMAGES_DIR)) {
+          fs.mkdirSync(IMAGES_DIR, { recursive: true });
+        }
+
         fs.writeFileSync(file1, Buffer.from('test1'));
         fs.writeFileSync(file2, Buffer.from('test2'));
         fs.writeFileSync(otherFile, Buffer.from('test3'));
 
+        // Verify files exist before deletion
+        expect(fs.existsSync(file1)).toBe(true);
+        expect(fs.existsSync(file2)).toBe(true);
+        expect(fs.existsSync(otherFile)).toBe(true);
+
         await MediaService.deleteAllUserImages(userId);
 
-        // Clean up manually since deleteImage won't work with just filenames
-        if (fs.existsSync(file1)) {
-          fs.unlinkSync(file1);
-        }
-        if (fs.existsSync(file2)) {
-          fs.unlinkSync(file2);
-        }
+        // User files should be deleted
+        expect(fs.existsSync(file1)).toBe(false);
+        expect(fs.existsSync(file2)).toBe(false);
+        // Other user's file should remain
+        expect(fs.existsSync(otherFile)).toBe(true);
+
+        // Clean up remaining file
         if (fs.existsSync(otherFile)) {
           fs.unlinkSync(otherFile);
         }
-
-        // Test verifies the method executes without error
-        expect(true).toBe(true);
       });
 
-      test('deleteAllUserImages does nothing when IMAGES_DIR does not exist', async () => {
-        // Input: IMAGES_DIR does not exist
-        // Expected behavior: Method returns early (line 39-40)
-        // Expected output: No error thrown
-        // Instead of renaming (which fails on Windows), test by checking the early return
-        // We can't easily remove IMAGES_DIR while tests are running, so we'll verify
-        // the branch exists by testing that it handles the case gracefully
-        
-        // Since we can't safely remove IMAGES_DIR, we'll test the logic path
-        // by ensuring the method handles non-existent directory (if we could create one)
-        // Actually, the best way is to test with a separate test directory that doesn't exist
-        const testNonExistentDir = path.resolve(__dirname, 'non-existent-images-dir');
-        
-        // Verify it doesn't exist
-        if (fs.existsSync(testNonExistentDir)) {
-          fs.rmSync(testNonExistentDir, { recursive: true, force: true });
-        }
-        
-        // We can't easily test the non-existent case without modifying the service
-        // But we can verify the existsSync check is working by testing the happy path
-        // The early return branch (line 39-40) would be tested if IMAGES_DIR didn't exist
-        // Since we need it for other tests, we'll verify the branch logic exists
-        // and test that the method works when directory exists
-        expect(true).toBe(true); // Branch exists in code, tested by code inspection
-      });
-
-      test('deleteAllUserImages handles errors gracefully when readdirSync fails', async () => {
-        // Input: IMAGES_DIR that causes readdirSync to fail
-        // Expected behavior: Error is caught and logged (line 48: console.error)
-        // Expected output: No error thrown
-        // Create a test directory that's a file to cause readdirSync to fail
-        const testImagesDir = path.resolve(__dirname, 'test-images-as-file');
-        const userId = testData.testUserId;
-        
-        // Clean up if it exists
-        if (fs.existsSync(testImagesDir)) {
-          if (fs.statSync(testImagesDir).isDirectory()) {
-            fs.rmSync(testImagesDir, { recursive: true, force: true });
-          } else {
-            fs.unlinkSync(testImagesDir);
-          }
-        }
-        
-        // Create a file with the directory name
-        fs.writeFileSync(testImagesDir, 'invalid');
-
-        try {
-          // Temporarily modify the service to use our test directory
-          // Actually, we can't do that without mocks. Let's use a different approach.
-          // We can't easily test this without modifying the service or using mocks
-          // The error branch exists in code and would be hit if readdirSync throws
-          // Since we can't safely replace IMAGES_DIR, we'll verify the error handling exists
-          // by ensuring the method handles errors gracefully
-          
-          // The best we can do is verify the catch block exists and test with current setup
-          // The error would occur if readdirSync throws, which we can't easily simulate
-          // without file system manipulation that fails on Windows
-          expect(true).toBe(true); // Error handling branch exists in code
-        } finally {
-          // Clean up
-          if (fs.existsSync(testImagesDir)) {
-            fs.unlinkSync(testImagesDir);
-          }
-        }
-      });
     });
   });
 });
