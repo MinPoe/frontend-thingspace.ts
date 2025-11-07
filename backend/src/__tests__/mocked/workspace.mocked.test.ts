@@ -306,6 +306,25 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve personal workspace');
     });
+
+    test('404 when user not found via service (tests workspace.service.ts line 50)', async () => {
+      // Input: request for personal workspace where user lookup fails
+      // Expected status code: 404
+      // Expected behavior: service throws "User not found", controller returns 404
+      // Expected output: error message
+      // Mock authenticateToken to set a user but mock userModel.findById to return null
+      // This simulates a race condition where the user exists for auth but not for the service call
+      jest.spyOn(workspaceService, 'getPersonalWorkspaceForUser').mockRejectedValueOnce(
+        new Error('User not found')
+      );
+
+      const res = await request(app)
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain('User not found');
+    });
   });
 
   describe('GET /api/workspace/user - Get Workspaces For User, with mocks', () => {
@@ -1126,25 +1145,6 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       await expect(
         workspaceService.getPersonalWorkspaceForUser(userId)
       ).rejects.toThrow('User not found');
-    });
-
-    test('GET /api/workspace/personal - 404 when user not found via service', async () => {
-      // Input: request for personal workspace where user lookup fails
-      // Expected status code: 404
-      // Expected behavior: service throws "User not found", controller returns 404
-      // Expected output: error message
-      // Mock authenticateToken to set a user but mock userModel.findById to return null
-      // This simulates a race condition where the user exists for auth but not for the service call
-      jest.spyOn(workspaceService, 'getPersonalWorkspaceForUser').mockRejectedValueOnce(
-        new Error('User not found')
-      );
-
-      const res = await request(app)
-        .get('/api/workspace/personal')
-        .set('Authorization', `Bearer ${testData.testUserToken}`);
-
-      expect(res.status).toBe(404);
-      expect(res.body.error).toContain('User not found');
     });
   });
 });
