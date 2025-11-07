@@ -4,6 +4,7 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 import { MediaService } from '../media.service';
 import { IMAGES_DIR } from '../constants';
@@ -135,6 +136,70 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       // Clean up
       if (fs.existsSync(testImagePath)) {
         fs.unlinkSync(testImagePath);
+      }
+    });
+
+    test('200 – recreates images directory when missing before upload route is registered', async () => {
+      // Mocked behavior: IMAGES_DIR does not exist when storage module initializes
+      // Input: image upload request with directory removed before re-importing storage module
+      // Expected status code: 200
+      // Expected behavior: storage.ts creates directory via fs.mkdirSync and upload succeeds
+      // Expected output: upload succeeds and mkdirSync invoked with IMAGES_DIR
+
+      const originalExistsSync = fs.existsSync.bind(fs);
+      const originalMkdirSync = fs.mkdirSync.bind(fs);
+
+      if (fs.existsSync(IMAGES_DIR)) {
+        fs.rmSync(IMAGES_DIR, { recursive: true, force: true });
+      }
+
+      const existsSyncSpy = jest.spyOn(fs, 'existsSync').mockImplementation(targetPath => {
+        if (targetPath === IMAGES_DIR) {
+          return false;
+        }
+        return originalExistsSync(targetPath as any);
+      });
+      const mkdirSyncSpy = jest.spyOn(fs, 'mkdirSync').mockImplementation((targetPath, options) => {
+        return originalMkdirSync(targetPath as any, options as any);
+      });
+
+      try {
+        jest.isolateModules(() => {
+          // Re-require storage module so the top-level directory creation runs with our spies
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          require('../storage');
+        });
+
+        // Check spy calls before restoring
+        expect(existsSyncSpy).toHaveBeenCalledWith(IMAGES_DIR);
+        expect(mkdirSyncSpy).toHaveBeenCalledWith(IMAGES_DIR, { recursive: true });
+        
+        // Restore spies so we can check the real directory state
+        existsSyncSpy.mockRestore();
+        mkdirSyncSpy.mockRestore();
+        
+        expect(fs.existsSync(IMAGES_DIR)).toBe(true);
+
+        const tmpFilePath = path.join(os.tmpdir(), `storage-recreate-${Date.now()}.png`);
+        fs.writeFileSync(tmpFilePath, Buffer.from('fake-image-data'));
+
+        try {
+          const res = await request(app)
+            .post('/api/media/upload')
+            .set('Authorization', `Bearer ${testData.testUserToken}`)
+            .attach('media', tmpFilePath);
+
+          expect(res.status).toBe(200);
+        } finally {
+          if (fs.existsSync(tmpFilePath)) {
+            fs.unlinkSync(tmpFilePath);
+          }
+        }
+      } catch (error) {
+        // Ensure spies are restored even if test fails
+        existsSyncSpy.mockRestore();
+        mkdirSyncSpy.mockRestore();
+        throw error;
       }
     });
   });

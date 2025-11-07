@@ -38,6 +38,108 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/notes - Create Note', () => {
+    test('400 – returns validation error when workspaceId is missing', async () => {
+      // Input: request body without workspaceId
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          noteType: NoteType.CONTENT,
+          tags: ['test'],
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when workspaceId is empty string', async () => {
+      // Input: request body with empty workspaceId
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (min(1) validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: '',
+          noteType: NoteType.CONTENT,
+          tags: ['test'],
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths).toContain('workspaceId');
+    });
+
+    test('400 – returns validation error when noteType is invalid', async () => {
+      // Input: request body with invalid noteType
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (enum validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: 'INVALID_TYPE',
+          tags: ['test'],
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when fields is not an array', async () => {
+      // Input: request body with non-array fields
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['test'],
+          fields: 'not-an-array',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when tags is not an array', async () => {
+      // Input: request body with non-array tags
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: 'not-an-array',
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+
     test('401 – returns 401 when user._id is not set', async () => {
       // Input: request without authentication token
       // Expected status code: 401
@@ -191,6 +293,43 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
           fields: [{ fieldType: 'title', content: 'Original Title', _id: '1' }],
         });
       noteId = create.body.data.note._id;
+    });
+
+    test('400 – returns validation error when tags is not an array', async () => {
+      // Input: request body with non-array tags
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put(`/api/notes/${noteId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          tags: 'not-an-array',
+          fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when fields is not an array', async () => {
+      // Input: request body with non-array fields
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put(`/api/notes/${noteId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          tags: ['updated'],
+          fields: 'not-an-array',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
     });
 
     test('401 – returns 401 when user._id is not set', async () => {

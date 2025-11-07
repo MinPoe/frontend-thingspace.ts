@@ -71,6 +71,68 @@ describe('User API – Normal Tests (No Mocking)', () => {
   });
 
   describe('PUT /api/user/profile - Update Profile', () => {
+    test('400 – returns validation error when profile name is empty string', async () => {
+      // Input: profile with name that fails min(1) validation
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put('/api/user/profile')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          profile: {
+            name: '', // Empty string fails min(1) validation
+          },
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when description exceeds max length', async () => {
+      // Input: profile with description longer than 500 characters
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (max(500) validation)
+      // Expected output: validation error with details
+      const longDescription = 'x'.repeat(501); // 501 characters
+      const res = await request(app)
+        .put('/api/user/profile')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          profile: {
+            description: longDescription,
+          },
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths.some((path: string) => path.includes('description'))).toBe(true);
+    });
+
+    test('400 – returns validation error when profile has wrong data types', async () => {
+      // Input: profile with non-string values
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .put('/api/user/profile')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          profile: {
+            name: 12345, // Should be string
+            description: true, // Should be string
+          },
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -258,6 +320,54 @@ describe('User API – Normal Tests (No Mocking)', () => {
   });
 
   describe('POST /api/user/fcm-token - Update FCM Token', () => {
+    test('400 – returns validation error when fcmToken is missing', async () => {
+      // Input: request body without fcmToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/user/fcm-token')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.message).toBe('Invalid input data');
+      expect(res.body.details).toBeDefined();
+    });
+
+    test('400 – returns validation error when fcmToken is empty string', async () => {
+      // Input: request body with empty fcmToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (min(1) validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/user/fcm-token')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ fcmToken: '' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+      const fieldPaths = res.body.details.map((d: any) => d.field);
+      expect(fieldPaths).toContain('fcmToken');
+    });
+
+    test('400 – returns validation error when fcmToken is wrong type', async () => {
+      // Input: request body with non-string fcmToken
+      // Expected status code: 400
+      // Expected behavior: validateBody middleware rejects request (type validation)
+      // Expected output: validation error with details
+      const res = await request(app)
+        .post('/api/user/fcm-token')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ fcmToken: 12345 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe('Validation error');
+      expect(res.body.details).toBeDefined();
+    });
+
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401

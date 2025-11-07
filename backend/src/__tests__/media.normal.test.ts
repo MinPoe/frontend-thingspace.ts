@@ -4,12 +4,13 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 import type { Request, Response } from 'express';
 
 import { MediaController } from '../media.controller';
 import * as sanitizeModule from '../sanitizeInput.util';
-import { IMAGES_DIR } from '../constants';
+import { IMAGES_DIR, MAX_FILE_SIZE } from '../constants';
 import { MediaService } from '../media.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
@@ -154,6 +155,29 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       // Clean up
       if (fs.existsSync(testFilePath)) {
         fs.unlinkSync(testFilePath);
+      }
+    });
+
+    test('413 – returns error when file exceeds MAX_FILE_SIZE', async () => {
+      // Input: image file larger than MAX_FILE_SIZE
+      // Expected status code: 400-500 range due to Multer file size limit
+      // Expected behavior: upload middleware rejects oversized file
+      // Expected output: error response and no file saved
+      const largeFilePath = path.join(os.tmpdir(), `oversized-upload-${Date.now()}.png`);
+      const oversizedBuffer = Buffer.alloc(MAX_FILE_SIZE + 1, 0);
+      fs.writeFileSync(largeFilePath, oversizedBuffer);
+
+      const res = await request(app)
+        .post('/api/media/upload')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .attach('media', largeFilePath);
+
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBeLessThan(600);
+      expect(res.body.message).toBeDefined();
+
+      if (fs.existsSync(largeFilePath)) {
+        fs.unlinkSync(largeFilePath);
       }
     });
 
