@@ -137,6 +137,7 @@ _(Placeholder)_
 ---
 
 ## 4. Front-end Test Specification
+This includes the non-functional requirement that every note/message containing screen must be reachable from the main screen within two clicks. This non-functional requirement can only be verified via frontend tests, hence it is included here as `TestReachWith2Clicks.kt`.
 
 ### 4.1. Location in Git
 `./frontend/app/src/androidTest/java/com.cpen321.usermanagement`
