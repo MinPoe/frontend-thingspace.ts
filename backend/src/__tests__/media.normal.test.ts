@@ -133,29 +133,16 @@ describe('Media API – Normal Tests (No Mocking)', () => {
     });
 
     test('400 – returns 400 when non-image file is uploaded', async () => {
-      // Input: non-image file (tests storage.ts fileFilter - line 30)
-      // Expected status code: 400 or 500 (depends on error handler)
-      // Expected behavior: fileFilter rejects non-image files
-      // Expected output: error message about only image files allowed
-      const testFilePath = path.resolve(IMAGES_DIR, 'test.txt');
-      fs.writeFileSync(testFilePath, Buffer.from('not an image'));
-
+      // Input: non-image file streamed from memory (tests storage.ts fileFilter)
+      // Expected status code: >=400
+      // Expected behavior: fileFilter rejects non-image files and request ends with error
       const res = await request(app)
         .post('/api/media/upload')
         .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .attach('media', testFilePath, { contentType: 'text/plain' });
+        .attach('media', Buffer.from('not an image'), { filename: 'test.txt', contentType: 'text/plain' });
 
-      // Multer fileFilter errors are handled by error handler, which returns 500
-      // But we verify the fileFilter branch (line 30) was executed
       expect(res.status).toBeGreaterThanOrEqual(400);
-      // The error message might be in the response or the fileFilter was executed
-      // We verify the branch was covered by checking status is error
       expect(res.status).toBeLessThan(600);
-
-      // Clean up
-      if (fs.existsSync(testFilePath)) {
-        fs.unlinkSync(testFilePath);
-      }
     });
 
     test('413 – returns error when file exceeds MAX_FILE_SIZE', async () => {

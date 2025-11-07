@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
+import type { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from 'express';
 
 import logger from '../logger.util';
+import { authMiddleware as legacyAuthMiddleware } from '../auth.middleware';
 import { userModel } from '../user.model';
 import { workspaceModel } from '../workspace.model';
 import { authService } from '../auth.service';
@@ -376,6 +378,268 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
       expect(res.body).toEqual({ message: 'Internal server error' });
       expect(loggerSpy).toHaveBeenCalledWith('Error:', expect.any(Error));
       expect(signUpSpy).toHaveBeenCalledWith('valid-token');
+    });
+  });
+
+  describe('authenticateToken middleware', () => {
+    const workspacePath = '/api/workspace/user';
+    let originalSecret: string | undefined;
+
+    beforeEach(() => {
+      originalSecret = process.env.JWT_SECRET;
+    });
+
+    afterEach(() => {
+      if (originalSecret === undefined) {
+        delete process.env.JWT_SECRET;
+      } else {
+        process.env.JWT_SECRET = originalSecret;
+      }
+    });
+
+    test('401 – denies access when token is missing', async () => {
+      // Input: request without Authorization header
+      // Expected status code: 401
+      // Expected behaviour: authenticateToken blocks request with Access denied
+      // Expected output: JSON containing Access denied error
+      const res = await request(app)
+        .get(workspacePath)
+        .expect(401);
+
+      expect(res.body).toEqual({ error: 'Access denied', message: 'No token provided' });
+    });
+
+    test('500 – returns configuration error when JWT_SECRET missing', async () => {
+      // Input: request with token but JWT_SECRET unset
+      // Expected status code: 500
+      // Expected behaviour: authenticateToken responds with configuration error
+      // Expected output: error message "JWT_SECRET not configured"
+      delete process.env.JWT_SECRET;
+
+      const res = await request(app)
+        .get(workspacePath)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .expect(500);
+
+      expect(res.body).toEqual({
+        error: 'Server configuration error',
+        message: 'JWT_SECRET not configured',
+      });
+    });
+
+    test('401 – returns user not found when token references missing user', async () => {
+      // Input: token signed for a non-existent user
+      // Expected status code: 401
+      // Expected behaviour: authenticateToken returns user not found error
+      // Expected output: message "Token is valid but user no longer exists"
+      const ghostId = new mongoose.Types.ObjectId();
+      const ghostToken = jwt.sign({ id: ghostId }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+
+      const res = await request(app)
+        .get(workspacePath)
+        .set('Authorization', `Bearer ${ghostToken}`)
+        .expect(401);
+
+      expect(res.body).toEqual({
+        error: 'User not found',
+        message: 'Token is valid but user no longer exists',
+      });
+    });
+
+    test('401 – returns token expired when token is past expiry', async () => {
+      // Input: expired token
+      // Expected status code: 401
+      // Expected behaviour: authenticateToken detects TokenExpiredError
+      // Expected output: error "Token expired" and prompt to login again
+      const expiredToken = jwt.sign(
+        { id: new mongoose.Types.ObjectId(testData.testUserId) },
+        process.env.JWT_SECRET as string,
+        { expiresIn: '1ms' }
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      const res = await request(app)
+        .get(workspacePath)
+        .set('Authorization', `Bearer ${expiredToken}`)
+        .expect(401);
+
+      expect(res.body).toEqual({
+        error: 'Token expired',
+        message: 'Please login again',
+      });
+    });
+
+    test('401 – returns invalid token when JWT is malformed', async () => {
+      // Input: malformed token
+      // Expected status code: 401
+      // Expected behaviour: authenticateToken responds with invalid token error
+      // Expected output: error "Invalid token" and descriptive message
+      const res = await request(app)
+        .get(workspacePath)
+        .set('Authorization', 'Bearer not-a-real-token')
+        .expect(401);
+
+      expect(res.body).toEqual({
+        error: 'Invalid token',
+        message: 'Token is malformed or expired',
+      });
+    });
+
+    test('200 – allows access when token is valid', async () => {
+      // Input: valid token issued by test helpers
+      // Expected status code: 200
+      // Expected behaviour: authenticateToken sets req.user and allows route handler
+      // Expected output: successful workspaces response
+      const res = await request(app)
+        .get(workspacePath)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .expect(200);
+
+      expect(res.body.message).toBe('Workspaces retrieved successfully');
+      expect(Array.isArray(res.body.data.workspaces)).toBe(true);
+    });
+  });
+
+  describe('authMiddleware legacy export', () => {
+    const createMockRes = () => {
+      const json = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json,
+      } as unknown as ExpressResponse;
+      return { res, json };
+    };
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test('401 – returns 401 when no token provided', () => {
+      // Input: request without Authorization header
+      // Expected behaviour: authMiddleware responds with 401
+      const { res, json } = createMockRes();
+      const next = jest.fn();
+
+      legacyAuthMiddleware({ headers: {} } as unknown as ExpressRequest, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(json).toHaveBeenCalledWith({ error: 'No token provided' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test('next receives configuration error when JWT_SECRET missing', () => {
+      // Input: JWT_SECRET unset at module load
+      // Expected behaviour: middleware forwards configuration error to next
+      const originalSecret = process.env.JWT_SECRET;
+      delete process.env.JWT_SECRET;
+
+      let middleware: ((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => unknown) | undefined;
+      jest.isolateModules(() => {
+        ({ authMiddleware: middleware } = require('../auth.middleware'));
+      });
+
+      if (!middleware) {
+        throw new Error('authMiddleware not loaded');
+      }
+
+      if (originalSecret === undefined) {
+        delete process.env.JWT_SECRET;
+      } else {
+        process.env.JWT_SECRET = originalSecret;
+      }
+
+      const { res } = createMockRes();
+      const next = jest.fn();
+
+      middleware(
+        { headers: { authorization: 'Bearer whatever' } } as unknown as ExpressRequest,
+        res,
+        next
+      );
+
+      expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'JWT_SECRET not configured' }));
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('401 – handles token expiration errors', () => {
+      // Input: jwt.verify throws TokenExpiredError
+      // Expected behaviour: middleware returns 401 Invalid token
+      const { res, json } = createMockRes();
+      const next = jest.fn();
+      const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new jwt.TokenExpiredError('Expired', new Date());
+      });
+
+      legacyAuthMiddleware(
+        { headers: { authorization: 'Bearer expired' } } as unknown as ExpressRequest,
+        res,
+        next
+      );
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(json).toHaveBeenCalledWith({ error: 'Invalid token' });
+      expect(next).not.toHaveBeenCalled();
+      verifySpy.mockRestore();
+    });
+
+    test('401 – handles malformed token errors', () => {
+      // Input: jwt.verify throws JsonWebTokenError
+      // Expected behaviour: middleware returns 401 Invalid token
+      const { res, json } = createMockRes();
+      const next = jest.fn();
+      const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new jwt.JsonWebTokenError('malformed');
+      });
+
+      legacyAuthMiddleware(
+        { headers: { authorization: 'Bearer malformed' } } as unknown as ExpressRequest,
+        res,
+        next
+      );
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(json).toHaveBeenCalledWith({ error: 'Invalid token' });
+      expect(next).not.toHaveBeenCalled();
+      verifySpy.mockRestore();
+    });
+
+    test('401 – handles unexpected verification errors', () => {
+      // Input: jwt.verify throws generic Error
+      // Expected behaviour: middleware falls back to generic invalid token response
+      const { res, json } = createMockRes();
+      const next = jest.fn();
+      const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new Error('boom');
+      });
+
+      legacyAuthMiddleware(
+        { headers: { authorization: 'Bearer bad' } } as unknown as ExpressRequest,
+        res,
+        next
+      );
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(json).toHaveBeenCalledWith({ error: 'Invalid token' });
+      expect(next).not.toHaveBeenCalled();
+      verifySpy.mockRestore();
+    });
+
+    test('calls next when token is valid', () => {
+      // Input: valid token with configured secret
+      // Expected behaviour: middleware attaches decoded payload to req.user and calls next
+      const { res } = createMockRes();
+      const next = jest.fn();
+      const validToken = jwt.sign({ foo: 'bar' }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+      const req = {
+        headers: { authorization: `Bearer ${validToken}` },
+      } as unknown as ExpressRequest;
+
+      legacyAuthMiddleware(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+      expect(req.user).toMatchObject({ foo: 'bar' });
     });
   });
 });
