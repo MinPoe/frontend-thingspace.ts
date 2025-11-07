@@ -69,8 +69,6 @@ export const authenticateToken = async (
   }
 };
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 export const authMiddleware = (
   req: Request,
   res: Response,
@@ -83,11 +81,13 @@ export const authMiddleware = (
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    if (!JWT_SECRET) {
+    const jwtSecret = process.env.JWT_SECRET;
+
+    if (!jwtSecret) {
       throw new Error('JWT_SECRET not configured');
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded as unknown as IUser;
     next();
     return;
