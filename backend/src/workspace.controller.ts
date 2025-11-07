@@ -5,7 +5,13 @@ import { CreateWorkspaceRequest, UpdateWorkspaceProfileRequest, UpdateWorkspaceP
 export class WorkspaceController {
     async createWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const userId = user._id;
 
             const workspace = await workspaceService.createWorkspace(userId, req.body as CreateWorkspaceRequest);
 
@@ -29,7 +35,13 @@ export class WorkspaceController {
 
     async getPersonalWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const userId = user._id;
 
             const workspace = await workspaceService.getPersonalWorkspaceForUser(userId);
 
@@ -59,7 +71,11 @@ export class WorkspaceController {
 
     async getWorkspacesForUser(req: Request, res: Response): Promise<void> {
         try {
-            const user = req.user!;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
 
             const workspaces = await workspaceService.getWorkspacesForUser(user._id, user.personalWorkspaceId);
 
@@ -75,7 +91,13 @@ export class WorkspaceController {
 
     async getWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const userId = user._id;
 
             const workspaceId = req.params.id;
             const workspace = await workspaceService.getWorkspace(workspaceId, userId);
@@ -105,7 +127,11 @@ export class WorkspaceController {
 
     async getWorkspaceMembers(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
 
             const workspaceId = req.params.id;
             const members = await workspaceService.getWorkspaceMembers(workspaceId);
@@ -134,7 +160,13 @@ export class WorkspaceController {
 
     async getAllTags(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const userId = user._id;
 
             const workspaceId = req.params.id;
             const tags = await workspaceService.getAllTags(workspaceId, userId);
@@ -186,7 +218,13 @@ export class WorkspaceController {
 
     async inviteMember(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const requestingUserId = user._id;
 
             const workspaceId = req.params.id;
             const { userId } = req.body as { userId?: string };
@@ -242,7 +280,13 @@ export class WorkspaceController {
 
     async leaveWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const userId = user._id;
 
             const workspaceId = req.params.id;
 
@@ -280,7 +324,13 @@ export class WorkspaceController {
 
     async banMember(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const requestingUserId = user._id;
 
             const workspaceId = req.params.id;
             const userIdToBan = req.params.userId;
@@ -323,7 +373,13 @@ export class WorkspaceController {
 
     async updateWorkspaceProfile(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const requestingUserId = user._id;
             const workspaceId = req.params.id;
 
             const workspace = await workspaceService.updateWorkspaceProfile(
@@ -356,7 +412,13 @@ export class WorkspaceController {
 
     async updateWorkspacePicture(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const requestingUserId = user._id;
 
             const workspaceId = req.params.id;
 
@@ -390,7 +452,13 @@ export class WorkspaceController {
 
     async deleteWorkspace(req: Request, res: Response): Promise<void> {
         try {
-            const requestingUserId = req.user!._id;
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
+            const requestingUserId = user._id;
 
             const workspaceId = req.params.id;
 
@@ -424,6 +492,11 @@ export class WorkspaceController {
 
     async pollForNewMessages(req: Request, res: Response): Promise<void> {
         try {
+            if (!req.user) {
+                res.status(401).json({ error: 'User not authenticated' });
+                return;
+            }
+
             const workspaceId = req.params.id;
             const hasNewMessages = await workspaceService.checkForNewChatMessages(workspaceId);
 

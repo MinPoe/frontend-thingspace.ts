@@ -5,7 +5,13 @@ import { noteService } from './notes.service';
 export class NotesController {
   async createNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+
+      const userId = user._id;
 
       const noteData = req.body as CreateNoteRequest;
 
@@ -24,7 +30,13 @@ export class NotesController {
 
   async updateNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+
+      const userId = user._id;
 
       const noteId = req.params.id;
       const updateData = req.body as UpdateNoteRequest;
@@ -43,7 +55,12 @@ export class NotesController {
 
   async deleteNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+      const userId = user._id;
       const noteId = req.params.id;
       const deletedNote = await noteService.deleteNote(noteId, userId);
 
@@ -59,7 +76,12 @@ export class NotesController {
 
   async getNote(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+      const userId = user._id;
       const noteId = req.params.id;
       const note = await noteService.getNote(noteId, userId);
 
@@ -80,7 +102,11 @@ export class NotesController {
 
   async shareNoteToWorkspace(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
 
       const noteId = req.params.id;
       const { workspaceId } = req.body as { workspaceId?: string };
@@ -90,7 +116,7 @@ export class NotesController {
         return;
       }
 
-      const sharedNote = await noteService.shareNoteToWorkspace(noteId, userId, workspaceId);
+      const sharedNote = await noteService.shareNoteToWorkspace(noteId, user._id, workspaceId);
 
       res.status(200).json({
         message: 'Note shared to workspace successfully',
@@ -118,7 +144,11 @@ export class NotesController {
 
   async copyNoteToWorkspace(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
   
       const noteId = req.params.id;
       const { workspaceId } = req.body as { workspaceId?: string };
@@ -128,7 +158,7 @@ export class NotesController {
         return;
       }
   
-      const copiedNote = await noteService.copyNoteToWorkspace(noteId, userId, workspaceId);
+      const copiedNote = await noteService.copyNoteToWorkspace(noteId, user._id, workspaceId);
   
       res.status(201).json({
         message: 'Note copied to workspace successfully',
@@ -171,7 +201,13 @@ export class NotesController {
 
   async findNotes(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user!._id;
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ error: 'User not authenticated' });
+        return;
+      }
+
+      const userId = user._id;
 
       const { workspaceId, noteType, tags, query } = req.query;
 

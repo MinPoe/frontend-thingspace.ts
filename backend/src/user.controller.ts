@@ -10,7 +10,11 @@ import { noteModel } from './note.model';
 
 export class UserController {
   getProfile(req: Request, res: Response<GetProfileResponse>) {
-    const user = req.user!;
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
 
     res.status(200).json({
       message: 'Profile fetched successfully',
