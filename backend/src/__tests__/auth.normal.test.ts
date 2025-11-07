@@ -7,27 +7,7 @@ import jwt from 'jsonwebtoken';
 import { userModel } from '../user.model';
 import { workspaceModel } from '../workspace.model';
 import { authService } from '../auth.service';
-import { setupTestDatabase, TestData } from './test-helpers';
-
-// Create app with auth routes but NO mock auth middleware (auth routes don't require it)
-function createAuthTestApp() {
-  const express = require('express');
-  const app = express();
-  app.use(express.json());
-
-  // Import auth routes
-  const authRoutes = require('../auth.routes').default;
-  app.use('/api/auth', authRoutes);
-
-  // Error handler for tests
-  app.use((err: any, req: any, res: any, next: any) => {
-    res.status(err.status || 500).json({
-      message: err.message || 'Internal server error',
-    });
-  });
-
-  return app;
-}
+import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
 // ---------------------------
 // Test suite
@@ -35,6 +15,7 @@ function createAuthTestApp() {
 describe('Auth API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -50,6 +31,9 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
     if (!process.env.GOOGLE_CLIENT_ID) {
       process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
     }
+    
+    // Create app after DB connection (uses full production app)
+    app = createTestApp();
   }, 60000); // 60 second timeout for MongoDB Memory Server startup
 
   // Tear down DB
@@ -64,10 +48,8 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
-
-  const app = createAuthTestApp();
 
   describe('POST /api/auth/dev-login - Dev Login', () => {
     test('200 – creates new test user and returns token', async () => {

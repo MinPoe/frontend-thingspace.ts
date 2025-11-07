@@ -55,11 +55,11 @@ describe('Error Handler Middleware', () => {
       app.use('*', notFoundHandler);
 
       const res = await request(app)
-        .get('/api/workspaces/123/members/456/nonexistent')
+        .get('/api/workspace/123/members/456/nonexistent')
         .expect(404);
 
-      expect(res.body.path).toBe('/api/workspaces/123/members/456/nonexistent');
-      expect(res.body.message).toBe('Cannot GET /api/workspaces/123/members/456/nonexistent');
+      expect(res.body.path).toBe('/api/workspace/123/members/456/nonexistent');
+      expect(res.body.message).toBe('Cannot GET /api/workspace/123/members/456/nonexistent');
     });
   });
 

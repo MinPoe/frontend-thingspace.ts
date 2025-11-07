@@ -1,10 +1,12 @@
 /// <reference types="jest" />
 import mongoose from 'mongoose';
-import express, { Request, Response, NextFunction, RequestHandler } from 'express';
-import { NotesController } from '../notes.controller';
-import { WorkspaceController } from '../workspace.controller';
-import { UserController } from '../user.controller';
+import express from 'express';
+import path from 'path';
+import request from 'supertest';
+
 import { workspaceModel } from '../workspace.model';
+import { errorHandler, notFoundHandler } from '../errorHandler.middleware';
+import router from '../routes';
 
 // Import route files to ensure they get coverage (even if we don't use them directly)
 // This ensures all route file code is executed and tracked by coverage
@@ -19,127 +21,18 @@ import '../message.routes';
 // ---------------------------
 // Express test app bootstrap
 // ---------------------------
+/**
+ * Creates the real Express app (same as production) for testing.
+ * This uses real authentication middleware and real routes.
+ */
 export function createTestApp() {
   const app = express();
   app.use(express.json());
 
-  // Mock authentication middleware
-  const mockAuthMiddleware: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
-    const mockUserId = req.headers['x-test-user-id'] as string;
-    const noUserId = req.headers['x-no-user-id'] === 'true';
-    
-    if (noUserId) {
-      // Don't set req.user at all to test unauthenticated checks
-      // This works for both !req.user and !req.user?._id checks
-      return next();
-    }
-    
-    if (mockUserId) {
-      // Try to fetch the actual user from database to get real data (e.g. personalWorkspaceId)
-      let User = mongoose.models.User;
-      if (!User) {
-        User = mongoose.model('User', new mongoose.Schema({
-          googleId: { type: String, unique: true },
-          email: String,
-          profile: {
-            name: String,
-            imagePath: String,
-            description: String
-          },
-          personalWorkspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace' }
-        }, { timestamps: true }));
-      }
-      
-      const dbUser = await User.findById(mockUserId);
-      
-      if (dbUser) {
-        // Use real user data if it exists in DB
-        (req as any).user = {
-          _id: dbUser._id,
-          googleId: dbUser.googleId,
-          email: dbUser.email,
-          profile: dbUser.profile,
-          personalWorkspaceId: dbUser.personalWorkspaceId || null,
-          createdAt: dbUser.createdAt,
-          updatedAt: dbUser.updatedAt,
-        };
-      } else {
-        // Fallback to mock user if not in DB
-        (req as any).user = {
-          _id: new mongoose.Types.ObjectId(mockUserId),
-          googleId: 'test-google-id',
-          email: 'test@example.com',
-          profile: { name: 'Test User', imagePath: '', description: '' },
-          personalWorkspaceId: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-      }
-      return next();
-    }
-    return res.status(401).json({ error: 'No test user ID provided' });
-  };
-
-  // Pass-through validation middleware (validation tested elsewhere)
-  const mockValidateBody = (_req: Request, _res: Response, next: NextFunction) => next();
-
-  // Controllers
-  const notesController = new NotesController();
-  const workspaceController = new WorkspaceController();
-  const userController = new UserController();
-
-  // ---------------------------
-  // Route mounting (ORDER MATTERS)
-  // ---------------------------
-  // Workspace routes FIRST - Put the more specific routes BEFORE the generic :id route.
-  // This prevents workspace routes from being matched by notes routes
-  app.get('/api/workspaces/user', mockAuthMiddleware, workspaceController.getWorkspacesForUser.bind(workspaceController));
-  app.get('/api/workspaces/personal', mockAuthMiddleware, workspaceController.getPersonalWorkspace.bind(workspaceController));
-  app.get('/api/workspaces/:id/members', mockAuthMiddleware, workspaceController.getWorkspaceMembers.bind(workspaceController));
-  app.get('/api/workspaces/:id/tags', mockAuthMiddleware, workspaceController.getAllTags.bind(workspaceController));
-  app.get('/api/workspaces/:id/membership/:userId', mockAuthMiddleware, workspaceController.getMembershipStatus.bind(workspaceController));
-  app.get('/api/workspaces/:id/poll', mockAuthMiddleware, workspaceController.pollForNewMessages.bind(workspaceController));
-  app.post('/api/workspaces', mockAuthMiddleware, mockValidateBody, workspaceController.createWorkspace.bind(workspaceController));
-  app.post('/api/workspaces/:id/members', mockAuthMiddleware, workspaceController.inviteMember.bind(workspaceController));
-  app.post('/api/workspaces/:id/leave', mockAuthMiddleware, workspaceController.leaveWorkspace.bind(workspaceController));
-  app.put('/api/workspaces/:id/picture', mockAuthMiddleware, mockValidateBody, workspaceController.updateWorkspacePicture.bind(workspaceController));
-  app.put('/api/workspaces/:id', mockAuthMiddleware, mockValidateBody, workspaceController.updateWorkspaceProfile.bind(workspaceController));
-  app.delete('/api/workspaces/:id/members/:userId', mockAuthMiddleware, workspaceController.banMember.bind(workspaceController));
-  app.delete('/api/workspaces/:id', mockAuthMiddleware, workspaceController.deleteWorkspace.bind(workspaceController));
-  app.get('/api/workspaces/:id', mockAuthMiddleware, workspaceController.getWorkspace.bind(workspaceController));
-
-  // Notes routes - Put the more specific route BEFORE the generic :id route.
-  app.post('/api/notes', mockAuthMiddleware, mockValidateBody, notesController.createNote.bind(notesController));
-  app.get('/api/notes', mockAuthMiddleware, notesController.findNotes.bind(notesController));
-  app.get('/api/notes/:id/workspaces', mockAuthMiddleware, notesController.getWorkspacesForNote.bind(notesController));
-  app.post('/api/notes/:id/share', mockAuthMiddleware, notesController.shareNoteToWorkspace.bind(notesController));
-  app.post('/api/notes/:id/copy', mockAuthMiddleware, notesController.copyNoteToWorkspace.bind(notesController));
-  app.put('/api/notes/:id', mockAuthMiddleware, mockValidateBody, notesController.updateNote.bind(notesController));
-  app.delete('/api/notes/:id', mockAuthMiddleware, notesController.deleteNote.bind(notesController));
-  app.get('/api/notes/:id', mockAuthMiddleware, notesController.getNote.bind(notesController));
-
-  // User routes - Put specific routes before generic :id route to avoid route matching conflicts
-  app.get('/api/user/profile', mockAuthMiddleware, userController.getProfile.bind(userController));
-  app.put('/api/user/profile', mockAuthMiddleware, mockValidateBody, userController.updateProfile.bind(userController));
-  app.delete('/api/user/profile', mockAuthMiddleware, userController.deleteProfile.bind(userController));
-  app.post('/api/user/fcm-token', mockAuthMiddleware, mockValidateBody, userController.updateFcmToken.bind(userController));
-  // /email/:email must come before /:id to avoid matching conflicts
-  app.get('/api/user/email/:email', mockAuthMiddleware, userController.getUserByEmail.bind(userController));
-  app.get('/api/user/:id', mockAuthMiddleware, userController.getUserById.bind(userController));
-
-  // Message routes - messageRouter uses authenticateToken, so we apply mockAuthMiddleware 
-  // instead of the router's authenticateToken. The router's authenticateToken would fail 
-  // because it requires a real JWT token. We apply mockAuthMiddleware before the router.
-  // Note: The router still has authenticateToken in its route definitions, so we need to
-  // mock it at module level. This should be done in the test files that use message routes.
-  const { messageRouter } = require('../message.routes');
-  app.use('/api/messages', mockAuthMiddleware, messageRouter);
-
-  // Media routes
-  const MediaController = require('../media.controller').MediaController;
-  const mediaController = new MediaController();
-  const { upload } = require('../storage');
-  app.post('/api/media/upload', mockAuthMiddleware, upload.single('media'), mediaController.uploadImage.bind(mediaController));
+  app.use('/api', router);
+  app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+  app.use('*', notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }
@@ -152,41 +45,61 @@ export interface TestData {
   testWorkspaceId: string;
   testUser2Id: string;
   testWorkspace2Id: string;
+  testUserToken: string;
+  testUser2Token: string;
 }
 
-export async function setupTestDatabase(): Promise<TestData> {
+/**
+ * Sets up a fresh test database and returns test data including JWT tokens.
+ * Uses dev-login endpoint to get real JWT tokens for authentication.
+ */
+export async function setupTestDatabase(app: express.Application): Promise<TestData> {
   // Fresh DB state
   if (mongoose.connection.db) {
     await mongoose.connection.db.dropDatabase();
   }
 
-  // Create test users - get existing model or create new one
-  let User = mongoose.models.User;
-  if (!User) {
-    User = mongoose.model('User', new mongoose.Schema({
-      googleId: { type: String, unique: true },
-      email: String,
-      profile: {
-        name: String,
-        imagePath: String,
-        description: String
-      }
-    }, { timestamps: true }));
+  // Ensure JWT_SECRET is set for token generation
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
   }
 
-  const testUser = await User.create({
-    googleId: 'test-google-id-1',
-    email: 'testuser1@example.com',
-    profile: { name: 'Test User 1', imagePath: '', description: '' },
-  });
-  const testUserId = testUser._id.toString();
+  // Create test users via dev-login (this creates users if they don't exist)
+  // This ensures users are created properly with all required fields
+  const testUser1Email = 'testuser1@example.com';
+  const testUser2Email = 'testuser2@example.com';
 
-  const testUser2 = await User.create({
-    googleId: 'test-google-id-2',
-    email: 'testuser2@example.com',
-    profile: { name: 'Test User 2', imagePath: '', description: '' },
-  });
-  const testUser2Id = testUser2._id.toString();
+  // Get tokens via dev-login API
+  const loginRes1 = await request(app)
+    .post('/api/auth/dev-login')
+    .send({ email: testUser1Email });
+  
+  if (loginRes1.status !== 200) {
+    throw new Error(`Failed to login test user 1: ${JSON.stringify(loginRes1.body)}`);
+  }
+  const testUserToken = loginRes1.body.data.token;
+  const testUserId = loginRes1.body.data.user._id;
+
+  const loginRes2 = await request(app)
+    .post('/api/auth/dev-login')
+    .send({ email: testUser2Email });
+  
+  if (loginRes2.status !== 200) {
+    throw new Error(`Failed to login test user 2: ${JSON.stringify(loginRes2.body)}`);
+  }
+  const testUser2Token = loginRes2.body.data.token;
+  const testUser2Id = loginRes2.body.data.user._id;
+
+  // Ensure deterministic googleIds for tests that rely on them
+  const usersCollection = mongoose.connection.collection('users');
+  await usersCollection.updateOne(
+    { _id: new mongoose.Types.ObjectId(testUserId) },
+    { $set: { googleId: 'test-google-id-1' } }
+  );
+  await usersCollection.updateOne(
+    { _id: new mongoose.Types.ObjectId(testUser2Id) },
+    { $set: { googleId: 'test-google-id-2' } }
+  );
 
   // Workspaces
   const testWorkspace = await workspaceModel.create({
@@ -205,6 +118,13 @@ export async function setupTestDatabase(): Promise<TestData> {
   });
   const testWorkspace2Id = testWorkspace2._id.toString();
 
-  return { testUserId, testWorkspaceId, testUser2Id, testWorkspace2Id };
+  return { 
+    testUserId, 
+    testWorkspaceId, 
+    testUser2Id, 
+    testWorkspace2Id,
+    testUserToken,
+    testUser2Token
+  };
 }
 

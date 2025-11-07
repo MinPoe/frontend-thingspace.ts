@@ -15,6 +15,7 @@ import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 describe('Media API – Mocked Tests (Jest Mocks)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -27,6 +28,9 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
     if (!fs.existsSync(IMAGES_DIR)) {
       fs.mkdirSync(IMAGES_DIR, { recursive: true });
     }
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Clean mocks every test
@@ -41,15 +45,9 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
     await mongo.stop();
   });
 
-  let app: ReturnType<typeof createTestApp>;
-
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
-    // Clear module cache and recreate app to ensure fresh imports
-    delete require.cache[require.resolve('../media.controller')];
-    delete require.cache[require.resolve('../media.service')];
-    app = createTestApp();
+    testData = await setupTestDatabase(app);
   });
 
   describe('POST /api/media/upload - Upload Image, with mocks', () => {
@@ -70,7 +68,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/media/upload')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .attach('media', testImagePath);
 
       expect(res.status).toBe(500);
@@ -100,7 +98,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/media/upload')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .attach('media', testImagePath);
 
       expect(res.status).toBe(500);
@@ -129,7 +127,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/media/upload')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .attach('media', testImagePath);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
@@ -143,7 +141,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
 
   describe('Media Service - Direct Service Tests with Mocks', () => {
     beforeEach(async () => {
-      testData = await setupTestDatabase();
+      testData = await setupTestDatabase(app);
     });
 
     test('saveImage throws error when path validation fails', async () => {

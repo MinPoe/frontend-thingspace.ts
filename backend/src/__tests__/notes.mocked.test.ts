@@ -10,14 +10,13 @@ import { noteModel } from '../note.model';
 import { workspaceModel } from '../workspace.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Notes API – Mocked Tests (Jest Mocks)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -25,6 +24,9 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Clean mocks every test; full DB reset occurs in beforeEach
@@ -41,7 +43,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   describe('Mocked – Database/Service failures', () => {
@@ -50,7 +52,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -70,7 +72,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -92,7 +94,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .put(`/api/notes/${noteId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ tags: ['updated'], fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }] });
 
       expect(res.status).toBe(500);
@@ -107,7 +109,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: None
       jest.spyOn(noteService, 'getNote').mockRejectedValue(new Error('Database lookup failed'));
 
-      const res = await request(app).get(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -121,7 +123,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: None
       jest.spyOn(noteService, 'deleteNote').mockRejectedValue(new Error('Database delete failed'));
 
-      const res = await request(app).delete(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).delete(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -138,7 +140,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -222,7 +224,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
           noteType: NoteType.CONTENT,
           query: 'test query'
         })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res1.status).toBe(200);
       expect(res1.body.message).toBe('Notes retrieved successfully');
@@ -265,7 +267,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
           noteType: NoteType.CONTENT,
           query: 'empty embedding test'
         })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res2.status).toBe(200);
       expect(res2.body.message).toBe('Notes retrieved successfully');
@@ -285,7 +287,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: None
       jest.spyOn(noteService, 'getWorkspacesForNote').mockRejectedValue(new Error('Database lookup failed'));
 
-      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -301,7 +303,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(500);
@@ -318,7 +320,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(404);
@@ -335,7 +337,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(500);
@@ -352,7 +354,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -374,7 +376,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .put(`/api/notes/${noteId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ tags: ['updated'], fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }] });
 
       expect(res.status).toBe(500);
@@ -389,7 +391,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: generic error message "Failed to delete note"
       jest.spyOn(noteService, 'deleteNote').mockRejectedValue('String error');
 
-      const res = await request(app).delete(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).delete(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to delete note');
@@ -403,7 +405,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: generic error message "Failed to retrieve note"
       jest.spyOn(noteService, 'getNote').mockRejectedValue(null);
 
-      const res = await request(app).get(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve note');
@@ -420,7 +422,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve notes');
@@ -434,7 +436,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // Expected output: generic error message "Failed to retrieve workspace"
       jest.spyOn(noteService, 'getWorkspacesForNote').mockRejectedValue(undefined);
 
-      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve workspace');
@@ -450,7 +452,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(500);
@@ -467,7 +469,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(500);
@@ -497,7 +499,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -522,7 +524,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       // This assumes your service catches OpenAI errors and proceeds with empty vectors.
       const res = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -560,7 +562,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -594,7 +596,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(404);
@@ -614,7 +616,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(404);
@@ -635,7 +637,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Workspace not found');
@@ -651,7 +653,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -677,7 +679,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(500);

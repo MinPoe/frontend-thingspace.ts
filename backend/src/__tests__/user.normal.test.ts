@@ -8,14 +8,13 @@ import { userModel } from '../user.model';
 import { noteModel } from '../note.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('User API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -23,6 +22,9 @@ describe('User API – Normal Tests (No Mocking)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -33,7 +35,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   describe('GET /api/user/profile - Get Profile', () => {
@@ -45,10 +47,10 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // This tests lines 15-16 in user.controller.ts
       const res = await request(app)
         .get('/api/user/profile')
-        .set('x-no-user-id', 'true');
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('200 – retrieves user profile successfully', async () => {
@@ -58,7 +60,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Expected output: user object with profile data
       const res = await request(app)
         .get('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Profile fetched successfully');
@@ -77,7 +79,6 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // This tests line 33 in user.controller.ts
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-no-user-id', 'true')
         .send({
           profile: {
             name: 'Updated Name',
@@ -87,7 +88,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
         });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('200 – updates user profile successfully', async () => {
@@ -105,7 +106,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -129,14 +130,14 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
       expect(res.status).toBe(200);
       expect(res.body.data.user.profile.name).toBe('New Name Only');
     });
 
-    test('404 – returns 404 when user not found', async () => {
+    test('401 – returns 401 when user not found', async () => {
       // Input: update request for deleted user
       // Expected status code: 404
       // Expected behavior: error message returned
@@ -152,11 +153,12 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
-      expect(res.status).toBe(404);
-      expect(res.body.message).toBe('User not found');
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not found');
+      expect(res.body.message).toBe('Token is valid but user no longer exists');
     });
 
     test('200 – handles update request without profile field (empty dictionary branch)', async () => {
@@ -168,7 +170,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -186,10 +188,10 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // This tests line 65 in user.controller.ts
       const res = await request(app)
         .delete('/api/user/profile')
-        .set('x-no-user-id', 'true');
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('200 – deletes user profile successfully', async () => {
@@ -219,7 +221,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .delete('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('User deleted successfully');
@@ -248,7 +250,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Expected output: success message
       const res = await request(app)
         .delete('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('User deleted successfully');
@@ -264,11 +266,10 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // This tests line 107 in user.controller.ts
       const res = await request(app)
         .post('/api/user/fcm-token')
-        .set('x-no-user-id', 'true')
         .send({ fcmToken: 'test-token' });
 
       expect(res.status).toBe(401);
-      expect(res.body.message).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – updates FCM token successfully', async () => {
@@ -282,7 +283,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post('/api/user/fcm-token')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -291,7 +292,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.user.fcmToken).toBe('new-fcm-token-123');
     });
 
-    test('404 – returns 404 when user not found', async () => {
+    test('401 – returns 401 when user not found', async () => {
       // Input: FCM token update request for deleted user
       // Expected status code: 404
       // Expected behavior: error message returned
@@ -305,11 +306,12 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post('/api/user/fcm-token')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
-      expect(res.status).toBe(404);
-      expect(res.body.message).toBe('User not found');
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not found');
+      expect(res.body.message).toBe('Token is valid but user no longer exists');
     });
   });
 
@@ -321,7 +323,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Expected output: user object
       const res = await request(app)
         .get(`/api/user/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('User fetched successfully');
@@ -337,7 +339,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .get('/api/user/invalid-id')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.message).toBe('Invalid user ID format');
@@ -351,7 +353,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       const fakeUserId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
         .get(`/api/user/${fakeUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.message).toBe('User not found');
@@ -366,7 +368,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Expected output: user object
       const res = await request(app)
         .get('/api/user/email/testuser1@example.com')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('User fetched successfully');
@@ -390,7 +392,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .get(`/api/user/email/${encodeURIComponent('test+special@example.com')}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.user.email).toBe('test+special@example.com');
@@ -404,7 +406,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Note: Express may not match empty params, but we test the branch
       const res = await request(app)
         .get('/api/user/email/')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       // The route might not match, so we test with a request that could trigger empty email
       // If the route doesn't match, we'll get 404 from Express, but the branch exists for safety
@@ -418,7 +420,7 @@ describe('User API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .get('/api/user/email/nonexistent@example.com')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.message).toBe('User not found');

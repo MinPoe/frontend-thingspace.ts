@@ -7,26 +7,7 @@ import jwt from 'jsonwebtoken';
 import { authService, AuthService } from '../auth.service';
 import { workspaceService } from '../workspace.service';
 import { userModel } from '../user.model';
-import { setupTestDatabase, TestData } from './test-helpers';
-
-// Helper to create auth test app
-function createAuthTestApp() {
-  const express = require('express');
-  const app = express();
-  app.use(express.json());
-
-  const authRoutes = require('../auth.routes').default;
-  app.use('/api/auth', authRoutes);
-
-  // Error handler for tests
-  app.use((err: any, req: any, res: any, next: any) => {
-    res.status(err.status || 500).json({
-      message: err.message || 'Internal server error',
-    });
-  });
-
-  return app;
-}
+import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
 // ---------------------------
 // Test suite
@@ -34,6 +15,7 @@ function createAuthTestApp() {
 describe('Auth API – Mocked Tests (Jest Mocks)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -49,6 +31,9 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
     if (!process.env.GOOGLE_CLIENT_ID) {
       process.env.GOOGLE_CLIENT_ID = 'test-google-client-id';
     }
+    
+    // Create app after DB connection (uses full production app)
+    app = createTestApp();
   });
 
   // Clean mocks every test
@@ -63,16 +48,9 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
     await mongo.stop();
   });
 
-  let app: ReturnType<typeof createAuthTestApp>;
-
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
-    // Clear module cache and recreate app to ensure fresh imports
-    delete require.cache[require.resolve('../auth.routes')];
-    delete require.cache[require.resolve('../auth.controller')];
-    delete require.cache[require.resolve('../auth.service')];
-    app = createAuthTestApp();
+    testData = await setupTestDatabase(app);
   });
 
   describe('POST /api/auth/signup - Sign Up, with mocks', () => {

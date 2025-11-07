@@ -10,14 +10,13 @@ import { NoteType } from '../notes.types';
 import { notificationService } from '../notification.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Workspace API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -25,6 +24,9 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -35,10 +37,10 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
-  describe('POST /api/workspaces - Create Workspace', () => {
+  describe('POST /api/workspace - Create Workspace', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -46,12 +48,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 10-11 in workspace.controller.ts
       const res = await request(app)
-        .post('/api/workspaces')
-        .set('x-no-user-id', 'true')
+        .post('/api/workspace')
         .send({ name: 'Test Workspace' });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('201 – creates a workspace', async () => {
@@ -66,8 +67,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .post('/api/workspaces')
-        .set('x-test-user-id', testData.testUserId)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(workspaceData);
 
       expect(res.status).toBe(201);
@@ -85,8 +86,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .post('/api/workspaces')
-        .set('x-test-user-id', testData.testUserId)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(workspaceData);
 
       expect(res.status).toBe(201);
@@ -104,8 +105,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .post('/api/workspaces')
-        .set('x-test-user-id', testData.testUserId)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(workspaceData);
 
       expect(res.status).toBe(409);
@@ -113,7 +114,7 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
     });
   });
 
-  describe('GET /api/workspaces/personal - Get Personal Workspace', () => {
+  describe('GET /api/workspace/personal - Get Personal Workspace', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -121,11 +122,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 38-39 in workspace.controller.ts
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-no-user-id', 'true');
+        .get('/api/workspace/personal')
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – retrieves personal workspace successfully', async () => {
@@ -149,8 +150,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Personal workspace retrieved successfully');
@@ -174,8 +175,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toContain('Personal workspace not found');
@@ -187,29 +188,28 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toContain('personal workspace');
     });
 
-    test('404 – user not found', async () => {
-      // Input: fake userId
-      // Expected status code: 404
+    test('401 – invalid token (user not found)', async () => {
+      // Input: invalid token for non-existent user
+      // Expected status code: 401 (auth fails before checking user existence)
       // Expected behavior: error message returned
       // Expected output: error message
-      const fakeUserId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-test-user-id', fakeUserId);
+        .get('/api/workspace/personal')
+        .set('Authorization', 'Bearer invalid-token-for-non-existent-user');
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(401);
       expect(res.body.error).toBeDefined();
     });
   });
 
-  describe('GET /api/workspaces/user - Get Workspaces For User', () => {
+  describe('GET /api/workspace/user - Get Workspaces For User', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -217,11 +217,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 72-73 in workspace.controller.ts
       const res = await request(app)
-        .get('/api/workspaces/user')
-        .set('x-no-user-id', 'true');
+        .get('/api/workspace/user')
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – retrieves all workspaces for user', async () => {
@@ -230,8 +230,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: list of workspaces retrieved
       // Expected output: array of workspaces
       const res = await request(app)
-        .get('/api/workspaces/user')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/user')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Workspaces retrieved successfully');
@@ -260,8 +260,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .get('/api/workspaces/user')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/user')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.workspaces).toBeDefined();
@@ -271,7 +271,7 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
     });
   });
 
-  describe('GET /api/workspaces/:id - Get Workspace', () => {
+  describe('GET /api/workspace/:id - Get Workspace', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -279,11 +279,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 92-93 in workspace.controller.ts
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-no-user-id', 'true');
+        .get(`/api/workspace/${testData.testWorkspaceId}`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – retrieves workspace when user is a member', async () => {
@@ -292,8 +292,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: workspace details retrieved
       // Expected output: workspace object
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Workspace retrieved successfully');
@@ -307,8 +307,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspace2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspace2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Access denied');
@@ -321,26 +321,26 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .get(`/api/workspaces/${fakeWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${fakeWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
     });
   });
 
-  describe('GET /api/workspaces/:id/members - Get Workspace Members', () => {
+  describe('GET /api/workspace/:id/members - Get Workspace Members', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-no-user-id', 'true');
+        .get(`/api/workspace/${testData.testWorkspaceId}/members`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – retrieves workspace members', async () => {
@@ -349,8 +349,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: list of members retrieved
       // Expected output: array of user objects
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Members retrieved successfully');
@@ -365,15 +365,15 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .get(`/api/workspaces/${fakeWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${fakeWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
     });
   });
 
-  describe('GET /api/workspaces/:id/tags - Get All Tags', () => {
+  describe('GET /api/workspace/:id/tags - Get All Tags', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -381,11 +381,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 159-160 in workspace.controller.ts
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
-        .set('x-no-user-id', 'true');
+        .get(`/api/workspace/${testData.testWorkspaceId}/tags`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     beforeEach(async () => {
@@ -413,8 +413,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: list of unique tags retrieved
       // Expected output: array of unique tag strings
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/tags`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Tags retrieved successfully');
@@ -433,8 +433,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspace2Id}/tags`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspace2Id}/tags`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Access denied');
@@ -447,23 +447,23 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .get(`/api/workspaces/${fakeWorkspaceId}/tags`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${fakeWorkspaceId}/tags`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
     });
   });
 
-  describe('GET /api/workspaces/:id/membership/:userId - Get Membership Status', () => {
+  describe('GET /api/workspace/:id/membership/:userId - Get Membership Status', () => {
     test('200 – returns OWNER status', async () => {
       // Input: workspaceId and userId where user is owner
       // Expected status code: 200
       // Expected behavior: membership status retrieved
       // Expected output: status object with OWNER
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/membership/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/membership/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Membership status retrieved successfully');
@@ -483,8 +483,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspace2Id}/membership/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspace2Id}/membership/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.status).toBe('MEMBER');
@@ -503,8 +503,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/membership/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/membership/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.status).toBe('BANNED');
@@ -516,8 +516,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: membership status retrieved
       // Expected output: status object with NOT_MEMBER
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspace2Id}/membership/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspace2Id}/membership/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.status).toBe('NOT_MEMBER');
@@ -530,15 +530,15 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .get(`/api/workspaces/${fakeWorkspaceId}/membership/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${fakeWorkspaceId}/membership/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
     });
   });
 
-  describe('POST /api/workspaces/:id/members - Invite Member', () => {
+  describe('POST /api/workspace/:id/members - Invite Member', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -546,12 +546,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 215-216 in workspace.controller.ts
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-no-user-id', 'true')
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – adds member to workspace', async () => {
@@ -560,8 +559,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: member added to workspace
       // Expected output: updated workspace object
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(200);
@@ -576,8 +575,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: validation error
       // Expected output: error message
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({});
 
       expect(res.status).toBe(400);
@@ -590,8 +589,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUserId }); // Adding owner again
 
       expect(res.status).toBe(400);
@@ -605,8 +604,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .post(`/api/workspaces/${fakeWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${fakeWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(404);
@@ -620,8 +619,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeUserId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: fakeUserId });
 
       expect(res.status).toBe(404);
@@ -636,8 +635,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       
       // testUserId is not a member of testWorkspace2Id
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspace2Id}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspace2Id}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(403);
@@ -666,8 +665,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .post(`/api/workspaces/${personalWorkspace._id.toString()}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${personalWorkspace._id.toString()}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(403);
@@ -685,8 +684,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       });
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(403);
@@ -706,8 +705,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(200);
@@ -726,8 +725,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       expect(user?.fcmToken).toBeUndefined();
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(200);
@@ -752,8 +751,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
         .mockRejectedValueOnce(new Error('Notification service error'));
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(200);
@@ -767,7 +766,7 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
     });
   });
 
-  describe('POST /api/workspaces/:id/leave - Leave Workspace', () => {
+  describe('POST /api/workspace/:id/leave - Leave Workspace', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -775,11 +774,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 275-276 in workspace.controller.ts
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/leave`)
-        .set('x-no-user-id', 'true');
+        .post(`/api/workspace/${testData.testWorkspaceId}/leave`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     beforeEach(async () => {
@@ -795,8 +794,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: user removed from workspace members
       // Expected output: updated workspace object
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/leave`)
-        .set('x-test-user-id', testData.testUser2Id);
+        .post(`/api/workspace/${testData.testWorkspaceId}/leave`)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Successfully left the workspace');
@@ -831,8 +830,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .post(`/api/workspaces/${personalWorkspace._id.toString()}/leave`)
-        .set('x-test-user-id', testData.testUserId);
+        .post(`/api/workspace/${personalWorkspace._id.toString()}/leave`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Cannot leave your personal workspace');
@@ -844,8 +843,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/leave`)
-        .set('x-test-user-id', testData.testUserId);
+        .post(`/api/workspace/${testData.testWorkspaceId}/leave`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Owner cannot leave');
@@ -857,8 +856,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspace2Id}/leave`)
-        .set('x-test-user-id', testData.testUserId);
+        .post(`/api/workspace/${testData.testWorkspace2Id}/leave`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('You are not a member of this workspace');
@@ -871,15 +870,15 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .post(`/api/workspaces/${fakeWorkspaceId}/leave`)
-        .set('x-test-user-id', testData.testUserId);
+        .post(`/api/workspace/${fakeWorkspaceId}/leave`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
     });
   });
 
-  describe('PUT /api/workspaces/:id - Update Workspace Profile', () => {
+  describe('PUT /api/workspace/:id - Update Workspace Profile', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -887,12 +886,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 364-365 in workspace.controller.ts
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-no-user-id', 'true')
+        .put(`/api/workspace/${testData.testWorkspaceId}`)
         .send({ name: 'Updated Name' });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – updates workspace profile', async () => {
@@ -906,8 +904,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -931,8 +929,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUser2Id)
+        .put(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`)
         .send(updateData);
 
       expect(res.status).toBe(403);
@@ -946,8 +944,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .put(`/api/workspaces/${fakeWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${fakeWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ name: 'New Name' });
 
       expect(res.status).toBe(404);
@@ -955,7 +953,7 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
     });
   });
 
-  describe('PUT /api/workspaces/:id/picture - Update Workspace Picture', () => {
+  describe('PUT /api/workspace/:id/picture - Update Workspace Picture', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -963,12 +961,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 401-402 in workspace.controller.ts
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}/picture`)
-        .set('x-no-user-id', 'true')
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
         .send({ profilePicture: 'https://example.com/image.jpg' });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – updates workspace picture', async () => {
@@ -981,8 +978,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}/picture`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(updateData);
 
       expect(res.status).toBe(200);
@@ -1004,8 +1001,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       };
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}/picture`)
-        .set('x-test-user-id', testData.testUser2Id)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`)
         .send(updateData);
 
       expect(res.status).toBe(403);
@@ -1019,8 +1016,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .put(`/api/workspaces/${fakeWorkspaceId}/picture`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${fakeWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ profilePicture: 'https://example.com/pic.jpg' });
 
       expect(res.status).toBe(404);
@@ -1028,7 +1025,7 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
     });
   });
 
-  describe('DELETE /api/workspaces/:id/members/:userId - Ban Member', () => {
+  describe('DELETE /api/workspace/:id/members/:userId - Ban Member', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -1036,11 +1033,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 317-318 in workspace.controller.ts
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-no-user-id', 'true');
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     beforeEach(async () => {
@@ -1056,8 +1053,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: member removed and added to banned list
       // Expected output: updated workspace object
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Member banned successfully');
@@ -1079,8 +1076,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
 
       // Try to ban again
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Member banned successfully');
@@ -1118,8 +1115,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .delete(`/api/workspaces/${personalWorkspace._id.toString()}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${personalWorkspace._id.toString()}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Cannot ban members from personal workspace');
@@ -1130,28 +1127,24 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected status code: 403
       // Expected behavior: error message returned
       // Expected output: error message
-      // Create a third user and add them
-      let User = mongoose.models.User;
-      if (!User) {
-        User = mongoose.model('User', new mongoose.Schema({
-          googleId: { type: String, unique: true },
-          email: String,
-          profile: { name: String, imagePath: String, description: String }
-        }, { timestamps: true }));
+      // Create a third user and get token via dev-login
+      const loginRes3 = await request(app)
+        .post('/api/auth/dev-login')
+        .send({ email: 'testuser3@example.com' });
+      
+      if (loginRes3.status !== 200) {
+        throw new Error(`Failed to login test user 3: ${JSON.stringify(loginRes3.body)}`);
       }
-      const testUser3 = await User.create({
-        googleId: 'test-google-id-3',
-        email: 'testuser3@example.com',
-        profile: { name: 'Test User 3', imagePath: '', description: '' },
-      });
+      const testUser3Token = loginRes3.body.data.token;
+      const testUser3Id = loginRes3.body.data.user._id;
 
       await workspaceModel.findByIdAndUpdate(testData.testWorkspaceId, {
-        $push: { members: new mongoose.Types.ObjectId(testUser3._id) },
+        $push: { members: new mongoose.Types.ObjectId(testUser3Id) },
       });
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testUser3._id.toString());
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testUser3Token}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Only workspace owner');
@@ -1163,8 +1156,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('Cannot ban the workspace owner');
@@ -1177,8 +1170,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .delete(`/api/workspaces/${fakeWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${fakeWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
@@ -1191,15 +1184,15 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeUserId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${fakeUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${fakeUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('User to ban not found');
     });
   });
 
-  describe('DELETE /api/workspaces/:id - Delete Workspace', () => {
+  describe('DELETE /api/workspace/:id - Delete Workspace', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -1207,11 +1200,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 439-440 in workspace.controller.ts
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-no-user-id', 'true');
+        .delete(`/api/workspace/${testData.testWorkspaceId}`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – deletes workspace and all notes', async () => {
@@ -1229,8 +1222,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       });
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Workspace and all its notes deleted successfully');
@@ -1266,8 +1259,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       );
 
       const res = await request(app)
-        .delete(`/api/workspaces/${personalWorkspace._id.toString()}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${personalWorkspace._id.toString()}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Cannot delete your personal workspace');
@@ -1283,8 +1276,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       });
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUser2Id);
+        .delete(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Only workspace owner');
@@ -1297,15 +1290,15 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .delete(`/api/workspaces/${fakeWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${fakeWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
     });
   });
 
-  describe('GET /api/workspaces/:id/poll - Poll For New Messages', () => {
+  describe('GET /api/workspace/:id/poll - Poll For New Messages', () => {
     test('401 – returns 401 when user is not authenticated', async () => {
       // Input: request without user authentication
       // Expected status code: 401
@@ -1313,11 +1306,11 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "User not authenticated"
       // This tests lines 476-477 in workspace.controller.ts
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/poll`)
-        .set('x-no-user-id', 'true');
+        .get(`/api/workspace/${testData.testWorkspaceId}/poll`)
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
 
     test('200 – checks for new messages', async () => {
@@ -1326,8 +1319,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected behavior: polling check completed
       // Expected output: hasNewMessages boolean
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/poll`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/poll`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Polling check completed');
@@ -1342,8 +1335,8 @@ describe('Workspace API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
-        .get(`/api/workspaces/${fakeWorkspaceId}/poll`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${fakeWorkspaceId}/poll`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');

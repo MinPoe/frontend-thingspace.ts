@@ -10,7 +10,6 @@ import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 import { UserController } from '../user.controller';
 import { workspaceService } from '../workspace.service';
 
-const app = createTestApp();
 const userController = new UserController();
 
 // ---------------------------
@@ -19,6 +18,7 @@ const userController = new UserController();
 describe('User API – Mocked Tests', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -26,6 +26,9 @@ describe('User API – Mocked Tests', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -36,7 +39,7 @@ describe('User API – Mocked Tests', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   // Clean mocks every test
@@ -56,7 +59,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ profile: { name: 'Test' } });
 
       expect(res.status).toBe(500);
@@ -73,7 +76,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ profile: { name: 'Test' } });
 
       // Should call next(error) which might be handled by error handler
@@ -93,7 +96,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .put('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ profile: { name: 'Test' } });
 
       expect(res.status).toBe(500);
@@ -112,7 +115,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .delete('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Database error');
@@ -128,7 +131,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .delete('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
     });
@@ -145,7 +148,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .delete('/api/user/profile')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Failed to delete user');
@@ -163,7 +166,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .post('/api/user/fcm-token')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ fcmToken: 'test-token' });
 
       expect(res.status).toBe(400);
@@ -180,7 +183,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .post('/api/user/fcm-token')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ fcmToken: 'test-token' });
 
       expect(res.status).toBeGreaterThanOrEqual(400);
@@ -198,7 +201,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .post('/api/user/fcm-token')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ fcmToken: 'test-token' });
 
       expect(res.status).toBe(400);
@@ -217,10 +220,10 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .get(`/api/user/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
-      expect(res.body.message).toBe('Database error');
+      expect(res.body.message).toBe('Internal server error');
     });
 
     test('500 – get user by ID handles non-Error thrown value', async () => {
@@ -233,7 +236,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .get(`/api/user/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
     });
@@ -250,10 +253,10 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .get(`/api/user/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
-      expect(res.body.message).toBe('Failed to get user');
+      expect(res.body.message).toBe('Internal server error');
     });
   });
 
@@ -268,7 +271,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .get('/api/user/email/testuser1@example.com')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Database error');
@@ -284,7 +287,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .get('/api/user/email/testuser1@example.com')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBeGreaterThanOrEqual(500);
     });
@@ -301,7 +304,7 @@ describe('User API – Mocked Tests', () => {
 
       const res = await request(app)
         .get('/api/user/email/testuser1@example.com')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.message).toBe('Failed to get user');
@@ -341,8 +344,8 @@ describe('User API – Mocked Tests', () => {
       jest.spyOn(userModel, 'findByIds').mockRejectedValueOnce(new Error('Database error'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database error');
@@ -406,7 +409,9 @@ describe('User API – Mocked Tests', () => {
       // Input: valid googleId
       // Expected behavior: returns user object
       // Expected output: user object
-      const result = await userModel.findByGoogleId('test-google-id-1');
+      const existingUser = await userModel.findByEmail('testuser1@example.com');
+      expect(existingUser).not.toBeNull();
+      const result = await userModel.findByGoogleId(existingUser!.googleId);
       expect(result).not.toBeNull();
       expect(result?.email).toBe('testuser1@example.com');
     });

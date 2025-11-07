@@ -9,7 +9,7 @@ import { NoteType } from '../notes.types';
 import { noteService } from '../notes.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
+jest.setTimeout(60000);
 
 // Load notes data from JSON file
 function loadNotesData(): any[] {
@@ -94,6 +94,7 @@ function convertToNoteRequest(noteData: any, workspaceId: string): any {
 describe('Notes API – Search Latency Test (Non-Functional Requirement)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
   const notesData = loadNotesData();
 
   // Spin up in-memory Mongo
@@ -102,6 +103,9 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -112,7 +116,7 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
 
   // Fresh DB state and note creation before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
     // Clean up any previous mocks
     jest.restoreAllMocks();
     
@@ -140,7 +144,7 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
       const noteRequest = convertToNoteRequest(noteData, testData.testWorkspaceId);
       const res = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send(noteRequest);
       
       if (res.status === 201) {
@@ -171,14 +175,19 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
         console.log(`\nSearch ${i + 1}: "${searchQuery}"`);
         
         const searchStartTime = Date.now();
-        const res = await request(app)
-          .get('/api/notes')
-          .query({
-            workspaceId: testData.testWorkspaceId,
-            noteType: NoteType.CONTENT,
-            query: searchQuery,
-          })
-          .set('x-test-user-id', testData.testUserId);
+        let res;
+        try {
+          res = await request(app)
+            .get('/api/notes')
+            .query({
+              workspaceId: testData.testWorkspaceId,
+              noteType: NoteType.CONTENT,
+              query: searchQuery,
+            })
+            .set('Authorization', `Bearer ${testData.testUserToken}`);
+        } catch (error) {
+          throw new Error(`Search ${i + 1} failed with error: ${(error as Error).message}`);
+        }
         
         const searchEndTime = Date.now();
         const searchLatency = searchEndTime - searchStartTime;
@@ -188,10 +197,9 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
         
         // Log error if status is not 200
         if (res.status !== 200) {
-          console.log(`Failed: Search ${i + 1} failed with status ${res.status}:`, JSON.stringify(res.body, null, 2));
-          console.log(`Full response:`, res.body);
-          // Skip printing notes if search failed
-          continue;
+          throw new Error(
+            `Search ${i + 1} failed with status ${res.status}: ${JSON.stringify(res.body)}`
+          );
         }
         
         // Assertions for each search

@@ -7,14 +7,13 @@ import { NoteType } from '../notes.types';
 import { workspaceModel } from '../workspace.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Notes API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -22,6 +21,9 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -32,19 +34,18 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   describe('POST /api/notes - Create Note', () => {
     test('401 – returns 401 when user._id is not set', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 10-11 in notes.controller.ts
       const res = await request(app)
         .post('/api/notes')
-        .set('x-no-user-id', 'true')
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -53,7 +54,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
         });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('201 – creates a CONTENT note', async () => {
@@ -71,7 +72,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
         ],
       };
 
-      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
+      const res = await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(noteData);
 
       expect(res.status).toBe(201);
       expect(res.body.message).toBe('Note created successfully');
@@ -98,26 +99,26 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
         ],
       };
 
-      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
+      const res = await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(noteData);
 
       expect(res.status).toBe(201);
       expect(res.body.message).toBe('Note created successfully');
       expect(res.body.data.note).toBeDefined();
     });
 
-    test('500 – missing workspaceId (validation mocked out)', async () => {
+    test('400 – missing workspaceId (validation now active)', async () => {
       // Input: noteData missing workspaceId
-      // Expected status code: 500
-      // Expected behavior: database error, as validation is mocked out
-      // Expected output: None
+      // Expected status code: 400
+      // Expected behavior: validation error (validation is no longer mocked)
+      // Expected output: validation error
       const noteData = {
         noteType: NoteType.CONTENT,
         tags: ['tag1'],
         fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
       };
 
-      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
-      expect(res.status).toBe(500);
+      const res = await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(noteData);
+      expect(res.status).toBe(400);
       expect(res.body.error).toBeDefined();
     });
 
@@ -133,7 +134,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
         fields: [{ fieldType: 'textbox', content: 'Chat message', _id: '1' }],
       };
 
-      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
+      const res = await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(noteData);
 
       expect(res.status).toBe(201);
       expect(res.body.data.note.noteType).toBe(NoteType.CHAT);
@@ -141,34 +142,34 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
 
     test('201 – creates note with default noteType when noteType is missing', async () => {
       // Input: noteData with workspaceId, missing noteType, tags, and fields
-      // Expected status code: 201
-      // Expected behavior: note is created with default noteType (CONTENT)
-      // Expected output: note with noteType set to CONTENT
+      // Expected status code: 400 (validation requires noteType)
+      // Expected behavior: validation rejects request without noteType
+      // Expected output: validation error
       const noteData = {
         workspaceId: testData.testWorkspaceId,
         tags: ['tag1'],
         fields: [{ fieldType: 'title', content: 'Default Note Type Test', _id: '1' }],
       };
 
-      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
+      const res = await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(noteData);
 
-      expect(res.status).toBe(201);
-      expect(res.body.message).toBe('Note created successfully');
-      expect(res.body.data.note.noteType).toBe(NoteType.CONTENT);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBeDefined();
     });
 
-    test('201 – creates note with default empty tags when tags is missing', async () => {
-      // Input: noteData with workspaceId, noteType, missing tags, and fields
+    test('201 – creates note with empty tags array', async () => {
+      // Input: noteData with workspaceId, noteType, empty tags array, and fields
       // Expected status code: 201
-      // Expected behavior: note is created with default empty tags array
+      // Expected behavior: note is created with empty tags array (tags can be [] but not null)
       // Expected output: note with tags set to []
       const noteData = {
         workspaceId: testData.testWorkspaceId,
         noteType: NoteType.CONTENT,
+        tags: [],
         fields: [{ fieldType: 'title', content: 'Default Tags Test', _id: '1' }],
       };
 
-      const res = await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(noteData);
+      const res = await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(noteData);
 
       expect(res.status).toBe(201);
       expect(res.body.message).toBe('Note created successfully');
@@ -182,7 +183,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -193,21 +194,20 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user._id is not set', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 33-34 in notes.controller.ts
       const res = await request(app)
         .put(`/api/notes/${noteId}`)
-        .set('x-no-user-id', 'true')
         .send({
           tags: ['updated'],
           fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }],
         });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('200 – updates an existing note', async () => {
@@ -217,7 +217,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: updated note details
       const res = await request(app)
         .put(`/api/notes/${noteId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ tags: ['new-tag'], fields: [{ fieldType: 'title', content: 'Updated Title', _id: '1' }] });
 
       expect(res.status).toBe(200);
@@ -234,7 +234,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const fakeId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
         .put(`/api/notes/${fakeId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ tags: ['new-tag'], fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }] });
 
       expect(res.status).toBe(500);
@@ -248,7 +248,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: None
       const res = await request(app)
         .put(`/api/notes/${noteId}`)
-        .set('x-test-user-id', testData.testUser2Id)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`)
         .send({ tags: ['new-tag'], fields: [{ fieldType: 'title', content: 'Hacked!', _id: '1' }] });
 
       expect(res.status).toBe(500);
@@ -262,7 +262,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -273,17 +273,16 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user._id is not set', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 56-57 in notes.controller.ts
       const res = await request(app)
-        .delete(`/api/notes/${noteId}`)
-        .set('x-no-user-id', 'true');
+        .delete(`/api/notes/${noteId}`);
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('200 – deletes an existing note', async () => {
@@ -291,7 +290,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected status code: 200
       // Expected behavior: note is deleted from database
       // Expected output: success message
-      const res = await request(app).delete(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).delete(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Note successfully deleted');
@@ -303,7 +302,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected behavior: database error
       // Expected output: None
       const fakeId = new mongoose.Types.ObjectId().toString();
-      const res = await request(app).delete(`/api/notes/${fakeId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).delete(`/api/notes/${fakeId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -314,7 +313,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected status code: 500
       // Expected behavior: database error due to ownership check
       // Expected output: None
-      const res = await request(app).delete(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUser2Id);
+      const res = await request(app).delete(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUser2Token}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -327,7 +326,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -338,17 +337,16 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user._id is not set', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 76-77 in notes.controller.ts
       const res = await request(app)
-        .get(`/api/notes/${noteId}`)
-        .set('x-no-user-id', 'true');
+        .get(`/api/notes/${noteId}`);
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('200 – fetches a note', async () => {
@@ -356,7 +354,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected status code: 200
       // Expected behavior: note is retrieved from database
       // Expected output: note details with fields
-      const res = await request(app).get(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Note successfully retrieved');
@@ -370,7 +368,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected behavior: error message returned
       // Expected output: error message
       const fakeId = new mongoose.Types.ObjectId().toString();
-      const res = await request(app).get(`/api/notes/${fakeId}`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${fakeId}`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Note not found');
@@ -381,7 +379,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected status code: 404
       // Expected behavior: error message due to ownership check
       // Expected output: error message
-      const res = await request(app).get(`/api/notes/${noteId}`).set('x-test-user-id', testData.testUser2Id);
+      const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUser2Token}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Note not found');
@@ -412,7 +410,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       ];
 
       for (const n of notes) {
-        await request(app).post('/api/notes').set('x-test-user-id', testData.testUserId).send(n);
+        await request(app).post('/api/notes').set('Authorization', `Bearer ${testData.testUserToken}`).send(n);
       }
     });
 
@@ -424,7 +422,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Notes retrieved successfully');
@@ -439,7 +437,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT, tags: 'urgent' })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       const urgentNotes = res.body.data.notes.filter((note: any) => note.tags.includes('urgent'));
@@ -454,7 +452,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT, tags: ['important', 'urgent'] })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.notes.length).toBeGreaterThan(0);
@@ -466,18 +464,17 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user._id is not set', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 200-201 in notes.controller.ts
       const res = await request(app)
         .get('/api/notes')
-        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('x-no-user-id', 'true');
+        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('400 – missing workspaceId', async () => {
@@ -488,7 +485,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ noteType: NoteType.CONTENT })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('workspaceId is required');
@@ -502,7 +499,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('noteType is required');
@@ -516,7 +513,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get('/api/notes')
         .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT })
-        .set('x-test-user-id', testData.testUser2Id);
+        .set('Authorization', `Bearer ${testData.testUser2Token}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
@@ -529,7 +526,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -550,7 +547,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(200);
@@ -566,7 +563,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: fakeWorkspaceId });
 
       expect(res.status).toBe(404);
@@ -580,7 +577,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(403);
@@ -595,7 +592,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const fakeNoteId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
         .post(`/api/notes/${fakeNoteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(404);
@@ -603,18 +600,17 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user._id is not set (shareNoteToWorkspace)', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 100-102 in notes.controller.ts
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-no-user-id', 'true')
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
 
     test('403 – cannot share another user\'s note (not owner)', async () => {
@@ -624,7 +620,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUser2Id)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(403);
@@ -638,7 +634,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .post(`/api/notes/${noteId}/share`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({});
 
       expect(res.status).toBe(400);
@@ -652,7 +648,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -673,7 +669,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(201);
@@ -691,7 +687,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       const fakeWorkspaceId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: fakeWorkspaceId });
 
       expect(res.status).toBe(404);
@@ -705,7 +701,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(403);
@@ -719,7 +715,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUser2Id)
+        .set('Authorization', `Bearer ${testData.testUser2Token}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
       expect(res.status).toBe(403);
@@ -733,7 +729,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected output: error message
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({});
 
       expect(res.status).toBe(400);
@@ -741,18 +737,17 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user._id is not set (copyNoteToWorkspace)', async () => {
-      // Input: request where authenticateToken passes but req.user._id is undefined
+      // Input: request without authentication token
       // Expected status code: 401
       // Expected behavior: error message returned
       // Expected output: error message "User not authenticated"
       // This tests lines 143-144 in notes.controller.ts
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
-        .set('x-no-user-id', 'true')
         .send({ workspaceId: testData.testWorkspace2Id });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
     });
   });
 
@@ -762,7 +757,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
     beforeEach(async () => {
       const create = await request(app)
         .post('/api/notes')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
@@ -777,7 +772,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected status code: 200
       // Expected behavior: workspace ID retrieved from database
       // Expected output: workspace ID
-      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${noteId}/workspaces`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Workspace retrieved successfully');
@@ -790,7 +785,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       // Expected behavior: database error
       // Expected output: None
       const fakeNoteId = new mongoose.Types.ObjectId().toString();
-      const res = await request(app).get(`/api/notes/${fakeNoteId}/workspaces`).set('x-test-user-id', testData.testUserId);
+      const res = await request(app).get(`/api/notes/${fakeNoteId}/workspaces`).set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();

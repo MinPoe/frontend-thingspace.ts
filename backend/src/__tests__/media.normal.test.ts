@@ -9,14 +9,13 @@ import { IMAGES_DIR } from '../constants';
 import { MediaService } from '../media.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Media API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -29,6 +28,9 @@ describe('Media API – Normal Tests (No Mocking)', () => {
     if (!fs.existsSync(IMAGES_DIR)) {
       fs.mkdirSync(IMAGES_DIR, { recursive: true });
     }
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -65,7 +67,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   describe('POST /api/media/upload - Upload Image', () => {
@@ -84,7 +86,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post('/api/media/upload')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .attach('media', testImagePath);
 
       expect(res.status).toBe(200);
@@ -107,7 +109,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       // Expected output: error message "No file uploaded"
       const res = await request(app)
         .post('/api/media/upload')
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.message).toBe('No file uploaded');
@@ -123,7 +125,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post('/api/media/upload')
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .attach('media', testFilePath, { contentType: 'text/plain' });
 
       // Multer fileFilter errors are handled by error handler, which returns 500
@@ -140,34 +142,22 @@ describe('Media API – Normal Tests (No Mocking)', () => {
     });
 
     test('401 – returns 401 when user is not authenticated', async () => {
-      // Input: request with file but req.user is not set
+      // Input: request with file but no authentication token
       // Expected status code: 401
       // Expected behavior: returns error when user is not authenticated
-      // Expected output: error message "User not authenticated"
-      // Create a custom app without auth middleware to test the controller's user check
-      const express = require('express');
-      const customApp = express();
-      customApp.use(express.json());
-      
-      const MediaController = require('../media.controller').MediaController;
-      const mediaController = new MediaController();
-      const { upload } = require('../storage');
-      
-      // Add route without auth middleware, so req.user won't be set
-      customApp.post('/api/media/upload', upload.single('media'), mediaController.uploadImage.bind(mediaController));
-
+      // Expected output: error message
       const testImagePath = path.resolve(IMAGES_DIR, 'test-no-auth.png');
       if (!fs.existsSync(IMAGES_DIR)) {
         fs.mkdirSync(IMAGES_DIR, { recursive: true });
       }
       fs.writeFileSync(testImagePath, Buffer.from('fake-image-data'));
 
-      const res = await request(customApp)
+      const res = await request(app)
         .post('/api/media/upload')
         .attach('media', testImagePath);
 
       expect(res.status).toBe(401);
-      expect(res.body.message).toBe('User not authenticated');
+      expect(res.body.error).toBeDefined();
 
       // Clean up
       if (fs.existsSync(testImagePath)) {

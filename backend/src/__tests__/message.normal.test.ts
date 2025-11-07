@@ -7,50 +7,13 @@ import { workspaceModel } from '../workspace.model';
 import { messageModel } from '../message.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-// Mock authenticateToken before requiring message routes
-jest.mock('../auth.middleware', () => {
-  const mongoose = require('mongoose');
-  const originalModule = jest.requireActual('../auth.middleware');
-  return {
-    ...originalModule,
-    authenticateToken: (req: any, res: any, next: any) => {
-      const mockUserId = req.headers['x-test-user-id'] as string;
-      const noUserId = req.headers['x-no-user-id'] === 'true';
-      
-      if (noUserId) {
-        // Set req.user but without _id to test route handler's userId check
-        req.user = {
-          googleId: 'test-google-id',
-          email: 'test@example.com',
-          profile: { name: 'Test User', imagePath: '', description: '' },
-          personalWorkspaceId: null,
-        };
-        return next();
-      }
-      
-      if (mockUserId) {
-        req.user = {
-          _id: new mongoose.Types.ObjectId(mockUserId),
-          googleId: 'test-google-id',
-          email: 'test@example.com',
-          profile: { name: 'Test User', imagePath: '', description: '' },
-          personalWorkspaceId: null,
-        };
-        return next();
-      }
-      return res.status(401).json({ error: 'No test user ID provided' });
-    },
-  };
-});
-
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Message API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -58,6 +21,9 @@ describe('Message API – Normal Tests (No Mocking)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Tear down DB
@@ -68,7 +34,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   describe('GET /api/messages/workspace/:workspaceId - Get Messages', () => {
@@ -86,7 +52,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -114,7 +80,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
         .query({ limit: '1' }) // Pass as string (query params are strings), schema will coerce
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.length).toBe(1);
@@ -138,7 +104,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
         .query({ before: beforeDate.toISOString() })
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       // Should not include the "After message"
@@ -154,7 +120,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       const res = await request(app)
         .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
         .query({ limit: 'not-a-number', before: 'not-a-valid-iso-date' }) // Both should fail validation
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(400);
       expect(res.body.error).toBeDefined();
@@ -170,7 +136,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .get(`/api/messages/workspace/${fakeWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
@@ -191,7 +157,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .get(`/api/messages/workspace/${workspace._id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Not a member of this workspace');
@@ -205,10 +171,10 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       // This tests line 18 in message.routes.ts
       const res = await request(app)
         .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-no-user-id', 'true');
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
   });
 
@@ -220,7 +186,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       // Expected output: created message object
       const res = await request(app)
         .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ content: 'New message' });
 
       expect(res.status).toBe(201);
@@ -240,7 +206,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       // Expected output: error response
       const res = await request(app)
         .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({});
 
       expect(res.status).toBe(400);
@@ -256,7 +222,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post(`/api/messages/workspace/${fakeWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ content: 'Test' });
 
       expect(res.status).toBe(404);
@@ -277,7 +243,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .post(`/api/messages/workspace/${workspace._id}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ content: 'Test' });
 
       expect(res.status).toBe(403);
@@ -292,11 +258,10 @@ describe('Message API – Normal Tests (No Mocking)', () => {
       // This tests line 64 in message.routes.ts
       const res = await request(app)
         .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-no-user-id', 'true')
         .send({ content: 'Test' });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
   });
 
@@ -315,7 +280,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${message._id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Message deleted successfully');
@@ -334,7 +299,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${fakeMessageId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Message not found');
@@ -354,7 +319,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${message._id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error).toBe('Workspace not found');
@@ -382,7 +347,7 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${message._id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Only workspace owner can delete messages');
@@ -402,10 +367,10 @@ describe('Message API – Normal Tests (No Mocking)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${message._id}`)
-        .set('x-no-user-id', 'true');
+;
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('User not authenticated');
+      expect(res.body.error).toBe('Access denied');
     });
   });
 });

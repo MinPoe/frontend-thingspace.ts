@@ -7,14 +7,13 @@ import { workspaceService } from '../workspace.service';
 import { workspaceModel } from '../workspace.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -22,6 +21,9 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Clean mocks every test; full DB reset occurs in beforeEach
@@ -38,10 +40,10 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
-  describe('POST /api/workspaces - Create Workspace, with mocks', () => {
+  describe('POST /api/workspace - Create Workspace, with mocks', () => {
     test('500 – create workspace handles service error', async () => {
       // Mocked behavior: workspaceService.createWorkspace throws database connection error
       // Input: workspaceData with name
@@ -51,8 +53,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'createWorkspace').mockRejectedValue(new Error('Database connection failed'));
 
       const res = await request(app)
-        .post('/api/workspaces')
-        .set('x-test-user-id', testData.testUserId)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           name: 'Test Workspace',
         });
@@ -70,8 +72,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'createWorkspace').mockRejectedValue('String error');
 
       const res = await request(app)
-        .post('/api/workspaces')
-        .set('x-test-user-id', testData.testUserId)
+        .post('/api/workspace')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({
           name: 'Test Workspace',
         });
@@ -81,7 +83,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
     });
   });
 
-  describe('GET /api/workspaces/personal - Get Personal Workspace, with mocks', () => {
+  describe('GET /api/workspace/personal - Get Personal Workspace, with mocks', () => {
     test('500 – get personal workspace handles service error', async () => {
       // Mocked behavior: workspaceService.getPersonalWorkspaceForUser throws database lookup error
       // Input: userId in header
@@ -91,8 +93,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getPersonalWorkspaceForUser').mockRejectedValue(new Error('Database lookup failed'));
 
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database lookup failed');
@@ -107,15 +109,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getPersonalWorkspaceForUser').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get('/api/workspaces/personal')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/personal')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve personal workspace');
     });
   });
 
-  describe('GET /api/workspaces/user - Get Workspaces For User, with mocks', () => {
+  describe('GET /api/workspace/user - Get Workspaces For User, with mocks', () => {
     test('500 – get workspaces for user handles service error', async () => {
       // Mocked behavior: workspaceService.getWorkspacesForUser throws database query error
       // Input: userId in header
@@ -125,8 +127,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspacesForUser').mockRejectedValue(new Error('Database query failed'));
 
       const res = await request(app)
-        .get('/api/workspaces/user')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/user')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database query failed');
@@ -141,15 +143,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspacesForUser').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get('/api/workspaces/user')
-        .set('x-test-user-id', testData.testUserId);
+        .get('/api/workspace/user')
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve workspaces');
     });
   });
 
-  describe('GET /api/workspaces/:id - Get Workspace, with mocks', () => {
+  describe('GET /api/workspace/:id - Get Workspace, with mocks', () => {
     test('500 – get workspace handles service error', async () => {
       // Mocked behavior: workspaceService.getWorkspace throws database lookup error
       // Input: workspaceId in URL
@@ -159,8 +161,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspace').mockRejectedValue(new Error('Database lookup failed'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database lookup failed');
@@ -175,15 +177,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspace').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve workspace');
     });
   });
 
-  describe('GET /api/workspaces/:id/members - Get Workspace Members, with mocks', () => {
+  describe('GET /api/workspace/:id/members - Get Workspace Members, with mocks', () => {
     test('403 – get workspace members handles Access denied error', async () => {
       // Mocked behavior: workspaceService.getWorkspaceMembers throws Access denied error
       // Input: workspaceId in URL
@@ -193,8 +195,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspaceMembers').mockRejectedValue(new Error('Access denied: You are not a member of this workspace'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(403);
       expect(res.body.error).toContain('Access denied');
@@ -209,8 +211,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspaceMembers').mockRejectedValue(new Error('Database lookup failed'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database lookup failed');
@@ -225,15 +227,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getWorkspaceMembers').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve members');
     });
   });
 
-  describe('GET /api/workspaces/:id/tags - Get All Tags, with mocks', () => {
+  describe('GET /api/workspace/:id/tags - Get All Tags, with mocks', () => {
     test('500 – get all tags handles service error', async () => {
       // Mocked behavior: workspaceService.getAllTags throws database query error
       // Input: workspaceId in URL
@@ -243,8 +245,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getAllTags').mockRejectedValue(new Error('Database query failed'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/tags`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database query failed');
@@ -259,15 +261,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getAllTags').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/tags`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/tags`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve tags');
     });
   });
 
-  describe('GET /api/workspaces/:id/membership/:userId - Get Membership Status, with mocks', () => {
+  describe('GET /api/workspace/:id/membership/:userId - Get Membership Status, with mocks', () => {
     test('500 – get membership status handles service error', async () => {
       // Mocked behavior: workspaceService.getMembershipStatus throws database lookup error
       // Input: workspaceId and userId in URL
@@ -277,8 +279,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getMembershipStatus').mockRejectedValue(new Error('Database lookup failed'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/membership/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/membership/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database lookup failed');
@@ -293,15 +295,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'getMembershipStatus').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/membership/${testData.testUserId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/membership/${testData.testUserId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to retrieve membership status');
     });
   });
 
-  describe('POST /api/workspaces/:id/members - Invite Member, with mocks', () => {
+  describe('POST /api/workspace/:id/members - Invite Member, with mocks', () => {
     test('403 – invite member handles Only workspace owner error', async () => {
       // Mocked behavior: workspaceService.inviteMember throws Only workspace owner error
       // Input: workspaceId in URL, userId in body
@@ -311,8 +313,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'inviteMember').mockRejectedValue(new Error('Only workspace owner can invite members'));
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(403);
@@ -328,8 +330,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'inviteMember').mockRejectedValue(new Error('User is banned from this workspace'));
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(403);
@@ -345,8 +347,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'inviteMember').mockRejectedValue(new Error('Database write failed'));
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(500);
@@ -362,8 +364,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'inviteMember').mockRejectedValue('String error');
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/members`)
-        .set('x-test-user-id', testData.testUserId)
+        .post(`/api/workspace/${testData.testWorkspaceId}/members`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ userId: testData.testUser2Id });
 
       expect(res.status).toBe(500);
@@ -371,7 +373,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
     });
   });
 
-  describe('POST /api/workspaces/:id/leave - Leave Workspace, with mocks', () => {
+  describe('POST /api/workspace/:id/leave - Leave Workspace, with mocks', () => {
     test('500 – leave workspace handles service error', async () => {
       // Mocked behavior: workspaceService.leaveWorkspace throws database update error
       // Input: workspaceId in URL
@@ -381,15 +383,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'leaveWorkspace').mockRejectedValue(new Error('Database update failed'));
 
       const res = await request(app)
-        .post(`/api/workspaces/${testData.testWorkspaceId}/leave`)
-        .set('x-test-user-id', testData.testUserId);
+        .post(`/api/workspace/${testData.testWorkspaceId}/leave`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to leave workspace');
     });
   });
 
-  describe('PUT /api/workspaces/:id - Update Workspace Profile, with mocks', () => {
+  describe('PUT /api/workspace/:id - Update Workspace Profile, with mocks', () => {
     test('500 – update workspace profile handles service error', async () => {
       // Mocked behavior: workspaceService.updateWorkspaceProfile throws database update error
       // Input: workspaceId in URL, updateData in body
@@ -399,8 +401,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'updateWorkspaceProfile').mockRejectedValue(new Error('Database update failed'));
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ name: 'Updated Name' });
 
       expect(res.status).toBe(500);
@@ -416,8 +418,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'updateWorkspaceProfile').mockRejectedValue({ code: 'UNKNOWN' });
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ name: 'Updated Name' });
 
       expect(res.status).toBe(500);
@@ -425,7 +427,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
     });
   });
 
-  describe('PUT /api/workspaces/:id/picture - Update Workspace Picture, with mocks', () => {
+  describe('PUT /api/workspace/:id/picture - Update Workspace Picture, with mocks', () => {
     test('500 – update workspace picture handles service error', async () => {
       // Mocked behavior: workspaceService.updateWorkspacePicture throws database update error
       // Input: workspaceId in URL, profilePicture in body
@@ -435,8 +437,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'updateWorkspacePicture').mockRejectedValue(new Error('Database update failed'));
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}/picture`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ profilePicture: 'https://example.com/pic.jpg' });
 
       expect(res.status).toBe(500);
@@ -452,8 +454,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'updateWorkspacePicture').mockRejectedValue('String error');
 
       const res = await request(app)
-        .put(`/api/workspaces/${testData.testWorkspaceId}/picture`)
-        .set('x-test-user-id', testData.testUserId)
+        .put(`/api/workspace/${testData.testWorkspaceId}/picture`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ profilePicture: 'https://example.com/pic.jpg' });
 
       expect(res.status).toBe(500);
@@ -461,7 +463,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
     });
   });
 
-  describe('DELETE /api/workspaces/:id/members/:userId - Ban Member, with mocks', () => {
+  describe('DELETE /api/workspace/:id/members/:userId - Ban Member, with mocks', () => {
     test('500 – ban member handles service error', async () => {
       // Mocked behavior: workspaceService.banMember throws database update error
       // Input: workspaceId and userId in URL
@@ -471,8 +473,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'banMember').mockRejectedValue(new Error('Database update failed'));
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database update failed');
@@ -487,15 +489,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'banMember').mockRejectedValue('String error');
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}/members/${testData.testUser2Id}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to ban member');
     });
   });
 
-  describe('DELETE /api/workspaces/:id - Delete Workspace, with mocks', () => {
+  describe('DELETE /api/workspace/:id - Delete Workspace, with mocks', () => {
     test('500 – delete workspace handles service error', async () => {
       // Mocked behavior: workspaceService.deleteWorkspace throws database delete error
       // Input: workspaceId in URL
@@ -505,8 +507,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'deleteWorkspace').mockRejectedValue(new Error('Database delete failed'));
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database delete failed');
@@ -521,15 +523,15 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'deleteWorkspace').mockRejectedValue('String error');
 
       const res = await request(app)
-        .delete(`/api/workspaces/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .delete(`/api/workspace/${testData.testWorkspaceId}`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to delete workspace');
     });
   });
 
-  describe('GET /api/workspaces/:id/poll - Poll For New Messages, with mocks', () => {
+  describe('GET /api/workspace/:id/poll - Poll For New Messages, with mocks', () => {
     test('500 – poll for new messages handles service error', async () => {
       // Mocked behavior: workspaceService.checkForNewChatMessages throws database lookup error
       // Input: workspaceId in URL
@@ -539,8 +541,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'checkForNewChatMessages').mockRejectedValue(new Error('Database lookup failed'));
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/poll`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/poll`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Database lookup failed');
@@ -555,8 +557,8 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.spyOn(workspaceService, 'checkForNewChatMessages').mockRejectedValue('String error');
 
       const res = await request(app)
-        .get(`/api/workspaces/${testData.testWorkspaceId}/poll`)
-        .set('x-test-user-id', testData.testUserId);
+        .get(`/api/workspace/${testData.testWorkspaceId}/poll`)
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to poll for new messages');

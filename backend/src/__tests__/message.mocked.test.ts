@@ -7,37 +7,13 @@ import { messageModel } from '../message.model';
 import { workspaceModel } from '../workspace.model';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
-// Mock authenticateToken before requiring message routes
-jest.mock('../auth.middleware', () => {
-  const mongoose = require('mongoose');
-  const originalModule = jest.requireActual('../auth.middleware');
-  return {
-    ...originalModule,
-    authenticateToken: (req: any, res: any, next: any) => {
-      const mockUserId = req.headers['x-test-user-id'] as string;
-      if (mockUserId) {
-        req.user = {
-          _id: new mongoose.Types.ObjectId(mockUserId),
-          googleId: 'test-google-id',
-          email: 'test@example.com',
-          profile: { name: 'Test User', imagePath: '', description: '' },
-          personalWorkspaceId: null,
-        };
-        return next();
-      }
-      return res.status(401).json({ error: 'No test user ID provided' });
-    },
-  };
-});
-
-const app = createTestApp();
-
 // ---------------------------
 // Test suite
 // ---------------------------
 describe('Message API – Mocked Tests (Jest Mocks)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
+  let app: ReturnType<typeof createTestApp>;
 
   // Spin up in-memory Mongo
   beforeAll(async () => {
@@ -45,6 +21,9 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
     const uri = mongo.getUri();
     await mongoose.connect(uri);
     console.log('✅ Connected to in-memory MongoDB');
+    
+    // Create app after DB connection
+    app = createTestApp();
   });
 
   // Clean mocks every test
@@ -61,7 +40,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
   // Fresh DB state before each test
   beforeEach(async () => {
-    testData = await setupTestDatabase();
+    testData = await setupTestDatabase(app);
   });
 
   describe('GET /api/messages/workspace/:workspaceId - Get Messages, with mocks', () => {
@@ -81,7 +60,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .get(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to fetch messages');
@@ -99,7 +78,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ content: 'Test message' });
 
       expect(res.status).toBe(500);
@@ -123,7 +102,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .post(`/api/messages/workspace/${testData.testWorkspaceId}`)
-        .set('x-test-user-id', testData.testUserId)
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
         .send({ content: 'Test message' });
 
       expect(res.status).toBe(500);
@@ -143,7 +122,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
       const messageId = new mongoose.Types.ObjectId();
       const res = await request(app)
         .delete(`/api/messages/${messageId}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to delete message');
@@ -166,7 +145,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${message._id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to delete message');
@@ -189,7 +168,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
       const res = await request(app)
         .delete(`/api/messages/${message._id}`)
-        .set('x-test-user-id', testData.testUserId);
+        .set('Authorization', `Bearer ${testData.testUserToken}`);
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBe('Failed to delete message');
