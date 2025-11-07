@@ -151,97 +151,143 @@ This includes the non-functional requirement that every note/message containing 
 `./frontend/app/src/androidTest/java/com.cpen321.usermanagement`
 
 ### 4.2. Tests Included
-#### TestCollaborate.kt – Collaborate Feature
-- **Prerequisites**
-  - Two user accounts: a workspace manager and a workspace member
-  - The manager account must have a workspace named `Test`
-  - The manager account must not have access to workspaces named `Study` or `Study v2`
+### Test of the “Collaborate” Feature (`TestCollaborate.kt`)
 
----
+**Prerequisite:**
 
-### Create Workspace
+1. Need 2 user accounts:
+   - Workspace Manager  
+   - Workspace Member
+2. Workspace Manager must have a workspace named **“Test”**
+3. There must be **no existing workspaces** named *“Study”* or *“Study v2”*
 
-| Scenario steps | Test case steps |
-|----------------|----------------|
+#### Scenario Steps and Test Case Steps
+
+| Scenario Steps | Test Case Steps |
+|---|---|
+| **Create Workspace** | |
 | 1. The user opens the “Create Workspace” screen. | Open the “Create Workspace” screen. |
-| 2. The app shows input fields for title and a “Create Workspace” button that is disabled. | Check that the “Pick a workspace name” field is visible. Check that button labelled “Create Workspace” is present and disabled. |
-| 3a. The user inputs a workspace title that is already taken | Before the test, a separate workspace called “Test” should be created. Then, open the “Create Workspace” screen and input “Test” in the title field. Click “Create”. |
-| 3a1. The app displays an error message telling user that the creation failed | Check the dialog shows: “Failed to create workspace.” |
-| 3. The user enters valid information. | Input “Studies” in the title field. Check that button labelled “Create” is now enabled. |
-| 4. The user clicks the “Create” button. | Click “Create”. Verify system shows “Manage Workspace Profile” for user to make edits and that the “Save” button is disabled until a workspace bio is inputted. Verify workspace “Studies” appears in the workspace list. |
+| 2. The app shows input fields and a disabled button. | Verify “Pick a workspace name” and disabled “Create Workspace” button. |
+| 3a. User enters workspace title already taken. | Pre-create workspace “Test”. Enter “Test” and click Create. |
+| 3a1. App shows error. | Check for dialog: **“Failed to create workspace.”** |
+| 3. User enters valid title. | Enter “Studies”. Verify “Create” button enabled. |
+| 4. User clicks “Create”. | Click “Create”. Verify workspace setup screen shown and “Studies” appears in list. |
+| **Update Workspace** | |
+| 10. Manager navigates to “Edit Workspace”. | As manager, open workspace → click pencil icon. |
+| 11. Edit title and bio. | Change title to “Studies v2” and bio “Study group”; click Save; expect “Profile updated successfully.” |
+| **Invite to Workspace** | |
+| 5. Member selects “Invite User”. | Open Studies → Manage Workspace → Invite icon. |
+| 6. App shows input and button. | Verify email field + “Invite to Workspace” button visible. |
+| 7a. Enter invalid email. | Enter “invalidemail”, click Invite. |
+| 7a1. Error message shown. | Check: **“Could not retrieve profile matching the given email!”** |
+| 7. Enter valid email. | Input teammate email → click Invite → expect **“The user got added to the workspace.”** |
+| 7b. Invite already-member user. | Enter existing member email and click Invite. |
+| 7b1. Error message. | **“The user is already a member!”** |
+| **Send Chat Message** | |
+| 8. User opens workspace chat. | Open chat icon; verify chat screen shown. |
+| 9a. Empty message. | Send blank message; verify no change. |
+| 9. Valid message. | Send “Hello team!”; verify appears with picture & timestamp. |
+| **Update Workspace as Non-Manager** | |
+| 10a. Non-manager tries editing workspace. | Open edit screen as non-manager → fields should be greyed out. |
+| **Leave Workspace (Non-Manager)** | |
+| 12. Non-manager clicks Leave. | Open Studies → Leave Workspace. |
+| 13. App removes user. | Studies no longer appears in workspace list. |
+| **Ban Users** | |
+| 14. Manager opens Members screen. | Manage Workspace → Members icon. |
+| 15. Manager bans user. | Click trash next to user. |
+| 16. User banned permanently. | User removed, cannot be re-invited → **“This user is banned”** |
+| **Delete Workspace** | |
+| 17. Manager deletes workspace. | Click Delete Workspace (trash icon). |
+| 18. Workspace deleted. | Studies disappears and name can be used again. |
 
 ---
 
-### Update Workspace (Manager)
+### Test of the “Manage Notes” Feature (`TestNotes.kt`)
 
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 10. The manager navigates to the “Edit Workspace” icon. | As the workspace manager account, navigate to the workspace screen. Click the “Pencil” icon next to the “Studies” workspace. |
-| 11. The manager edits the title and bio. | Change title to “Studies v2” and the bio to “Study group” and click the “Save” button. Check the confirmation message: “Profile updated successfully.” |
+**Prerequisite:**  
+Two pre-existing workspaces.
 
----
-
-### Invite to Workspace
-
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 5. A workspace member selects “Invite User”. | Click “Studies” workspace’s “Manage Workspace” icon (pencil icon). Click the “Invite User” icon on the bottom navbar (icon with person and cogwheel). |
-| 6. The app shows an input field for email and a “Invite to the Workspace” button. | Check input field and “Invite to the Workspace” button are visible. |
-| 7a. The inviter inputs invalid email. | Input “invalidemail” and click “Invite to the workspace”. |
-| 7a1. The app displays an error message about no user with the email existing | Check message: “Could not retrieve profile matching the given email!” |
-| 7. The inviter inputs a valid email | Input the email of another account (your teammate’s account on the app). Click the “Invite to the Workspace” button. Check the confirmation message: “The user got added to the workspace.” |
-| 7b. The invitee is already in the workspace. | Input the email of the teammate already in the workspace and click “Invite to the workspace”. |
-| 7b1. The app displays an error message indicating that the invitee is already in the workspace. | Check message: “The user is already a member!” |
-
----
-
-### Send Chat Message
-
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 8. The user opens workspace chat. | Go to Workspaces Screen. Click the “Chat” icon next to the “Studies” workspace. Check that the system displays the workspace chat screen. |
-| 9a. The message is empty. | Leave input blank or simply spaces and click the “Send” icon. Check that nothing occurs in the chat screen. |
-| 9. The user types a valid message and presses send. | Input “Hello team!” in the chat box and click the “Send” icon. Check the chat log shows “Hello team!” with the sender's profile picture and timestamp. |
-
----
-
-### Update Workspace (Non-Manager)
-
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 10a. A non-manager user attempts to update the workspace. | Log in as a non-manager user and navigate to the “Edit Workspace” icon. Check that the input fields are greyed out. |
-
----
-
-### Leave Workspace (Non-Manager)
-
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 12. The user (non-manager) selects “Leave Workspace”. | Open “Studies” manage workspace screen (pencil icon) using your non-manager account and click “Leave Workspace” (door icon). |
-| 13. App removes user from the workspace | Check that the “Studies” workspace doesn’t show up in the workspace list screen. |
+| Scenario Steps | Test Case Steps |
+|---|---|
+| **Create Note** | |
+| 1. Open “Create Note” screen. | Tap pencil icon. |
+| 2. App shows metadata fields and create button. | Verify “Note Type”, “Tags”, “Fields”. |
+| 3a. Create note with no fields. | Click Create with no fields. |
+| 3a1. Error. | **“Please add at least one field”** |
+| 3b. Create note with empty field label. | Add field but leave label blank; click Create. |
+| 3b1. Error. | **“All fields must have a label”** |
+| 3. User fills fields. | Add tag(s), add field “Notes”, enter content. |
+| 4. Click Create. | |
+| 5. Note created. | Verify note appears. |
+| **Update Note** | |
+| 6. Open note to edit. | Click pencil icon on note. |
+| 7. App shows editable fields. | Verify tag add/remove. |
+| 8. Modify content & tags. | |
+| 9. Click Save. | |
+| 10. Note updated. | Verify new values. |
+| **Share Note** | |
+| 11. Select “Share Note”. | Click Share icon. |
+| 12. Workspace selection dialog. | Verify “Share Note” + workspace list. |
+| 13. Select workspace & confirm. | Click Share. |
+| 14. Note shared. | **“Note shared to workspace successfully”**, note moves workspaces. |
+| **Copy Note** | |
+| 15. Select “Copy Note”. | Click Copy icon. |
+| 16. Workspace selection. | Verify UI. |
+| 17. Select workspace. | Click Copy. |
+| 18. Note copied. | Appears in both workspaces. |
+| **Delete Note** | |
+| 19. Select “Delete Note”. | Tap trash. |
+| 20. Confirmation dialog. | **“Are you sure… cannot be undone”** |
+| 21. Confirm. | Click Delete. |
+| 22. Note deleted. | Verify removal. |
 
 ---
 
-### Ban Users
+### Test of the “Retrieve Notes” Feature (`TestRetrieveNotes.kt`)
 
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 14. The manager opens the Members screen (Profile icon in manage workspace screen). | “Studies” workspace → Manage Workspace → Members screen (profile icon). |
-| 15. Manager chooses the user to ban | Click the trash bin icon next to the user. |
-| 16. App bans user from the workspace permanently | Verify the banned user doesn’t show up in the Members screen anymore. Verify the user cannot be invited anymore and system shows an error message: “This user is banned.” |
+**Prerequisite:**  
+Existing workspace with notes.
+
+| Scenario Steps | Test Case Steps |
+|---|---|
+| **Search Notes** | |
+| 1. Open workspace. | Navigate to workspace. |
+| 2. Search bar visible. | Verify presence. |
+| 3a. Empty query. | Search blank. |
+| 3a1. All notes shown. | Verify list. |
+| 3. Enter query. | Input string → Search. |
+| 4. Matching notes shown. | Relevant notes at top. |
+| **Filter Notes by Tags** | |
+| 5. Click filter icon. | |
+| 6. Tag selection screen. | Verify “All” + checkboxes. |
+| 7. Select “All”. | All tags selected. |
+| 9. Deselect “All”. | All tags cleared. |
+| 11. Select specific tags. | |
+| 12. Go back. | |
+| 13. Filter applied. | Only matching notes. |
+| **Combined Search + Filter** | |
+| 14. Enter search + choose tags. | |
+| 15. Results match both filters. | Matching notes displayed. |
 
 ---
 
-### Delete Workspace (Manager)
+### Test: Reach Note Screens in ≤2 Clicks (`TestReachWith2Clicks.kt`)
 
-| Scenario steps | Test case steps |
-|----------------|----------------|
-| 17. The manager selects “Delete Workspace”. | Open “Studies” settings and click “Delete Workspace” (trash bin icon). |
-| 18. App deletes the workspace | Verify the workspace “Studies” doesn’t show up in the workspace list screen. Verify the workspace “Studies” can be created. |
+This test verifies that from a workspace main screen, users can reach:
+
+- templates screen
+- chat screen
+- content/templates/chat of another workspace
+
+All screens must be reachable in **2 clicks or fewer**.
+
+The test counts the number of clicks for each navigation path.
+
+---
+
+### Test Logs
 
 Logs:
-
-Test of the non-functional requirement that every note-containing screen is reachable from the main screen within two clicks or fewer (`TestReachWith2Clicks.kt`). Starting at the main content screen in a workspace, the test navigates to templates or chat screens in the current workspace, as well as content, templates, or chat in other workspaces. Each route tracks the number of taps performed and asserts that the destination is reached in two clicks or less.
 
 <Place final print screens here>
 
