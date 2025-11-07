@@ -11,7 +11,7 @@ import type { Request, Response } from 'express';
 import { MediaController } from '../media.controller';
 import * as sanitizeModule from '../sanitizeInput.util';
 import { IMAGES_DIR, MAX_FILE_SIZE } from '../constants';
-import { MediaService } from '../media.service';
+import { mediaService } from '../media.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
 // ---------------------------
@@ -197,7 +197,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
       } as unknown as Response;
 
       const next = jest.fn();
-      const saveImageSpy = jest.spyOn(MediaService, 'saveImage');
+      const saveImageSpy = jest.spyOn(mediaService, 'saveImage');
 
       const controller = new MediaController();
       await controller.uploadImage(req, res, next);
@@ -220,7 +220,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         const nonExistentPath = path.resolve(IMAGES_DIR, 'non-existent-file.png');
 
         await expect(
-          MediaService.saveImage(nonExistentPath, testData.testUserId)
+          mediaService.saveImage(nonExistentPath, testData.testUserId)
         ).rejects.toThrow('Failed to save profile picture');
       });
 
@@ -248,7 +248,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         // Verify the file exists before deletion
         expect(fs.existsSync(testFile)).toBe(true);
         
-        await MediaService.deleteImage(url);
+        await mediaService.deleteImage(url);
         
         // File should be deleted
         expect(fs.existsSync(testFile)).toBe(false);
@@ -260,7 +260,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         // Expected output: No error thrown, no file deleted
         const url = '../../some/other/path/image.png';
 
-        await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
+        await expect(mediaService.deleteImage(url)).resolves.not.toThrow();
       });
 
       test('deleteImage handles errors gracefully when file operation fails', async () => {
@@ -272,7 +272,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         const relativePath = path.relative(process.cwd(), testFile);
         const url = relativePath.replace(/\\/g, '/');
 
-        await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
+        await expect(mediaService.deleteImage(url)).resolves.not.toThrow();
       });
 
       test('deleteImage handles URL starting with slash', async () => {
@@ -292,7 +292,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         // Verify the file exists before deletion
         expect(fs.existsSync(testFile)).toBe(true);
         
-        await MediaService.deleteImage(url);
+        await mediaService.deleteImage(url);
         
         // File should be deleted
         expect(fs.existsSync(testFile)).toBe(false);
@@ -323,7 +323,7 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         expect(fs.existsSync(file2)).toBe(true);
         expect(fs.existsSync(otherFile)).toBe(true);
 
-        await MediaService.deleteAllUserImages(userId);
+        await mediaService.deleteAllUserImages(userId);
 
         // User files should be deleted
         expect(fs.existsSync(file1)).toBe(false);

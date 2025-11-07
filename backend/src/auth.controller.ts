@@ -107,7 +107,7 @@ export class AuthController {
     }
   }
 
-  async devLogin(req: Request, res: Response, _next: NextFunction) {
+  async devLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const email = (req.body.email as string | undefined) ?? 'test@example.com';
       
@@ -119,17 +119,16 @@ export class AuthController {
       });
     } catch (error) {
       logger.error('Dev login error:', error);
-      
-      if (error instanceof Error) {
+
+      if (!(error instanceof Error)) {
+        let message = 'Dev login failed';
+
         return res.status(500).json({
-          message: error.message || 'Dev login failed',
+          message,
         });
       }
 
-      // For non-Error values, return generic message instead of calling next
-      return res.status(500).json({
-        message: 'Dev login failed',
-      });
+      next(error);
     }
   }
 }

@@ -5,7 +5,6 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 import { userModel } from '../user.model';
 import { workspaceModel } from '../workspace.model';
-import { MediaService } from '../media.service';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 import { UserController } from '../user.controller';
 import { workspaceService } from '../workspace.service';

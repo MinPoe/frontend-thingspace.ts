@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-import { MediaService } from '../media.service';
+import { mediaService } from '../media.service';
 import { IMAGES_DIR } from '../constants';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
@@ -58,7 +58,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       // Expected status code: 500
       // Expected behavior: error handled gracefully
       // Expected output: error message
-      jest.spyOn(MediaService, 'saveImage').mockRejectedValue(new Error('Failed to save image'));
+      jest.spyOn(mediaService, 'saveImage').mockRejectedValue(new Error('Failed to save image'));
 
       const testImagePath = path.resolve(IMAGES_DIR, 'test-upload.png');
       // Ensure directory exists
@@ -88,7 +88,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       // Expected behavior: error handled gracefully with fallback message
       // Expected output: error message "Failed to upload profile picture"
       const errorWithoutMessage = new Error('');
-      jest.spyOn(MediaService, 'saveImage').mockRejectedValue(errorWithoutMessage);
+      jest.spyOn(mediaService, 'saveImage').mockRejectedValue(errorWithoutMessage);
 
       const testImagePath = path.resolve(IMAGES_DIR, 'test-upload.png');
       // Ensure directory exists
@@ -117,7 +117,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       // Expected status code: 500 or handled by error handler
       // Expected behavior: next(error) called
       // Expected output: error handled by error handler
-      jest.spyOn(MediaService, 'saveImage').mockRejectedValue('String error');
+      jest.spyOn(mediaService, 'saveImage').mockRejectedValue('String error');
 
       const testImagePath = path.resolve(IMAGES_DIR, 'test-upload.png');
       // Ensure directory exists
@@ -216,11 +216,11 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       fs.writeFileSync(testFile, Buffer.from('test data'));
 
       // Mock validatePath to return false to trigger the validation error
-      const validatePathSpy = jest.spyOn(MediaService as any, 'validatePath').mockReturnValue(false);
+      const validatePathSpy = jest.spyOn(mediaService as any, 'validatePath').mockReturnValue(false);
 
       try {
         await expect(
-          MediaService.saveImage(testFile, testData.testUserId)
+          mediaService.saveImage(testFile, testData.testUserId)
         ).rejects.toThrow('Invalid file path');
 
         // Verify validatePath was called
@@ -251,7 +251,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
         // Try to save - rename will fail due to mock
         // The file exists, so the cleanup branch (line 17-18) will be executed
         await expect(
-          MediaService.saveImage(testFile, testData.testUserId)
+          mediaService.saveImage(testFile, testData.testUserId)
         ).rejects.toThrow('Failed to save profile picture');
 
         // File should be cleaned up (deleted) - line 18
@@ -286,7 +286,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
 
       // Mock validatePath to return true (so we can test the error handling)
       // We need to access the private method via bracket notation or spy on the class
-      const validatePathSpy = jest.spyOn(MediaService as any, 'validatePath').mockReturnValue(true);
+      const validatePathSpy = jest.spyOn(mediaService as any, 'validatePath').mockReturnValue(true);
       
       // Mock fs.unlinkSync to throw error
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -297,7 +297,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
 
       try {
         // deleteImage should catch the error and log it
-        await expect(MediaService.deleteImage(url)).resolves.not.toThrow();
+        await expect(mediaService.deleteImage(url)).resolves.not.toThrow();
         
         // Verify error was logged
         expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to delete old profile picture:', expect.any(Error));
@@ -338,7 +338,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       try {
         // deleteAllUserImages should return early without error
         await expect(
-          MediaService.deleteAllUserImages(testData.testUserId)
+          mediaService.deleteAllUserImages(testData.testUserId)
         ).resolves.not.toThrow();
         
         // Verify existsSync was called with IMAGES_DIR
@@ -360,7 +360,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       try {
         // deleteAllUserImages should catch the error and log it
         await expect(
-          MediaService.deleteAllUserImages(testData.testUserId)
+          mediaService.deleteAllUserImages(testData.testUserId)
         ).resolves.not.toThrow();
         
         // Verify error was logged - line 48

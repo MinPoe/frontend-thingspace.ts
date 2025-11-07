@@ -3,13 +3,12 @@ import path from 'path';
 
 import { IMAGES_DIR } from './constants';
 
-// Using static methods only - class structure for organization
 export class MediaService {
   /**
    * Validates that a file path is within the IMAGES_DIR directory
    * to prevent path traversal attacks
    */
-  private static validatePath(filePath: string): boolean {
+  private validatePath(filePath: string): boolean {
     const resolvedPath = path.resolve(filePath);
     // IMAGES_DIR is already an absolute path from constants.ts
     return resolvedPath.startsWith(IMAGES_DIR + path.sep) || resolvedPath === IMAGES_DIR;
@@ -57,6 +56,7 @@ export class MediaService {
     // Validate the source file path is safe (from multer, should be in temp directory)
     const resolvedFilePath = path.resolve(filePath);
     
+  
     try {
       const fileExtension = path.extname(resolvedFilePath);
       const fileName = `${userId}-${Date.now()}${fileExtension}`;
@@ -80,7 +80,7 @@ export class MediaService {
     }
   }
 
-  static deleteImage(url: string): Promise<void> {
+  deleteImage(url: string): Promise<void> {
     try {
       // Resolve the URL to a file path and validate it's within IMAGES_DIR
       const normalizedUrl = url.replace(/\\/g, '/');
@@ -102,7 +102,7 @@ export class MediaService {
     }
   }
 
-  static async deleteAllUserImages(userId: string): Promise<void> {
+  async deleteAllUserImages(userId: string): Promise<void> {
     try {
       if (!this.safeExistsSync(IMAGES_DIR)) {
         return;
@@ -125,3 +125,5 @@ export class MediaService {
     }
   }
 }
+
+export const mediaService = new MediaService();

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import logger from './logger.util';
-import { MediaService } from './media.service';
+import { mediaService } from './media.service';
 import { UploadImageRequest, UploadImageResponse } from './media.types';
 import { sanitizeInput } from './sanitizeInput.util';
 
@@ -25,7 +25,7 @@ export class MediaController {
           message: 'User not authenticated',
         });
       }
-      const image = await MediaService.saveImage(
+      const image = await mediaService.saveImage(
         sanitizedFilePath,
         user._id.toString()
       );

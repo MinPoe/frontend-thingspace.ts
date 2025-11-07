@@ -412,7 +412,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
         .send({ email: 'dev-error@example.com' });
 
       expect(res.status).toBe(500);
-      expect(res.body.message).toBe('Database error');
+      expect(res.body.message).toBe('Internal server error');
     });
 
     test('500 – handles non-Error thrown value', async () => {
@@ -420,7 +420,6 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       // Input: email
       // Expected status code: 500
       // Expected behavior: error handled gracefully
-      // Expected output: error message
       jest.spyOn(authService, 'devLogin').mockRejectedValueOnce('String error');
 
       const res = await request(app)
@@ -431,7 +430,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       expect(res.body.message).toBe('Dev login failed');
     });
 
-    test('500 – handles Error with empty message (covers error.message || fallback)', async () => {
+    test('500 – handles Error with empty message by delegating to middleware', async () => {
       // Mocked behavior: authService.devLogin throws Error with empty message
       // Input: email
       // Expected status code: 500
@@ -446,7 +445,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
         .send({ email: 'dev-error@example.com' });
 
       expect(res.status).toBe(500);
-      expect(res.body.message).toBe('Dev login failed');
+      expect(res.body.message).toBe('Internal server error');
     });
   });
 

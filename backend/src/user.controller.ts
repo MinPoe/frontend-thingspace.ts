@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 import { GetProfileResponse, UpdateProfileRequest, updateFcmTokenSchema } from './user.types';
 import logger from './logger.util';
-import { MediaService } from './media.service';
+import { mediaService } from './media.service';
 import { userModel } from './user.model';
 import { workspaceModel } from './workspace.model';
 import { noteModel } from './note.model';
@@ -79,7 +79,7 @@ export class UserController {
       );
       logger.info(`Removed user ${user._id.toString()} from all member workspaces`);
 
-      await MediaService.deleteAllUserImages(user._id.toString());
+      await mediaService.deleteAllUserImages(user._id.toString());
 
       await userModel.delete(user._id);
 
