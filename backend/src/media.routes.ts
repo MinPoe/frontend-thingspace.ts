@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, RequestHandler } from 'express';
 
 import { upload } from './storage';
 import { authenticateToken } from './auth.middleware';
@@ -11,7 +11,7 @@ const mediaController = new MediaController();
 router.post(
   '/upload',
   authenticateToken,
-  upload.single('media'),
+  upload.single('media') as RequestHandler,
   asyncHandler(mediaController.uploadImage.bind(mediaController))
 );
 
