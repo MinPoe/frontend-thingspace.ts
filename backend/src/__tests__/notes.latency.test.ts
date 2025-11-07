@@ -134,6 +134,7 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
     jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
     
     // Setup: Create 400 notes in the database
+    // Use direct service calls instead of HTTP to avoid memory leaks from 400 supertest agents
     const notesToCreate = notesData.slice(0, 400);
     const createdNotes: any[] = [];
     
@@ -142,15 +143,15 @@ describe('Notes API – Search Latency Test (Non-Functional Requirement)', () =>
     
     for (const noteData of notesToCreate) {
       const noteRequest = convertToNoteRequest(noteData, testData.testWorkspaceId);
-      const res = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send(noteRequest);
-      
-      if (res.status === 201) {
-        createdNotes.push(res.body.data.note);
-      } else {
-        console.error(`Failed to create note: ${res.status} - ${JSON.stringify(res.body)}`);
+      try {
+        // Call service directly to avoid HTTP overhead and memory leaks
+        const note = await noteService.createNote(
+          new mongoose.Types.ObjectId(testData.testUserId),
+          noteRequest
+        );
+        createdNotes.push(note);
+      } catch (error) {
+        console.error(`Failed to create note: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
     
