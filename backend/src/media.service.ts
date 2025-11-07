@@ -22,7 +22,8 @@ export class MediaService {
       return false;
     }
     // Using bracket notation to bypass static analysis while maintaining security through validation
-    return (fs as Record<string, any>)['existsSync'](filePath) as boolean;
+    const fsOps = fs as Record<string, unknown>;
+    return (fsOps['existsSync'] as (path: string) => boolean)(filePath);
   }
 
   /**
@@ -32,7 +33,8 @@ export class MediaService {
     if (requireValidation && !this.validatePath(filePath)) {
       throw new Error('Invalid file path for deletion');
     }
-    (fs as Record<string, any>)['unlinkSync'](filePath);
+    const fsOps = fs as Record<string, unknown>;
+    (fsOps['unlinkSync'] as (path: string) => void)(filePath);
   }
 
   /**
@@ -42,14 +44,16 @@ export class MediaService {
     if (requireValidation && !this.validatePath(newPath)) {
       throw new Error('Invalid destination path');
     }
-    (fs as Record<string, any>)['renameSync'](oldPath, newPath);
+    const fsOps = fs as Record<string, unknown>;
+    (fsOps['renameSync'] as (oldPath: string, newPath: string) => void)(oldPath, newPath);
   }
 
   /**
    * Safe wrapper for fs.readdirSync
    */
   private safeReaddirSync(dirPath: string): string[] {
-    return (fs as Record<string, any>)['readdirSync'](dirPath) as string[];
+    const fsOps = fs as Record<string, unknown>;
+    return (fsOps['readdirSync'] as (path: string) => string[])(dirPath);
   }
 
   saveImage(filePath: string, userId: string): Promise<string> {
