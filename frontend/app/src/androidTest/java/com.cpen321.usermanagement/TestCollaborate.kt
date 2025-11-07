@@ -311,6 +311,22 @@ class TestCollaborate {
         waitForText(createWsString)
         composeRule.onNodeWithText(text = studyWsName).assertIsNotDisplayed()
     }
+
+    @After
+    fun sign_out(){//On failure, we might end up on another user that other test cases need, so we have to sign out just in case
+        composeRule.activity.setContent {
+            UserManagementApp()
+        }
+        val profileIcString = composeRule.activity.getString(R.string.profile)
+        val signOutString = composeRule.activity.getString(R.string.sign_out)
+        try{waitForDescription(profileIcString)
+            composeRule.onNodeWithContentDescription(profileIcString).performClick()
+            waitForText(signOutString)
+            composeRule.onNodeWithText(signOutString).performClick()
+        }catch (e: Exception){
+            Log.d("TEST_COLLABORATE","Unable to sign out, other test might be affected!, reason: ${e}")
+        }
+    }
 }
 
 
