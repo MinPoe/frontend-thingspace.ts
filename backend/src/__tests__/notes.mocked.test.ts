@@ -3,11 +3,13 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import OpenAI from 'openai';
+import type { Request, Response, NextFunction } from 'express';
 
 import { NoteType } from '../notes.types';
 import { noteService } from '../notes.service';
 import { noteModel } from '../note.model';
 import { workspaceModel } from '../workspace.model';
+import * as authMiddleware from '../auth.middleware';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
 // ---------------------------
@@ -684,6 +686,243 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.error).toBeDefined();
+    });
+  });
+
+  describe('Notes routes - user authentication edge cases', () => {
+    const buildAppWithMockedAuth = async (userMock: any) => {
+      jest.resetModules();
+
+      // Mock authenticateToken before requiring routes
+      jest.doMock('../auth.middleware', () => ({
+        authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
+          req.user = userMock;
+          next();
+        },
+      }));
+
+      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      return helpers.createTestApp();
+    };
+
+    afterEach(() => {
+      jest.resetModules();
+      jest.dontMock('../auth.middleware');
+    });
+
+    test('POST /api/notes - 401 when req.user is undefined (lines 10-11)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 10-11 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .post('/api/notes')
+        .set('Authorization', 'Bearer fake-token')
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['test'],
+          fields: [{ fieldType: 'title', content: 'Test', _id: '1' }],
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('PUT /api/notes/:id - 401 when req.user is undefined (lines 35-36)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 35-36 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .put(`/api/notes/${new mongoose.Types.ObjectId()}`)
+        .set('Authorization', 'Bearer fake-token')
+        .send({ 
+          tags: ['updated'],
+          fields: [{ fieldType: 'title', content: 'Updated', _id: '1' }]
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('DELETE /api/notes/:id - 401 when req.user is undefined (lines 60-61)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 60-61 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .delete(`/api/notes/${new mongoose.Types.ObjectId()}`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/notes/:id - 401 when req.user is undefined (lines 81-82)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 81-82 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .get(`/api/notes/${new mongoose.Types.ObjectId()}`)
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('POST /api/notes/:id/share - 401 when req.user is undefined (lines 107-108)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 107-108 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .post(`/api/notes/${new mongoose.Types.ObjectId()}/share`)
+        .set('Authorization', 'Bearer fake-token')
+        .send({ workspaceId: testData.testWorkspaceId });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('POST /api/notes/:id/copy - 401 when req.user is undefined (lines 149-150)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 149-150 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .post(`/api/notes/${new mongoose.Types.ObjectId()}/copy`)
+        .set('Authorization', 'Bearer fake-token')
+        .send({ workspaceId: testData.testWorkspaceId });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('GET /api/notes - 401 when req.user is undefined (lines 206-207)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 206-207 in notes.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .get('/api/notes')
+        .set('Authorization', 'Bearer fake-token')
+        .query({ workspaceId: testData.testWorkspaceId, noteType: NoteType.CONTENT });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+  });
+
+  describe('NoteService - cosineSimilarity edge cases', () => {
+    test('cosineSimilarity handles sparse arrays with undefined values (lines 268-269)', async () => {
+      // Input: note with sparse vector data (arrays with undefined values)
+      // Expected behavior: .at() returns undefined for sparse array elements, ?? operator provides default 0
+      // Expected output: notes returned with similarity scores
+      // This tests lines 268-269 in notes.service.ts
+      
+      // Create a sparse array with undefined values
+      const sparseArray = new Array(100);
+      sparseArray[0] = 0.5;
+      sparseArray[50] = 0.3;
+      sparseArray[99] = 0.1;
+      // Most elements are undefined (sparse array)
+
+      // Create a note with sparse vector data
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        noteType: NoteType.CONTENT,
+        tags: ['sparse-test'],
+        fields: [{ fieldType: 'title', content: 'Sparse Vector Note', _id: '1' }],
+        vectorData: sparseArray,
+      });
+
+      // Mock OpenAI to return an embedding with undefined values too
+      const mockEmbedding = new Array(100);
+      mockEmbedding[10] = 0.2;
+      mockEmbedding[60] = 0.4;
+      
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue({
+        embeddings: {
+          create: jest.fn().mockResolvedValue({
+            data: [{ embedding: mockEmbedding }],
+          }),
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .query({ 
+          workspaceId: testData.testWorkspaceId, 
+          noteType: NoteType.CONTENT,
+          query: 'test sparse'
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.notes).toBeDefined();
+      expect(Array.isArray(res.body.data.notes)).toBe(true);
+    });
+
+    test('cosineSimilarity with arrays containing explicit undefined values', async () => {
+      // Input: note with vector data containing explicit undefined
+      // Expected behavior: handles undefined values gracefully via ?? operator
+      // Expected output: returns notes with similarity scores
+      const vectorWithUndefined = [0.1, undefined, 0.3, undefined, 0.5];
+      
+      await noteModel.create({
+        userId: new mongoose.Types.ObjectId(testData.testUserId),
+        workspaceId: new mongoose.Types.ObjectId(testData.testWorkspaceId),
+        noteType: NoteType.CONTENT,
+        tags: ['undefined-test'],
+        fields: [{ fieldType: 'title', content: 'Undefined Vector Note', _id: '1' }],
+        vectorData: vectorWithUndefined as any,
+      });
+
+      const mockEmbeddingWithUndefined = [undefined, 0.2, undefined, 0.4, 0.6];
+
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue({
+        embeddings: {
+          create: jest.fn().mockResolvedValue({
+            data: [{ embedding: mockEmbeddingWithUndefined }],
+          }),
+        },
+      });
+
+      const res = await request(app)
+        .get('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .query({ 
+          workspaceId: testData.testWorkspaceId, 
+          noteType: NoteType.CONTENT,
+          query: 'test undefined'
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.notes).toBeDefined();
     });
   });
 });

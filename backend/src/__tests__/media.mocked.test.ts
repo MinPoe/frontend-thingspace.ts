@@ -204,10 +204,6 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
   });
 
   describe('Media Service - Direct Service Tests with Mocks', () => {
-    beforeEach(async () => {
-      testData = await setupTestDatabase(app);
-    });
-
     test('saveImage throws error when path validation fails', async () => {
       // Input: file path that fails validation (line 30-31)
       // Expected behavior: validatePath returns false, error is thrown
