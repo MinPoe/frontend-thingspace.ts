@@ -631,7 +631,7 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
           fields: [{ fieldType: 'title', content: 'Mock Test Note', _id: '1' }],
         });
       noteId = create.body.data.note._id;
-    });
+    }); 
 
     test('500 – get workspace for note handles service error', async () => {
       // Mocked behavior: noteService.getWorkspacesForNote throws database lookup error
