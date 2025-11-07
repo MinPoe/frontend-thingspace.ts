@@ -2,9 +2,11 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import type { Request, Response, NextFunction } from 'express';
 
 import { userModel } from '../user.model';
 import { workspaceModel } from '../workspace.model';
+import * as authMiddleware from '../auth.middleware';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 import { UserController } from '../user.controller';
 import { workspaceService } from '../workspace.service';
@@ -523,6 +525,207 @@ describe('User API – Mocked Tests', () => {
       // Restore original method
       internalUserModel.findOne = originalFindOne;
       loggerErrorSpy.mockRestore();
+    });
+  });
+
+  describe('User routes - user authentication edge cases', () => {
+    const buildAppWithMockedAuth = async (userMock: any) => {
+      jest.resetModules();
+
+      // Mock authenticateToken before requiring routes
+      jest.doMock('../auth.middleware', () => ({
+        authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
+          req.user = userMock;
+          next();
+        },
+      }));
+
+      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      return helpers.createTestApp();
+    };
+
+    afterEach(() => {
+      jest.resetModules();
+      jest.dontMock('../auth.middleware');
+    });
+
+    test('GET /api/user/profile - 401 when req.user is undefined (lines 15-16)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests lines 15-16 in user.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .get('/api/user/profile')
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('PUT /api/user/profile - 401 when req.user is undefined (line 33)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests line 33 in user.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .put('/api/user/profile')
+        .set('Authorization', 'Bearer fake-token')
+        .send({ profile: { name: 'Test' } });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('DELETE /api/user/profile - 401 when req.user is undefined (line 65)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests line 65 in user.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .delete('/api/user/profile')
+        .set('Authorization', 'Bearer fake-token');
+
+      expect(res.status).toBe(401);
+      expect(res.body.error).toBe('User not authenticated');
+    });
+
+    test('POST /api/user/fcm-token - 401 when req.user is undefined (line 107)', async () => {
+      // Input: request where authenticateToken passes but req.user is undefined
+      // Expected status code: 401
+      // Expected behavior: returns "User not authenticated" error
+      // Expected output: error message
+      // This tests line 107 in user.controller.ts
+      const appInstance = await buildAppWithMockedAuth(undefined);
+
+      const res = await request(appInstance)
+        .post('/api/user/fcm-token')
+        .set('Authorization', 'Bearer fake-token')
+        .send({ fcmToken: 'test-token' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('User not authenticated');
+    });
+  });
+
+  describe('User controller - null return value edge cases', () => {
+    test('PUT /api/user/profile - 404 when userModel.update returns null (line 39)', async () => {
+      // Input: update request where userModel.update returns null
+      // Expected status code: 404
+      // Expected behavior: returns "User not found" error
+      // Expected output: error message
+      // This tests line 39 in user.controller.ts
+      jest.spyOn(userModel, 'update').mockResolvedValueOnce(null);
+
+      const res = await request(app)
+        .put('/api/user/profile')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ profile: { name: 'Test' } });
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('User not found');
+    });
+
+    test('POST /api/user/fcm-token - 404 when userModel.updateFcmToken returns null (line 117)', async () => {
+      // Input: FCM token update where userModel.updateFcmToken returns null
+      // Expected status code: 404
+      // Expected behavior: returns "User not found" error
+      // Expected output: error message
+      // This tests line 117 in user.controller.ts
+      jest.spyOn(userModel, 'updateFcmToken').mockResolvedValueOnce(null);
+
+      const res = await request(app)
+        .post('/api/user/fcm-token')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({ fcmToken: 'test-token' });
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('User not found');
+    });
+  });
+
+  describe('GET /api/user/:id - getUserById non-Error handling (lines 161-169)', () => {
+    test('next(error) called when non-Error is thrown (direct controller call)', async () => {
+      // Input: non-Error value thrown
+      // Expected behavior: logger.error called, then next(error) called for non-Error (lines 161-169)
+      // Expected output: next receives the non-Error value
+      // This tests lines 161-169 in user.controller.ts by calling controller directly
+      const req = {
+        params: { id: testData.testUserId },
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as any;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as any;
+      const next = jest.fn();
+
+      // Mock userModel.findById to throw a non-Error value
+      jest.spyOn(userModel, 'findById').mockRejectedValueOnce({ custom: 'error object' });
+
+      await userController.getUserById(req, res, next);
+
+      // Verify that next was called with the non-Error object
+      expect(next).toHaveBeenCalledWith({ custom: 'error object' });
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    test('error.message || fallback works when Error has no message (line 165 - direct controller call)', async () => {
+      // Input: Error instance without message property
+      // Expected behavior: fallback message is used (line 164-165)
+      // Expected output: 500 with fallback message
+      // Must call controller directly to avoid asyncHandler intercepting
+      const req = {
+        params: { id: testData.testUserId },
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as any;
+      const jsonMock = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jsonMock,
+      } as any;
+      const next = jest.fn();
+
+      const errorWithoutMessage = new Error();
+      delete (errorWithoutMessage as any).message;
+      jest.spyOn(userModel, 'findById').mockRejectedValueOnce(errorWithoutMessage);
+
+      await userController.getUserById(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Failed to get user' });
+    });
+
+    test('Error with message is handled properly (line 164 - direct controller call)', async () => {
+      // Input: Error instance with a message
+      // Expected behavior: error message is returned (line 164)
+      // Expected output: 500 with error message
+      // Must call controller directly to test line 164
+      const req = {
+        params: { id: testData.testUserId },
+        user: { _id: new mongoose.Types.ObjectId(testData.testUserId) },
+      } as any;
+      const jsonMock = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jsonMock,
+      } as any;
+      const next = jest.fn();
+
+      jest.spyOn(userModel, 'findById').mockRejectedValueOnce(new Error('Specific database error'));
+
+      await userController.getUserById(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'Specific database error' });
     });
   });
 });
