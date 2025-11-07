@@ -80,7 +80,7 @@
 | **POST /api/media/upload** | `src/tests/media.normal.test.ts#L56` | `L55` | Media Service, File System |
 
 #### 2.1.2. Commit Hash Where Tests Run
-` `
+`c5f46d61177b82ff74c9c30dfd32a5e24de5d683`
 
 #### 2.1.3. How to Run the Tests
 
@@ -91,7 +91,6 @@
 ---
 
 ### 2.2. GitHub Actions Configuration Location
-
 `~/.github/workflows/backend-tests.yml`
 
 ### 2.3. Jest Coverage Report Screenshots (Without Mocking)
@@ -252,7 +251,7 @@ Test of the non-functional requirement that every note-containing screen is reac
 ## 5. Automated Code Review Results
 
 ### 5.1. Commit Hash Where Codacy Ran
-` `
+`c5f46d61177b82ff74c9c30dfd32a5e24de5d683`
 
 ### 5.2. Unfixed Issues per Codacy Category
 ![image info](./graphics/CodacyCategory.png)
