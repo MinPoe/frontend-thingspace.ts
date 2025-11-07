@@ -5,12 +5,12 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import OpenAI from 'openai';
 import type { Request, Response, NextFunction } from 'express';
 
-import { NoteType } from '../notes.types';
-import { noteService } from '../notes.service';
-import { noteModel } from '../note.model';
-import { workspaceModel } from '../workspace.model';
-import * as authMiddleware from '../auth.middleware';
-import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
+import { NoteType } from '../../notes.types';
+import { noteService } from '../../notes.service';
+import { noteModel } from '../../note.model';
+import { workspaceModel } from '../../workspace.model';
+import * as authMiddleware from '../../auth.middleware';
+import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
 // Test suite
@@ -694,20 +694,20 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       jest.resetModules();
 
       // Mock authenticateToken before requiring routes
-      jest.doMock('../auth.middleware', () => ({
+      jest.doMock('../../auth.middleware', () => ({
         authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
           req.user = userMock;
           next();
         },
       }));
 
-      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      const helpers = await import('../test-utils/test-helpers.js') as typeof import('../test-utils/test-helpers');
       return helpers.createTestApp();
     };
 
     afterEach(() => {
       jest.resetModules();
-      jest.dontMock('../auth.middleware');
+      jest.dontMock('../../auth.middleware');
     });
 
     test('POST /api/notes - 401 when req.user is undefined (lines 10-11)', async () => {

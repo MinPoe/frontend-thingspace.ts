@@ -4,13 +4,13 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import type { Request, Response, NextFunction } from 'express';
 
-import { workspaceService } from '../workspace.service';
-import { workspaceModel } from '../workspace.model';
-import { notificationService } from '../notification.service';
-import * as authMiddleware from '../auth.middleware';
-import { userModel } from '../user.model';
-import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
-import { mockSend } from './setup';
+import { workspaceService } from '../../workspace.service';
+import { workspaceModel } from '../../workspace.model';
+import { notificationService } from '../../notification.service';
+import * as authMiddleware from '../../auth.middleware';
+import { userModel } from '../../user.model';
+import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
+import { mockSend } from '../test-utils/setup';
 
 // ---------------------------
 // Test suite
@@ -64,7 +64,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       delete process.env.FIREBASE_JSON;
       
       // Clear the module cache to force re-import
-      const notificationServicePath = require.resolve('../notification.service');
+      const notificationServicePath = require.resolve('../../notification.service');
       delete require.cache[notificationServicePath];
       
       // Also clear firebase-admin from cache
@@ -75,7 +75,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
         // Try to import the module and expect it to throw
         expect(() => {
           jest.isolateModules(() => {
-            require('../notification.service');
+            require('../../notification.service');
           });
         }).toThrow('FIREBASE_JSON environment variable is not set');
       } finally {
@@ -87,7 +87,7 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
         delete require.cache[firebaseAdminPath];
         
         // Re-import to restore normal state
-        require('../notification.service');
+        require('../../notification.service');
       }
     });
 
@@ -869,20 +869,20 @@ describe('Workspace API – Mocked Tests (Jest Mocks)', () => {
       jest.resetModules();
 
       // Mock authenticateToken before requiring routes
-      jest.doMock('../auth.middleware', () => ({
+      jest.doMock('../../auth.middleware', () => ({
         authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
           req.user = userMock;
           next();
         },
       }));
 
-      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      const helpers = await import('../test-utils/test-helpers.js') as typeof import('../test-utils/test-helpers');
       return helpers.createTestApp();
     };
 
     afterEach(() => {
       jest.resetModules();
-      jest.dontMock('../auth.middleware');
+      jest.dontMock('../../auth.middleware');
     });
 
     test('POST /api/workspace - 401 when req.user is undefined (lines 10-11)', async () => {

@@ -4,12 +4,12 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import type { Request, Response, NextFunction } from 'express';
 
-import { userModel } from '../user.model';
-import { workspaceModel } from '../workspace.model';
-import * as authMiddleware from '../auth.middleware';
-import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
-import { UserController } from '../user.controller';
-import { workspaceService } from '../workspace.service';
+import { userModel } from '../../user.model';
+import { workspaceModel } from '../../workspace.model';
+import * as authMiddleware from '../../auth.middleware';
+import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
+import { UserController } from '../../user.controller';
+import { workspaceService } from '../../workspace.service';
 
 const userController = new UserController();
 
@@ -436,10 +436,10 @@ describe('User API – Mocked Tests', () => {
       // Input: invalid updateProfileReq
       // Expected behavior: error is caught and rethrown with message
       // Expected output: Error with message "Failed to update user"
-      const loggerErrorSpy = jest.spyOn(require('../logger.util').default, 'error').mockImplementation(() => {});
+      const loggerErrorSpy = jest.spyOn(require('../../logger.util').default, 'error').mockImplementation(() => {});
       
       // Mock updateProfileSchema.parse using jest.spyOn
-      const { updateProfileSchema } = require('../user.types');
+      const { updateProfileSchema } = require('../../user.types');
       const parseSpy = jest.spyOn(updateProfileSchema, 'parse').mockImplementation(() => {
         throw new Error('Validation error');
       });
@@ -460,7 +460,7 @@ describe('User API – Mocked Tests', () => {
       // Input: userId
       // Expected behavior: error is caught and rethrown with message
       // Expected output: Error with message "Failed to delete user"
-      const loggerErrorSpy = jest.spyOn(require('../logger.util').default, 'error').mockImplementation(() => {});
+      const loggerErrorSpy = jest.spyOn(require('../../logger.util').default, 'error').mockImplementation(() => {});
       
       // Access the internal user model and mock its findByIdAndDelete method
       const internalUserModel = (userModel as any).user;
@@ -508,7 +508,7 @@ describe('User API – Mocked Tests', () => {
       // Input: email string
       // Expected behavior: error is caught and rethrown with message
       // Expected output: Error with message "Failed to find user"
-      const loggerErrorSpy = jest.spyOn(require('../logger.util').default, 'error').mockImplementation(() => {});
+      const loggerErrorSpy = jest.spyOn(require('../../logger.util').default, 'error').mockImplementation(() => {});
       
       // Access the internal user model and mock its findOne method
       const internalUserModel = (userModel as any).user;
@@ -533,20 +533,20 @@ describe('User API – Mocked Tests', () => {
       jest.resetModules();
 
       // Mock authenticateToken before requiring routes
-      jest.doMock('../auth.middleware', () => ({
+      jest.doMock('../../auth.middleware', () => ({
         authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
           req.user = userMock;
           next();
         },
       }));
 
-      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      const helpers = await import('../test-utils/test-helpers.js') as typeof import('../test-utils/test-helpers');
       return helpers.createTestApp();
     };
 
     afterEach(() => {
       jest.resetModules();
-      jest.dontMock('../auth.middleware');
+      jest.dontMock('../../auth.middleware');
     });
 
     test('GET /api/user/profile - 401 when req.user is undefined (lines 15-16)', async () => {

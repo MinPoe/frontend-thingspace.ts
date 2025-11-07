@@ -16,8 +16,8 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   moduleFileExtensions: ['ts', 'js', 'json'],
-  setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
-  setupFilesAfterEnv: ['<rootDir>/src/__tests__/suppress-console.ts'],
+  setupFiles: ['<rootDir>/src/__tests__/test-utils/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/test-utils/suppress-console.ts'],
   globalSetup: undefined,
   globalTeardown: undefined,
   testTimeout: 30000, // 30 seconds for database operations

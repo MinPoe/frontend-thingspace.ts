@@ -3,14 +3,14 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import { workspaceModel } from '../workspace.model';
-import { userModel } from '../user.model';
-import { noteModel } from '../note.model';
-import { WorkspaceController } from '../workspace.controller';
-import { workspaceService } from '../workspace.service';
-import { NoteType } from '../notes.types';
-import { notificationService } from '../notification.service';
-import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
+import { workspaceModel } from '../../workspace.model';
+import { userModel } from '../../user.model';
+import { noteModel } from '../../note.model';
+import { WorkspaceController } from '../../workspace.controller';
+import { workspaceService } from '../../workspace.service';
+import { NoteType } from '../../notes.types';
+import { notificationService } from '../../notification.service';
+import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
 // Test suite

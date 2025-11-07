@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import { workspaceModel } from '../workspace.model';
-import { userModel } from '../user.model';
-import { noteModel } from '../note.model';
-import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
+import { workspaceModel } from '../../workspace.model';
+import { userModel } from '../../user.model';
+import { noteModel } from '../../note.model';
+import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
 // Test suite

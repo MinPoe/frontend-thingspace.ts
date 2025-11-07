@@ -5,15 +5,15 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { NoteType } from '../notes.types';
-import { noteService } from '../notes.service';
-import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
+import { NoteType } from '../../notes.types';
+import { noteService } from '../../notes.service';
+import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 jest.setTimeout(60000);
 
 // Load notes data from JSON file
 function loadNotesData(): any[] {
-  const jsonPath = path.join(__dirname, '../../../scripts/500_notes.json');
+  const jsonPath = path.join(__dirname, '../../../../scripts/500_notes.json');
   const jsonContent = fs.readFileSync(jsonPath, 'utf-8');
   const data = JSON.parse(jsonContent);
   return data.notes || [];

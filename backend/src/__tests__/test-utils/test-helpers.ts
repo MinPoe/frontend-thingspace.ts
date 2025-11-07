@@ -4,19 +4,19 @@ import express from 'express';
 import path from 'path';
 import request from 'supertest';
 
-import { workspaceModel } from '../workspace.model';
-import { errorHandler, notFoundHandler } from '../errorHandler.middleware';
-import router from '../routes';
+import { workspaceModel } from '../../workspace.model';
+import { errorHandler, notFoundHandler } from '../../errorHandler.middleware';
+import router from '../../routes';
 
 // Import route files to ensure they get coverage (even if we don't use them directly)
 // This ensures all route file code is executed and tracked by coverage
-import '../routes';
-import '../media.routes';
-import '../notes.routes';
-import '../workspace.routes';
-import '../user.routes';
-import '../auth.routes';
-import '../message.routes';
+import '../../routes';
+import '../../media.routes';
+import '../../notes.routes';
+import '../../workspace.routes';
+import '../../user.routes';
+import '../../auth.routes';
+import '../../message.routes';
 
 // ---------------------------
 // Express test app bootstrap
