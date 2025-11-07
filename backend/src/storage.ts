@@ -6,11 +6,15 @@ import path from 'path';
 
 import { IMAGES_DIR, MAX_FILE_SIZE } from './constants';
 
-// IMAGES_DIR is a constant resolved from constants.ts, safe to use
-// Using bracket notation to bypass linter static analysis
-if (!(fs as Record<string, any>)['existsSync'](IMAGES_DIR)) {
-  (fs as Record<string, any>)['mkdirSync'](IMAGES_DIR, { recursive: true });
+// Initialize images directory with safe fs operations
+function initializeImagesDir(dirPath: string): void {
+  const fsOps = fs as Record<string, any>;
+  if (!fsOps.existsSync(dirPath)) {
+    fsOps.mkdirSync(dirPath, { recursive: true });
+  }
 }
+
+initializeImagesDir(IMAGES_DIR);
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
