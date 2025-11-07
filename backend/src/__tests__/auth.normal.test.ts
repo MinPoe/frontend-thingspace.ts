@@ -199,5 +199,73 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
       }
     });
   });
+
+  describe('Async Handler integration via /api/auth/dev-login', () => {
+    /**
+     * Uses the real /api/auth/dev-login route but swaps the controller method so we can
+     * deterministically trigger asyncHandler behaviours. No fake endpoints are introduced.
+     */
+    const buildAppWithMockedDevLogin = async (
+      impl: () => Promise<void>
+    ) => {
+      jest.resetModules();
+
+      if (!process.env.JWT_SECRET) {
+        process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
+      }
+
+      const { AuthController } = await import('../auth.controller.js') as typeof import('../auth.controller');
+      jest
+        .spyOn(AuthController.prototype, 'devLogin')
+        .mockImplementation(async function devLoginMock(req, res, next) {
+          await impl();
+          return res;
+        });
+
+      const helpers = await import('./test-helpers.js') as typeof import('./test-helpers');
+      const appInstance = helpers.createTestApp();
+
+      return appInstance;
+    };
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+      jest.resetModules();
+    });
+
+    test('500 – surfaces thrown Error through global error handler', async () => {
+      // Input: POST /api/auth/dev-login with controller throwing an Error instance
+      // Expected status code: 500
+      // Expected behavior: error bubbles into asyncHandler and global error middleware
+      // Expected output: generic 500 JSON response ({ message: 'Internal server error' })
+      const appInstance = await buildAppWithMockedDevLogin(async () => {
+        throw new Error('Integration failure');
+      });
+
+      const res = await request(appInstance)
+        .post('/api/auth/dev-login')
+        .send({ email: 'error@example.com' });
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({ message: 'Internal server error' });
+    });
+
+    test('500 – surfaces non-Error rejections via Express default handler', async () => {
+      // Input: POST /api/auth/dev-login with controller throwing a string (non-Error)
+      // Expected status code: 500
+      // Expected behavior: asyncHandler forwards rejection, Express default handler renders HTML
+      // Expected output: HTML error page containing the non-Error value
+      const appInstance = await buildAppWithMockedDevLogin(async () => {
+        throw 'String error';
+      });
+
+      const res = await request(appInstance)
+        .post('/api/auth/dev-login')
+        .send({ email: 'error@example.com' });
+
+      expect(res.status).toBe(500);
+      expect(res.text).toContain('String error');
+    });
+  });
 });
 
