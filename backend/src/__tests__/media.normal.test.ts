@@ -209,6 +209,43 @@ describe('Media API – Normal Tests (No Mocking)', () => {
 
       saveImageSpy.mockRestore();
     });
+
+    test('401 – returns 401 when user is undefined in request (line 24)', async () => {
+      // Input: request object without user field (testing controller logic directly)
+      // Expected status code: 401
+      // Expected behavior: controller checks req.user and returns 401 if undefined
+      // Expected output: error message "User not authenticated"
+      const testImagePath = path.resolve(IMAGES_DIR, 'test-no-user.png');
+      if (!fs.existsSync(IMAGES_DIR)) {
+        fs.mkdirSync(IMAGES_DIR, { recursive: true });
+      }
+      fs.writeFileSync(testImagePath, Buffer.from('fake-image-data'));
+
+      const req = {
+        file: { path: testImagePath },
+        user: undefined, // This tests line 24
+      } as unknown as Request;
+
+      const jsonMock = jest.fn();
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jsonMock,
+      } as unknown as Response;
+
+      const next = jest.fn();
+
+      const controller = new MediaController();
+      await controller.uploadImage(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(jsonMock).toHaveBeenCalledWith({ message: 'User not authenticated' });
+      expect(next).not.toHaveBeenCalled();
+
+      // Clean up test file
+      if (fs.existsSync(testImagePath)) {
+        fs.unlinkSync(testImagePath);
+      }
+    });
   });
 
   describe('Media Service - Direct Service Tests', () => {
@@ -296,6 +333,47 @@ describe('Media API – Normal Tests (No Mocking)', () => {
         
         // File should be deleted
         expect(fs.existsSync(testFile)).toBe(false);
+      });
+    });
+
+    describe('private validation methods', () => {
+      test('safeExistsSync returns false when requireValidation is true and path is invalid (line 22)', () => {
+        // Input: path outside IMAGES_DIR with requireValidation=true
+        // Expected behavior: validatePath returns false, safeExistsSync returns false (line 22)
+        // Expected output: false
+        // We need to access the private method through reflection
+        const invalidPath = '/etc/passwd'; // Path outside IMAGES_DIR
+        
+        // Cast to any to access private method
+        const service = mediaService as any;
+        const result = service.safeExistsSync(invalidPath, true);
+        
+        expect(result).toBe(false);
+      });
+
+      test('safeUnlinkSync throws error when requireValidation is true and path is invalid (line 34)', () => {
+        // Input: path outside IMAGES_DIR with requireValidation=true
+        // Expected behavior: validatePath returns false, safeUnlinkSync throws error (line 34)
+        // Expected output: Error with message "Invalid file path for deletion"
+        const invalidPath = '/etc/passwd'; // Path outside IMAGES_DIR
+        
+        // Cast to any to access private method
+        const service = mediaService as any;
+        
+        expect(() => service.safeUnlinkSync(invalidPath, true)).toThrow('Invalid file path for deletion');
+      });
+
+      test('safeRenameSync throws error when requireValidation is true and newPath is invalid (line 45)', () => {
+        // Input: newPath outside IMAGES_DIR with requireValidation=true
+        // Expected behavior: validatePath returns false, safeRenameSync throws error (line 45)
+        // Expected output: Error with message "Invalid destination path"
+        const validOldPath = path.resolve(IMAGES_DIR, 'test.png');
+        const invalidNewPath = '/etc/test.png'; // Path outside IMAGES_DIR
+        
+        // Cast to any to access private method
+        const service = mediaService as any;
+        
+        expect(() => service.safeRenameSync(validOldPath, invalidNewPath, true)).toThrow('Invalid destination path');
       });
     });
 

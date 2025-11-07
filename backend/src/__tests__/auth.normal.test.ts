@@ -641,6 +641,59 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
       expect(res.status).not.toHaveBeenCalled();
       expect(req.user).toMatchObject({ foo: 'bar' });
     });
+
+    test('next receives configuration error when JWT_SECRET becomes undefined at runtime', () => {
+      // Input: JWT_SECRET set at module load but undefined at runtime (lines 93-95)
+      // Expected behaviour: middleware forwards configuration error to next
+      const originalSecret = process.env.JWT_SECRET;
+      
+      // Temporarily delete JWT_SECRET after module has loaded (but moduleHadJwtSecret is true)
+      const currentSecret = process.env.JWT_SECRET;
+      delete process.env.JWT_SECRET;
+
+      const { res } = createMockRes();
+      const next = jest.fn();
+
+      legacyAuthMiddleware(
+        { headers: { authorization: 'Bearer whatever' } } as unknown as ExpressRequest,
+        res,
+        next
+      );
+
+      expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'JWT_SECRET not configured' }));
+      expect(res.status).not.toHaveBeenCalled();
+
+      // Restore
+      if (currentSecret) {
+        process.env.JWT_SECRET = currentSecret;
+      }
+      if (originalSecret) {
+        process.env.JWT_SECRET = originalSecret;
+      }
+    });
+
+    test('next receives configuration error from catch block', () => {
+      // Input: Error with message 'JWT_SECRET not configured' thrown in try block (lines 105-107)
+      // Expected behaviour: middleware forwards error to next from catch block
+      const { res } = createMockRes();
+      const next = jest.fn();
+      
+      // Mock jwt.verify to throw the specific error we want to test
+      const verifySpy = jest.spyOn(jwt, 'verify').mockImplementation(() => {
+        throw new Error('JWT_SECRET not configured');
+      });
+
+      legacyAuthMiddleware(
+        { headers: { authorization: 'Bearer token' } } as unknown as ExpressRequest,
+        res,
+        next
+      );
+
+      expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'JWT_SECRET not configured' }));
+      expect(res.status).not.toHaveBeenCalled();
+      
+      verifySpy.mockRestore();
+    });
   });
 });
 
