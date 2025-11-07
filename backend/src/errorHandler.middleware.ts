@@ -21,5 +21,12 @@ export const errorHandler = (error: unknown, req: Request, res: Response, next: 
     });
   }
 
+  // Log when we're about to call next with a non-Error object
+  logger.error('WARNING: Calling next(error) with non-Error object:', {
+    errorType: typeof error,
+    errorValue: error,
+    route: req.path,
+    method: req.method,
+  });
   next(error);
 };
