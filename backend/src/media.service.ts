@@ -34,8 +34,10 @@ export class MediaService {
 
       return Promise.resolve(resolvedNewPath.split(path.sep).join('/'));
     } catch (error) {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      // Clean up the uploaded file if it exists, with path validation
+      const resolvedCleanupPath = path.resolve(filePath);
+      if (fs.existsSync(resolvedCleanupPath)) {
+        fs.unlinkSync(resolvedCleanupPath);
       }
       return Promise.reject(new Error(`Failed to save profile picture: ${error instanceof Error ? error.message : String(error)}`));
     }

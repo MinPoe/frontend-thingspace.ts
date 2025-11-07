@@ -1,12 +1,11 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { userModel } from './user.model';
 import { IUser } from './user.types';
 
 
-// Express supports async handlers, but RequestHandler type expects void
-export const authenticateToken: RequestHandler = async (
+export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
