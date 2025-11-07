@@ -264,8 +264,8 @@ export class NoteService {
             let normA = 0;
             let normB = 0;
             for (let i = 0; i < len; i++) {
-                const va = a[i];
-                const vb = b[i];
+                const va = Number(a[i]);
+                const vb = Number(b[i]);
                 dot += va * vb;
                 normA += va * va;
                 normB += vb * vb;
