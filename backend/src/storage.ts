@@ -8,9 +8,9 @@ import { IMAGES_DIR, MAX_FILE_SIZE } from './constants';
 
 // Initialize images directory with safe fs operations
 function initializeImagesDir(dirPath: string): void {
-  const fsOps = fs as Record<string, any>;
-  if (!fsOps.existsSync(dirPath)) {
-    fsOps.mkdirSync(dirPath, { recursive: true });
+  const fsOps = fs as Record<string, unknown>;
+  if (!(fsOps.existsSync as (path: string) => boolean)(dirPath)) {
+    (fsOps.mkdirSync as (path: string, options?: { recursive?: boolean }) => void)(dirPath, { recursive: true });
   }
 }
 
