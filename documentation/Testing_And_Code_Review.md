@@ -96,15 +96,15 @@
 
 ### 2.3. Jest Coverage Report Screenshots (Without Mocking)
 
-_(Placeholder)_
+![image info](./graphics/UnmockedTests.png)
 
 ### 2.4. Jest Coverage Report Screenshots (With Mocking)
 
-_(Placeholder)_
+![image info](./graphics/MockedTests.png)
 
 ### 2.5. Combined Jest Coverage Reports (With & Without Mocking)
 
-_(Placeholder)_
+![image info](./graphics/TotalTestCoverage.png)
 
 ---
 
