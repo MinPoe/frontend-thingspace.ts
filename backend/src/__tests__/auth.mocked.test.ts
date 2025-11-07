@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { authService, AuthService } from '../auth.service';
 import { workspaceService } from '../workspace.service';
 import { userModel } from '../user.model';
+import { connectDB, disconnectDB } from '../database';
 import { createTestApp, setupTestDatabase, TestData } from './test-helpers';
 
 // ---------------------------
@@ -810,6 +811,293 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       // Restore
       signSpy.mockRestore();
       jest.restoreAllMocks();
+    });
+  });
+
+  describe('Database Connection Infrastructure Tests', () => {
+    let savedMongoUri: string | undefined;
+
+    beforeEach(() => {
+      // Save the current test MongoDB URI
+      savedMongoUri = mongo.getUri();
+    });
+
+    afterEach(async () => {
+      // Clean up SIGINT listeners
+      process.removeAllListeners('SIGINT');
+      // Clean up mongoose event listeners
+      mongoose.connection.removeAllListeners('error');
+      mongoose.connection.removeAllListeners('disconnected');
+      
+      // Restore connection to the test MongoDB for other tests
+      if (mongoose.connection.readyState === 0 && savedMongoUri) {
+        await mongoose.connect(savedMongoUri);
+      }
+    });
+
+    test('connectDB successfully connects to MongoDB', async () => {
+      // Input: valid MONGODB_URI from test setup
+      // Expected behavior: mongoose connects successfully via connectDB (database.ts lines 10, 12)
+      // Expected output: connection state is connected
+      const originalMongoUri = process.env.MONGODB_URI;
+      let testMongo: MongoMemoryServer | null = null;
+      
+      try {
+        testMongo = await MongoMemoryServer.create();
+        process.env.MONGODB_URI = testMongo.getUri();
+        
+        // Disconnect existing connection first
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.disconnect();
+        }
+
+        await connectDB();
+
+        expect(mongoose.connection.readyState).toBe(1); // 1 = connected
+        
+        await mongoose.disconnect();
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        if (testMongo) {
+          await testMongo.stop();
+        }
+      }
+    });
+
+    test('connectDB handles missing MONGODB_URI', async () => {
+      // Input: MONGODB_URI is undefined
+      // Expected behavior: Error caught, process.exitCode set to 1 (database.ts lines 6-7, 34-35)
+      // Expected output: console.error called, exitCode is 1
+      const originalMongoUri = process.env.MONGODB_URI;
+      const originalExitCode = process.exitCode;
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      try {
+        delete process.env.MONGODB_URI;
+        process.exitCode = undefined;
+
+        await connectDB();
+
+        expect(process.exitCode).toBe(1);
+        expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Failed to connect to MongoDB:', expect.any(Error));
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        process.exitCode = originalExitCode;
+        consoleErrorSpy.mockRestore();
+      }
+    });
+
+    test('connectDB handles connection failure', async () => {
+      // Input: invalid MONGODB_URI
+      // Expected behavior: Error caught, process.exitCode set to 1 (database.ts lines 33-35)
+      // Expected output: console.error called, exitCode is 1
+      const originalMongoUri = process.env.MONGODB_URI;
+      const originalExitCode = process.exitCode;
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const connectSpy = jest.spyOn(mongoose, 'connect').mockRejectedValueOnce(new Error('Connection failed'));
+      
+      try {
+        process.env.MONGODB_URI = 'mongodb://invalid-host:27017/test';
+        process.exitCode = undefined;
+
+        await connectDB();
+
+        expect(process.exitCode).toBe(1);
+        expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Failed to connect to MongoDB:', expect.any(Error));
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        process.exitCode = originalExitCode;
+        connectSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      }
+    });
+
+    test('connectDB registers error event handler', async () => {
+      // Input: MongoDB connection error event
+      // Expected behavior: Error handler logs error (database.ts lines 14-16)
+      // Expected output: console.error called with error
+      const originalMongoUri = process.env.MONGODB_URI;
+      let testMongo: MongoMemoryServer | null = null;
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      try {
+        testMongo = await MongoMemoryServer.create();
+        process.env.MONGODB_URI = testMongo.getUri();
+        
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.disconnect();
+        }
+
+        await connectDB();
+
+        const testError = new Error('Test connection error');
+        mongoose.connection.emit('error', testError);
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith('❌ MongoDB connection error:', testError);
+        
+        await mongoose.disconnect();
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        consoleErrorSpy.mockRestore();
+        if (testMongo) {
+          await testMongo.stop();
+        }
+      }
+    });
+
+    test('connectDB registers disconnected event handler', async () => {
+      // Input: MongoDB disconnected event
+      // Expected behavior: Handler logs message (database.ts lines 18-20)
+      // Expected output: console.log called with disconnection message
+      const originalMongoUri = process.env.MONGODB_URI;
+      let testMongo: MongoMemoryServer | null = null;
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      
+      try {
+        testMongo = await MongoMemoryServer.create();
+        process.env.MONGODB_URI = testMongo.getUri();
+        
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.disconnect();
+        }
+
+        await connectDB();
+
+        mongoose.connection.emit('disconnected');
+
+        expect(consoleLogSpy).toHaveBeenCalledWith('⚠️ MongoDB disconnected');
+        
+        await mongoose.disconnect();
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        consoleLogSpy.mockRestore();
+        if (testMongo) {
+          await testMongo.stop();
+        }
+      }
+    });
+
+    test('connectDB registers SIGINT handler that closes connection successfully', async () => {
+      // Input: SIGINT signal
+      // Expected behavior: Connection closes, exitCode set to 0 (database.ts lines 22-28)
+      // Expected output: console.log called, exitCode is 0
+      const originalMongoUri = process.env.MONGODB_URI;
+      const originalExitCode = process.exitCode;
+      let testMongo: MongoMemoryServer | null = null;
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      
+      try {
+        testMongo = await MongoMemoryServer.create();
+        process.env.MONGODB_URI = testMongo.getUri();
+        process.exitCode = undefined;
+        
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.disconnect();
+        }
+
+        await connectDB();
+
+        const closeSpy = jest.spyOn(mongoose.connection, 'close').mockResolvedValueOnce(undefined);
+
+        process.emit('SIGINT', 'SIGINT');
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        expect(closeSpy).toHaveBeenCalled();
+        expect(consoleLogSpy).toHaveBeenCalledWith('MongoDB connection closed through app termination');
+        expect(process.exitCode).toBe(0);
+        
+        closeSpy.mockRestore();
+        await mongoose.disconnect();
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        process.exitCode = originalExitCode;
+        consoleLogSpy.mockRestore();
+        if (testMongo) {
+          await testMongo.stop();
+        }
+      }
+    });
+
+    test('connectDB SIGINT handler handles close error', async () => {
+      // Input: SIGINT signal when connection.close fails
+      // Expected behavior: Error caught and logged (database.ts lines 29-31)
+      // Expected output: console.error called with error
+      const originalMongoUri = process.env.MONGODB_URI;
+      const originalExitCode = process.exitCode;
+      let testMongo: MongoMemoryServer | null = null;
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      try {
+        testMongo = await MongoMemoryServer.create();
+        process.env.MONGODB_URI = testMongo.getUri();
+        process.exitCode = undefined;
+        
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.disconnect();
+        }
+
+        await connectDB();
+
+        const closeError = new Error('Failed to close connection');
+        const closeSpy = jest.spyOn(mongoose.connection, 'close').mockRejectedValueOnce(closeError);
+
+        process.emit('SIGINT', 'SIGINT');
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        expect(closeSpy).toHaveBeenCalled();
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error closing MongoDB connection on SIGINT:', closeError);
+        
+        closeSpy.mockRestore();
+        await mongoose.disconnect();
+      } finally {
+        process.env.MONGODB_URI = originalMongoUri;
+        process.exitCode = originalExitCode;
+        consoleLogSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+        if (testMongo) {
+          await testMongo.stop();
+        }
+      }
+    });
+
+    test('disconnectDB successfully closes connection', async () => {
+      // Input: connected mongoose instance
+      // Expected behavior: Connection closes successfully (database.ts lines 41-42)
+      // Expected output: console.log called with success message
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const closeSpy = jest.spyOn(mongoose.connection, 'close').mockResolvedValueOnce(undefined);
+      
+      try {
+        await disconnectDB();
+
+        expect(closeSpy).toHaveBeenCalled();
+        expect(consoleLogSpy).toHaveBeenCalledWith('✅ MongoDB disconnected successfully');
+      } finally {
+        closeSpy.mockRestore();
+        consoleLogSpy.mockRestore();
+      }
+    });
+
+    test('disconnectDB handles close error', async () => {
+      // Input: mongoose connection that fails to close
+      // Expected behavior: Error caught and logged (database.ts lines 43-44)
+      // Expected output: console.error called with error
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const closeError = new Error('Close failed');
+      const closeSpy = jest.spyOn(mongoose.connection, 'close').mockRejectedValueOnce(closeError);
+      
+      try {
+        await disconnectDB();
+
+        expect(closeSpy).toHaveBeenCalled();
+        expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Error disconnecting from MongoDB:', closeError);
+      } finally {
+        closeSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      }
     });
   });
 });
