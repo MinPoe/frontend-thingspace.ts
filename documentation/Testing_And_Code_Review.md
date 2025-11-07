@@ -149,12 +149,87 @@ This includes the non-functional requirement that every note/message containing 
   - The manager account must have a workspace named `Test`
   - The manager account must not have access to workspaces named `Study` or `Study v2`
 
-| Use Case | Test File |
-|---|---|
-| Collaborate | `TestCollaborate.kt` |
-| Manage Notes | `TestNotes.kt` |
-| Retrieve Notes | `TestRetrieveNotes.kt` |
-| Reach Note Screens in ≤2 Clicks | `TestReachWith2Clicks.kt` |
+---
+
+### Create Workspace
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 1. The user opens the “Create Workspace” screen. | Open the “Create Workspace” screen. |
+| 2. The app shows input fields for title and a “Create Workspace” button that is disabled. | Check that the “Pick a workspace name” field is visible. Check that button labelled “Create Workspace” is present and disabled. |
+| 3a. The user inputs a workspace title that is already taken | Before the test, a separate workspace called “Test” should be created. Then, open the “Create Workspace” screen and input “Test” in the title field. Click “Create”. |
+| 3a1. The app displays an error message telling user that the creation failed | Check the dialog shows: “Failed to create workspace.” |
+| 3. The user enters valid information. | Input “Studies” in the title field. Check that button labelled “Create” is now enabled. |
+| 4. The user clicks the “Create” button. | Click “Create”. Verify system shows “Manage Workspace Profile” for user to make edits and that the “Save” button is disabled until a workspace bio is inputted. Verify workspace “Studies” appears in the workspace list. |
+
+---
+
+### Update Workspace (Manager)
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 10. The manager navigates to the “Edit Workspace” icon. | As the workspace manager account, navigate to the workspace screen. Click the “Pencil” icon next to the “Studies” workspace. |
+| 11. The manager edits the title and bio. | Change title to “Studies v2” and the bio to “Study group” and click the “Save” button. Check the confirmation message: “Profile updated successfully.” |
+
+---
+
+### Invite to Workspace
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 5. A workspace member selects “Invite User”. | Click “Studies” workspace’s “Manage Workspace” icon (pencil icon). Click the “Invite User” icon on the bottom navbar (icon with person and cogwheel). |
+| 6. The app shows an input field for email and a “Invite to the Workspace” button. | Check input field and “Invite to the Workspace” button are visible. |
+| 7a. The inviter inputs invalid email. | Input “invalidemail” and click “Invite to the workspace”. |
+| 7a1. The app displays an error message about no user with the email existing | Check message: “Could not retrieve profile matching the given email!” |
+| 7. The inviter inputs a valid email | Input the email of another account (your teammate’s account on the app). Click the “Invite to the Workspace” button. Check the confirmation message: “The user got added to the workspace.” |
+| 7b. The invitee is already in the workspace. | Input the email of the teammate already in the workspace and click “Invite to the workspace”. |
+| 7b1. The app displays an error message indicating that the invitee is already in the workspace. | Check message: “The user is already a member!” |
+
+---
+
+### Send Chat Message
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 8. The user opens workspace chat. | Go to Workspaces Screen. Click the “Chat” icon next to the “Studies” workspace. Check that the system displays the workspace chat screen. |
+| 9a. The message is empty. | Leave input blank or simply spaces and click the “Send” icon. Check that nothing occurs in the chat screen. |
+| 9. The user types a valid message and presses send. | Input “Hello team!” in the chat box and click the “Send” icon. Check the chat log shows “Hello team!” with the sender's profile picture and timestamp. |
+
+---
+
+### Update Workspace (Non-Manager)
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 10a. A non-manager user attempts to update the workspace. | Log in as a non-manager user and navigate to the “Edit Workspace” icon. Check that the input fields are greyed out. |
+
+---
+
+### Leave Workspace (Non-Manager)
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 12. The user (non-manager) selects “Leave Workspace”. | Open “Studies” manage workspace screen (pencil icon) using your non-manager account and click “Leave Workspace” (door icon). |
+| 13. App removes user from the workspace | Check that the “Studies” workspace doesn’t show up in the workspace list screen. |
+
+---
+
+### Ban Users
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 14. The manager opens the Members screen (Profile icon in manage workspace screen). | “Studies” workspace → Manage Workspace → Members screen (profile icon). |
+| 15. Manager chooses the user to ban | Click the trash bin icon next to the user. |
+| 16. App bans user from the workspace permanently | Verify the banned user doesn’t show up in the Members screen anymore. Verify the user cannot be invited anymore and system shows an error message: “This user is banned.” |
+
+---
+
+### Delete Workspace (Manager)
+
+| Scenario steps | Test case steps |
+|----------------|----------------|
+| 17. The manager selects “Delete Workspace”. | Open “Studies” settings and click “Delete Workspace” (trash bin icon). |
+| 18. App deletes the workspace | Verify the workspace “Studies” doesn’t show up in the workspace list screen. Verify the workspace “Studies” can be created. |
 
 Logs:
 
@@ -169,10 +244,10 @@ Logs:
 ` `
 
 ### 5.2. Unfixed Issues per Codacy Category
-_(Placeholder)_
+![image info](./graphics/CodacyCategory.png)
 
 ### 5.3. Unfixed Issues per Codacy Code Pattern
-_(Placeholder)_
+![image info](./graphics/CodacyCodePattern.png)
 
 ### 5.4. Justifications for Unfixed Issues
 
