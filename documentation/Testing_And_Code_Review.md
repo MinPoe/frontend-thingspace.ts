@@ -241,6 +241,8 @@ Two pre-existing workspaces.
 | 21. Confirm. | Click Delete. |
 | 22. Note deleted. | Verify removal. |
 
+![image info](./graphics/frontend-manage-notes-testlog.png)
+
 ---
 
 ### Test of the “Retrieve Notes” Feature (`TestRetrieveNotes.kt`)
@@ -269,6 +271,8 @@ Existing workspace with notes.
 | 14. Enter search + choose tags. | |
 | 15. Results match both filters. | Matching notes displayed. |
 
+![image info](./graphics/frontend-retrieve-notes-testlog.png)
+
 ---
 
 ### Test: Reach Note Screens in ≤2 Clicks (`TestReachWith2Clicks.kt`)
@@ -287,7 +291,7 @@ The test counts the number of clicks for each navigation path.
 
 ### Test Logs
 
-Logs:
+![image info](./graphics/frontend-nonfunct-testlog.png)
 
 <Place final print screens here>
 
