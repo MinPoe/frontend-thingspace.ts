@@ -9,7 +9,8 @@ export function asyncHandler<T extends Request = Request, U extends Response = R
   fn: (req: T, res: U, next: NextFunction) => Promise<unknown>
 ): (req: T, res: U, next: NextFunction) => void {
   return (req: T, res: U, next: NextFunction): void => {
-    void Promise.resolve(fn(req, res, next)).catch((error: unknown) => { next(error); });
+    const promise = fn(req, res, next);
+    promise.catch((error: unknown) => { next(error); });
   };
 }
 
