@@ -301,7 +301,7 @@ The test counts the number of clicks for each navigation path.
 ## 5. Automated Code Review Results
 
 ### 5.1. Commit Hash Where Codacy Ran
-`c5f46d61177b82ff74c9c30dfd32a5e24de5d683`
+`96e4c5520f47503662f56029212714c229f3617f`
 
 ### 5.2. Unfixed Issues per Codacy Category
 ![image info](./graphics/CodacyCategory.png)
