@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Get messages for a workspace
 router.get('/workspace/:workspaceId', authenticateToken, (req: Request, res: Response, next: NextFunction) => {
-  (async () => {
+  void (async () => {
     try {
       const { workspaceId } = req.params;
       const userId = req.user?._id;
@@ -61,7 +61,7 @@ router.get('/workspace/:workspaceId', authenticateToken, (req: Request, res: Res
 
 // Create a message
 router.post('/workspace/:workspaceId', authenticateToken, (req: Request, res: Response, next: NextFunction) => {
-  (async () => {
+  void (async () => {
     try {
       const { workspaceId } = req.params;
       const userId = req.user?._id;
@@ -111,7 +111,7 @@ router.post('/workspace/:workspaceId', authenticateToken, (req: Request, res: Re
 
 // Delete a message (workspace owner only)
 router.delete('/:messageId', authenticateToken, (req: Request, res: Response, next: NextFunction) => {
-  (async () => {
+  void (async () => {
     try {
       const { messageId } = req.params;
       const userId = req.user?._id;
