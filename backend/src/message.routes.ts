@@ -31,16 +31,16 @@ router.get('/workspace/:workspaceId', authenticateToken, async (req, res) => {
     }
 
     // Build query
-    const query: any = { workspaceId: new mongoose.Types.ObjectId(workspaceId) };
+    const query: { workspaceId: mongoose.Types.ObjectId; createdAt?: { $lt: Date } } = { workspaceId: new mongoose.Types.ObjectId(workspaceId) };
     if (before) {
-      query.createdAt = { $lt: new Date(before) };
+      query.createdAt = { $lt: new Date(before as string) };
     }
 
     // Fetch messages
     const messages = await messageModel
       .find(query)
       .sort({ createdAt: -1 })
-      .limit(limit)
+      .limit(limit as number)
       .lean();
 
     res.json(messages);
