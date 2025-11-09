@@ -9,8 +9,8 @@ import { createMessageSchema, getMessagesQuerySchema } from './message.types';
 const router = express.Router();
 
 // Get messages for a workspace
-router.get('/workspace/:workspaceId', authenticateToken, (req: Request, res: Response, next: NextFunction) => {
-  void (async () => {
+router.get('/workspace/:workspaceId', authenticateToken, (req: Request, res: Response, next: NextFunction): void => {
+  const promise = (async () => {
     try {
       const { workspaceId } = req.params;
       const userId = req.user?._id;
@@ -57,11 +57,12 @@ router.get('/workspace/:workspaceId', authenticateToken, (req: Request, res: Res
       next(error);
     }
   })();
+  promise.catch((error: unknown) => { next(error); });
 });
 
 // Create a message
-router.post('/workspace/:workspaceId', authenticateToken, (req: Request, res: Response, next: NextFunction) => {
-  void (async () => {
+router.post('/workspace/:workspaceId', authenticateToken, (req: Request, res: Response, next: NextFunction): void => {
+  const promise = (async () => {
     try {
       const { workspaceId } = req.params;
       const userId = req.user?._id;
@@ -107,11 +108,12 @@ router.post('/workspace/:workspaceId', authenticateToken, (req: Request, res: Re
       next(error);
     }
   })();
+  promise.catch((error: unknown) => { next(error); });
 });
 
 // Delete a message (workspace owner only)
-router.delete('/:messageId', authenticateToken, (req: Request, res: Response, next: NextFunction) => {
-  void (async () => {
+router.delete('/:messageId', authenticateToken, (req: Request, res: Response, next: NextFunction): void => {
+  const promise = (async () => {
     try {
       const { messageId } = req.params;
       const userId = req.user?._id;
@@ -144,6 +146,7 @@ router.delete('/:messageId', authenticateToken, (req: Request, res: Response, ne
       next(error);
     }
   })();
+  promise.catch((error: unknown) => { next(error); });
 });
 
 export const messageRouter = router;
