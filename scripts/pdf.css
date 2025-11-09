@@ -1,0 +1,6 @@
+table, thead, tbody, tfoot, tr, td, th {
+    page-break-inside: avoid;
+  }
+  .table-wrapper {
+    overflow: visible !important;
+  }
