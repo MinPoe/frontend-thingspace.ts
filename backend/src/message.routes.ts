@@ -10,21 +10,21 @@ const messageController = new MessageController();
 // Get messages for a workspace
 router.get(
   '/workspace/:workspaceId',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(messageController.getMessages.bind(messageController))
 );
 
 // Create a message
 router.post(
   '/workspace/:workspaceId',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(messageController.createMessage.bind(messageController))
 );
 
 // Delete a message (workspace owner only)
 router.delete(
   '/:messageId',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(messageController.deleteMessage.bind(messageController))
 );
 
