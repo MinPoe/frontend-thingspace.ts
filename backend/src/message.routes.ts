@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateToken } from './auth.middleware';;
+import { authenticateToken } from './auth.middleware';
 import { messageModel } from './message.model';
 import { workspaceModel } from './workspace.model';
 import { createMessageSchema, getMessagesQuerySchema } from './message.types';
