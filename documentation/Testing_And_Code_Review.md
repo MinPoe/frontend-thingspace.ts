@@ -134,12 +134,12 @@
 <Place final print screens here>
 
 
-#### Chat Data Security
+<!-- #### Chat Data Security
 
 - Verification:
 - Logs:
 
-<Place final print screens here>
+<Place final print screens here> -->
 
 
 ---
@@ -173,10 +173,10 @@ This includes the non-functional requirement that every note/message containing 
 | 3. User enters valid title. | Enter “Studies”. Verify “Create” button enabled. |
 | 4. User clicks “Create”. | Click “Create”. Verify workspace setup screen shown and “Studies” appears in list. |
 | **Update Workspace** | |
-| 10. Manager navigates to “Edit Workspace”. | As manager, open workspace → click pencil icon. |
+| 10. Manager navigates to “Edit Workspace”. | <After workspace creation, one is already at the edit workspace screen> |
 | 11. Edit title and bio. | Change title to “Studies v2” and bio “Study group”; click Save; expect “Profile updated successfully.” |
 | **Invite to Workspace** | |
-| 5. Member selects “Invite User”. | Open Studies → Manage Workspace → Invite icon. |
+| 5. Member selects “Invite User”. | Open Studies v2 → Manage Workspace → Invite icon. |
 | 6. App shows input and button. | Verify email field + “Invite to Workspace” button visible. |
 | 7a. Enter invalid email. | Enter “invalidemail”, click Invite. |
 | 7a1. Error message shown. | Check: **“Could not retrieve profile matching the given email!”** |
@@ -188,17 +188,17 @@ This includes the non-functional requirement that every note/message containing 
 | 9a. Empty message. | Send blank message; verify no change. |
 | 9. Valid message. | Send “Hello team!”; verify appears with picture & timestamp. |
 | **Update Workspace as Non-Manager** | |
-| 10a. Non-manager tries editing workspace. | Open edit screen as non-manager → fields should be greyed out. |
+| 10a. Non-manager tries editing workspace. | Log out as the manager. Open edit screen as non-manager → fields should be greyed out. |
 | **Leave Workspace (Non-Manager)** | |
-| 12. Non-manager clicks Leave. | Open Studies → Leave Workspace. |
-| 13. App removes user. | Studies no longer appears in workspace list. |
+| 12. Non-manager clicks Leave. | Open Studies v2 → Leave Workspace. |
+| 13. App removes user. | Studies v2 no longer appears in workspace list. |
 | **Ban Users** | |
-| 14. Manager opens Members screen. | Manage Workspace → Members icon. |
+| 14. Manager opens Members screen. | Log in as manager → Workspaces Screen → <select "Studies v2"> → Manage Workspace → Members icon. |
 | 15. Manager bans user. | Click trash next to user. |
-| 16. User banned permanently. | User removed, cannot be re-invited → **“This user is banned”** |
+| 16. User banned permanently. | User removed, cannot be re-invited → **“That user is banned”** message should show upon an invite attempt |
 | **Delete Workspace** | |
 | 17. Manager deletes workspace. | Click Delete Workspace (trash icon). |
-| 18. Workspace deleted. | Studies disappears and name can be used again. |
+| 18. Workspace deleted. | Studies v2 disappears and an appropriate success meassage is shown. |
 
 ---
 
@@ -266,10 +266,7 @@ Existing workspace with notes.
 | 9. Deselect “All”. | All tags cleared. |
 | 11. Select specific tags. | |
 | 12. Go back. | |
-| 13. Filter applied. | Only matching notes. |
-| **Combined Search + Filter** | |
-| 14. Enter search + choose tags. | |
-| 15. Results match both filters. | Matching notes displayed. |
+| 13. Filter applied. | Only matching notes. Ordered according to the search query |
 
 ![image info](./graphics/frontend-retrieve-notes-testlog.png)
 
