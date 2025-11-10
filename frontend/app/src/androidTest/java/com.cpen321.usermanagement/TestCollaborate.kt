@@ -7,12 +7,14 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -310,22 +312,6 @@ class TestCollaborate {
         composeRule.onNodeWithContentDescription(trashIcString).performClick()
         waitForText(createWsString)
         composeRule.onNodeWithText(text = studyWsName).assertIsNotDisplayed()
-    }
-
-    @After
-    fun sign_out(){//On failure, we might end up on another user that other test cases need, so we have to sign out just in case
-        composeRule.activity.setContent {
-            UserManagementApp()
-        }
-        val profileIcString = composeRule.activity.getString(R.string.profile)
-        val signOutString = composeRule.activity.getString(R.string.sign_out)
-        try{waitForDescription(profileIcString)
-            composeRule.onNodeWithContentDescription(profileIcString).performClick()
-            waitForText(signOutString)
-            composeRule.onNodeWithText(signOutString).performClick()
-        }catch (e: Exception){
-            Log.d("TEST_COLLABORATE","Unable to sign out, other test might be affected!, reason: ${e}")
-        }
     }
 }
 
