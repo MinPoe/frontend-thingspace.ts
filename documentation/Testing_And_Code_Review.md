@@ -200,6 +200,8 @@ This includes the non-functional requirement that every note/message containing 
 | 17. Manager deletes workspace. | Click Delete Workspace (trash icon). |
 | 18. Workspace deleted. | Studies v2 disappears and an appropriate success meassage is shown. |
 
+![image info](./graphics/frontend-collaborate-testlog.png)
+
 ---
 
 ### Test of the “Manage Notes” Feature (`TestNotes.kt`)
