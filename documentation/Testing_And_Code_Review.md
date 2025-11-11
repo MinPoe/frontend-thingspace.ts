@@ -19,59 +19,59 @@
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
 | POST `/api/notes` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L40` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L51` | `noteService.createNote`, OpenAI embeddings client |
-| PUT `/api/notes/:id` | `#L282` | `#L202` | `noteService.updateNoteById` |
-| DELETE `/api/notes/:id` | `#L398` | `#L298` | `noteService.deleteNote` |
-| GET `/api/notes/:id` | `#L462` | `#L253` | `noteService.getNoteById` |
-| GET `/api/notes` | `#L528` | `#L343` | `noteService.searchNotes`, OpenAI embeddings |
-| GET `/api/notes/:id/workspaces` | `#L893` | `#L620` | `workspaceModel.findById` |
-| POST `/api/notes/:id/share` | `#L662` | `#L665` | `noteService.shareNoteToWorkspace`, `workspaceModel` |
-| POST `/api/notes/:id/copy` | `#L784` | `#L764` | `noteService.copyNote`, `workspaceModel` |
+| PUT `/api/notes/:id` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L282` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L202` | `noteService.updateNoteById` |
+| DELETE `/api/notes/:id` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L398` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L298` | `noteService.deleteNote` |
+| GET `/api/notes/:id` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L462` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L253` | `noteService.getNoteById` |
+| GET `/api/notes` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L528` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L343` | `noteService.searchNotes`, OpenAI embeddings |
+| GET `/api/notes/:id/workspaces` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L893` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L620` | `workspaceModel.findById` |
+| POST `/api/notes/:id/share` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L662` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L665` | `noteService.shareNoteToWorkspace`, `workspaceModel` |
+| POST `/api/notes/:id/copy` | `backend/src/__tests__/unmocked/notes.normal.test.ts#L784` | `backend/src/__tests__/mocked/notes.mocked.test.ts#L764` | `noteService.copyNote`, `workspaceModel` |
 
 ##### Workspaces API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
 | POST `/api/workspace` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L45` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L237` | `workspaceService.createWorkspace` |
-| GET `/api/workspace/personal` | `#L167` | `#L277` | `workspaceService.getPersonalWorkspaces` |
-| GET `/api/workspace/user` | `#L290` | `#L330` | `workspaceService.getUserWorkspaces` |
-| GET `/api/workspace/:id` | `#L352` | `#L364` | `workspaceService.getWorkspaceById` |
-| GET `/api/workspace/:id/members` | `#L410` | `#L398` | `workspaceService.getMembers`, `notificationService` |
-| GET `/api/workspace/:id/tags` | `#L454` | `#L448` | `workspaceService.getWorkspaceTags` |
-| GET `/api/workspace/:id/membership/:userId` | `#L536` | `#L482` | `workspaceService.getMembership` |
-| POST `/api/workspace/:id/members` | `#L619` | `#L516` | `workspaceService.addMembers`, `notificationService` |
-| POST `/api/workspace/:id/leave` | `#L847` | `#L694` | `workspaceService.leaveWorkspace` |
-| PUT `/api/workspace/:id` | `#L959` | `#L712` | `workspaceService.updateWorkspace` |
-| PUT `/api/workspace/:id/picture` | `#L1051` | `#L748` | `workspaceService.updateWorkspacePicture`, `storage` |
-| DELETE `/api/workspace/:id/members/:userId` | `#L1156` | `#L784` | `workspaceService.removeMember` |
-| DELETE `/api/workspace/:id` | `#L1323` | `#L818` | `workspaceService.deleteWorkspace`, `notificationService` |
-| GET `/api/workspace/:id/poll` | `#L1429` | `#L852` | `workspaceService.getWorkspaceWithPolling` |
+| GET `/api/workspace/personal` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L167` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L277` | `workspaceService.getPersonalWorkspaces` |
+| GET `/api/workspace/user` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L290` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L330` | `workspaceService.getUserWorkspaces` |
+| GET `/api/workspace/:id` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L352` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L364` | `workspaceService.getWorkspaceById` |
+| GET `/api/workspace/:id/members` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L410` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L398` | `workspaceService.getMembers`, `notificationService` |
+| GET `/api/workspace/:id/tags` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L454` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L448` | `workspaceService.getWorkspaceTags` |
+| GET `/api/workspace/:id/membership/:userId` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L536` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L482` | `workspaceService.getMembership` |
+| POST `/api/workspace/:id/members` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L619` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L516` | `workspaceService.addMembers`, `notificationService` |
+| POST `/api/workspace/:id/leave` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L847` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L694` | `workspaceService.leaveWorkspace` |
+| PUT `/api/workspace/:id` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L959` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L712` | `workspaceService.updateWorkspace` |
+| PUT `/api/workspace/:id/picture` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L1051` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L748` | `workspaceService.updateWorkspacePicture`, `storage` |
+| DELETE `/api/workspace/:id/members/:userId` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L1156` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L784` | `workspaceService.removeMember` |
+| DELETE `/api/workspace/:id` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L1323` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L818` | `workspaceService.deleteWorkspace`, `notificationService` |
+| GET `/api/workspace/:id/poll` | `backend/src/__tests__/unmocked/workspace.normal.test.ts#L1429` | `backend/src/__tests__/mocked/workspace.mocked.test.ts#L852` | `workspaceService.getWorkspaceWithPolling` |
 
 ##### Authentication API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
 | POST `/api/auth/signup` | `backend/src/__tests__/unmocked/auth.normal.test.ts#L123` | `backend/src/__tests__/mocked/auth.mocked.test.ts#L74` | `authService.signUp`, Google token verifier, `workspaceService` |
-| POST `/api/auth/signin` | `#L151` | `#L290` | `authService.signIn` |
-| POST `/api/auth/dev-login` | `#L68` | `#L394` | `authService.devLogin` |
+| POST `/api/auth/signin` | `backend/src/__tests__/unmocked/auth.normal.test.ts#L151` | `backend/src/__tests__/mocked/auth.mocked.test.ts#L290` | `authService.signIn` |
+| POST `/api/auth/dev-login` | `backend/src/__tests__/unmocked/auth.normal.test.ts#L68` | `backend/src/__tests__/mocked/auth.mocked.test.ts#L394` | `authService.devLogin` |
 
 ##### User API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
 | GET `/api/users/profile` | `backend/src/__tests__/unmocked/user.normal.test.ts#L39` | — | — |
-| PUT `/api/users/profile` | `#L57` | `backend/src/__tests__/mocked/user.mocked.test.ts#L48` | `userModel.updateOne`, `workspaceModel` |
-| DELETE `/api/users/profile` | `#L166` | `#L104` | `workspaceModel`, notification service |
-| POST `/api/users/fcm-token` | `#L230` | `#L155` | `userModel.updateOne` |
-| GET `/api/users/:id` | `#L273` | `#L209` | `userModel.findById` |
-| GET `/api/users/email/:email` | `#L318` | `#L260` | `userModel.findByEmail` |
+| PUT `/api/users/profile` | `backend/src/__tests__/unmocked/user.normal.test.ts#L57` | `backend/src/__tests__/mocked/user.mocked.test.ts#L48` | `userModel.updateOne`, `workspaceModel` |
+| DELETE `/api/users/profile` | `backend/src/__tests__/unmocked/user.normal.test.ts#L166` | `backend/src/__tests__/mocked/user.mocked.test.ts#L104` | `workspaceModel`, notification service |
+| POST `/api/users/fcm-token` | `backend/src/__tests__/unmocked/user.normal.test.ts#L230` | `backend/src/__tests__/mocked/user.mocked.test.ts#L155` | `userModel.updateOne` |
+| GET `/api/users/:id` | `backend/src/__tests__/unmocked/user.normal.test.ts#L273` | `backend/src/__tests__/mocked/user.mocked.test.ts#L209` | `userModel.findById` |
+| GET `/api/users/email/:email` | `backend/src/__tests__/unmocked/user.normal.test.ts#L318` | `backend/src/__tests__/mocked/user.mocked.test.ts#L260` | `userModel.findByEmail` |
 
 ##### Message API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
 | GET `/api/messages/workspace/:workspaceId` | `backend/src/__tests__/unmocked/message.normal.test.ts#L61` | `backend/src/__tests__/mocked/message.mocked.test.ts#L67` | `messageModel.findByWorkspace` |
-| POST `/api/messages/workspace/:workspaceId` | `#L188` | `#L91` | `messageModel.create`, `workspaceModel` |
-| DELETE `/api/messages/:messageId` | `#L261` | `#L134` | `messageModel.deleteOne` |
+| POST `/api/messages/workspace/:workspaceId` | `backend/src/__tests__/unmocked/message.normal.test.ts#L188` | `backend/src/__tests__/mocked/message.mocked.test.ts#L91` | `messageModel.create`, `workspaceModel` |
+| DELETE `/api/messages/:messageId` | `backend/src/__tests__/unmocked/message.normal.test.ts#L261` | `backend/src/__tests__/mocked/message.mocked.test.ts#L134` | `messageModel.deleteOne` |
 
 ##### Media API
 
