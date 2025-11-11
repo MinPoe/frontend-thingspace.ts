@@ -14,7 +14,7 @@
 
 #### 2.1.1. Tests
 
-##### Notes API
+#### Notes API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
@@ -27,7 +27,7 @@
 | POST `/api/notes/:id/share` | `#L662` | `#L665` | `noteService.shareNoteToWorkspace`, `workspaceModel` |
 | POST `/api/notes/:id/copy` | `#L784` | `#L764` | `noteService.copyNote`, `workspaceModel` |
 
-##### Workspaces API
+#### Workspaces API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
@@ -46,7 +46,7 @@
 | DELETE `/api/workspace/:id` | `#L1323` | `#L818` | `workspaceService.deleteWorkspace`, `notificationService` |
 | GET `/api/workspace/:id/poll` | `#L1429` | `#L852` | `workspaceService.getWorkspaceWithPolling` |
 
-##### Authentication API
+#### Authentication API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
@@ -54,7 +54,7 @@
 | POST `/api/auth/signin` | `#L151` | `#L290` | `authService.signIn` |
 | POST `/api/auth/dev-login` | `#L68` | `#L394` | `authService.devLogin` |
 
-##### User API
+#### User API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
@@ -65,7 +65,7 @@
 | GET `/api/users/:id` | `#L273` | `#L209` | `userModel.findById` |
 | GET `/api/users/email/:email` | `#L318` | `#L260` | `userModel.findByEmail` |
 
-##### Message API
+#### Message API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
@@ -73,7 +73,7 @@
 | POST `/api/messages/workspace/:workspaceId` | `#L188` | `#L91` | `messageModel.create`, `workspaceModel` |
 | DELETE `/api/messages/:messageId` | `#L261` | `#L134` | `messageModel.deleteOne` |
 
-##### Media API
+#### Media API
 
 | Interface | Describe Group Location, No Mocks | Describe Group Location, With Mocks | Mocked Components |
 |---|---|---|---|
