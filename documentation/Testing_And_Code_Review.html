@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Testing_And_Code_Review.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="testing-and-code-review">Testing and Code Review</h1>
+<h2 id="1-change-history">1. Change History</h2>
+<table>
+<thead>
+<tr>
+<th><strong>Change Date</strong></th>
+<th><strong>Modified Sections</strong></th>
+<th><strong>Rationale</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>Nothing to show</em></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-back-end-test-specification-apis">2. Back-end Test Specification: APIs</h2>
+<h3 id="21-locations-of-back-end-tests-and-instructions-to-run-them">2.1. Locations of Back-end Tests and Instructions to Run Them</h3>
+<h4 id="211-tests">2.1.1. Tests</h4>
+<h4 id="notes-api">Notes API</h4>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Describe Group Location, No Mocks</th>
+<th>Describe Group Location, With Mocks</th>
+<th>Mocked Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST <code>/api/notes</code></td>
+<td><code>backend/src/__tests__/unmocked/notes.normal.test.ts#L40</code></td>
+<td><code>backend/src/__tests__/mocked/notes.mocked.test.ts#L51</code></td>
+<td><code>noteService.createNote</code>, OpenAI embeddings client</td>
+</tr>
+<tr>
+<td>PUT <code>/api/notes/:id</code></td>
+<td><code>#L282</code></td>
+<td><code>#L202</code></td>
+<td><code>noteService.updateNoteById</code></td>
+</tr>
+<tr>
+<td>DELETE <code>/api/notes/:id</code></td>
+<td><code>#L398</code></td>
+<td><code>#L298</code></td>
+<td><code>noteService.deleteNote</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/notes/:id</code></td>
+<td><code>#L462</code></td>
+<td><code>#L253</code></td>
+<td><code>noteService.getNoteById</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/notes</code></td>
+<td><code>#L528</code></td>
+<td><code>#L343</code></td>
+<td><code>noteService.searchNotes</code>, OpenAI embeddings</td>
+</tr>
+<tr>
+<td>GET <code>/api/notes/:id/workspaces</code></td>
+<td><code>#L893</code></td>
+<td><code>#L620</code></td>
+<td><code>workspaceModel.findById</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/notes/:id/share</code></td>
+<td><code>#L662</code></td>
+<td><code>#L665</code></td>
+<td><code>noteService.shareNoteToWorkspace</code>, <code>workspaceModel</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/notes/:id/copy</code></td>
+<td><code>#L784</code></td>
+<td><code>#L764</code></td>
+<td><code>noteService.copyNote</code>, <code>workspaceModel</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="workspaces-api">Workspaces API</h4>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Describe Group Location, No Mocks</th>
+<th>Describe Group Location, With Mocks</th>
+<th>Mocked Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST <code>/api/workspace</code></td>
+<td><code>backend/src/__tests__/unmocked/workspace.normal.test.ts#L45</code></td>
+<td><code>backend/src/__tests__/mocked/workspace.mocked.test.ts#L237</code></td>
+<td><code>workspaceService.createWorkspace</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/personal</code></td>
+<td><code>#L167</code></td>
+<td><code>#L277</code></td>
+<td><code>workspaceService.getPersonalWorkspaces</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/user</code></td>
+<td><code>#L290</code></td>
+<td><code>#L330</code></td>
+<td><code>workspaceService.getUserWorkspaces</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/:id</code></td>
+<td><code>#L352</code></td>
+<td><code>#L364</code></td>
+<td><code>workspaceService.getWorkspaceById</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/:id/members</code></td>
+<td><code>#L410</code></td>
+<td><code>#L398</code></td>
+<td><code>workspaceService.getMembers</code>, <code>notificationService</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/:id/tags</code></td>
+<td><code>#L454</code></td>
+<td><code>#L448</code></td>
+<td><code>workspaceService.getWorkspaceTags</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/:id/membership/:userId</code></td>
+<td><code>#L536</code></td>
+<td><code>#L482</code></td>
+<td><code>workspaceService.getMembership</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/workspace/:id/members</code></td>
+<td><code>#L619</code></td>
+<td><code>#L516</code></td>
+<td><code>workspaceService.addMembers</code>, <code>notificationService</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/workspace/:id/leave</code></td>
+<td><code>#L847</code></td>
+<td><code>#L694</code></td>
+<td><code>workspaceService.leaveWorkspace</code></td>
+</tr>
+<tr>
+<td>PUT <code>/api/workspace/:id</code></td>
+<td><code>#L959</code></td>
+<td><code>#L712</code></td>
+<td><code>workspaceService.updateWorkspace</code></td>
+</tr>
+<tr>
+<td>PUT <code>/api/workspace/:id/picture</code></td>
+<td><code>#L1051</code></td>
+<td><code>#L748</code></td>
+<td><code>workspaceService.updateWorkspacePicture</code>, <code>storage</code></td>
+</tr>
+<tr>
+<td>DELETE <code>/api/workspace/:id/members/:userId</code></td>
+<td><code>#L1156</code></td>
+<td><code>#L784</code></td>
+<td><code>workspaceService.removeMember</code></td>
+</tr>
+<tr>
+<td>DELETE <code>/api/workspace/:id</code></td>
+<td><code>#L1323</code></td>
+<td><code>#L818</code></td>
+<td><code>workspaceService.deleteWorkspace</code>, <code>notificationService</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/workspace/:id/poll</code></td>
+<td><code>#L1429</code></td>
+<td><code>#L852</code></td>
+<td><code>workspaceService.getWorkspaceWithPolling</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="authentication-api">Authentication API</h4>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Describe Group Location, No Mocks</th>
+<th>Describe Group Location, With Mocks</th>
+<th>Mocked Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST <code>/api/auth/signup</code></td>
+<td><code>backend/src/__tests__/unmocked/auth.normal.test.ts#L123</code></td>
+<td><code>backend/src/__tests__/mocked/auth.mocked.test.ts#L74</code></td>
+<td><code>authService.signUp</code>, Google token verifier, <code>workspaceService</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/auth/signin</code></td>
+<td><code>#L151</code></td>
+<td><code>#L290</code></td>
+<td><code>authService.signIn</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/auth/dev-login</code></td>
+<td><code>#L68</code></td>
+<td><code>#L394</code></td>
+<td><code>authService.devLogin</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="user-api">User API</h4>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Describe Group Location, No Mocks</th>
+<th>Describe Group Location, With Mocks</th>
+<th>Mocked Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET <code>/api/users/profile</code></td>
+<td><code>backend/src/__tests__/unmocked/user.normal.test.ts#L39</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>PUT <code>/api/users/profile</code></td>
+<td><code>#L57</code></td>
+<td><code>backend/src/__tests__/mocked/user.mocked.test.ts#L48</code></td>
+<td><code>userModel.updateOne</code>, <code>workspaceModel</code></td>
+</tr>
+<tr>
+<td>DELETE <code>/api/users/profile</code></td>
+<td><code>#L166</code></td>
+<td><code>#L104</code></td>
+<td><code>workspaceModel</code>, notification service</td>
+</tr>
+<tr>
+<td>POST <code>/api/users/fcm-token</code></td>
+<td><code>#L230</code></td>
+<td><code>#L155</code></td>
+<td><code>userModel.updateOne</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/users/:id</code></td>
+<td><code>#L273</code></td>
+<td><code>#L209</code></td>
+<td><code>userModel.findById</code></td>
+</tr>
+<tr>
+<td>GET <code>/api/users/email/:email</code></td>
+<td><code>#L318</code></td>
+<td><code>#L260</code></td>
+<td><code>userModel.findByEmail</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="message-api">Message API</h4>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Describe Group Location, No Mocks</th>
+<th>Describe Group Location, With Mocks</th>
+<th>Mocked Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET <code>/api/messages/workspace/:workspaceId</code></td>
+<td><code>backend/src/__tests__/unmocked/message.normal.test.ts#L61</code></td>
+<td><code>backend/src/__tests__/mocked/message.mocked.test.ts#L67</code></td>
+<td><code>messageModel.findByWorkspace</code></td>
+</tr>
+<tr>
+<td>POST <code>/api/messages/workspace/:workspaceId</code></td>
+<td><code>#L188</code></td>
+<td><code>#L91</code></td>
+<td><code>messageModel.create</code>, <code>workspaceModel</code></td>
+</tr>
+<tr>
+<td>DELETE <code>/api/messages/:messageId</code></td>
+<td><code>#L261</code></td>
+<td><code>#L134</code></td>
+<td><code>messageModel.deleteOne</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="media-api">Media API</h4>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Describe Group Location, No Mocks</th>
+<th>Describe Group Location, With Mocks</th>
+<th>Mocked Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST <code>/api/media/upload</code></td>
+<td><code>backend/src/__tests__/unmocked/media.normal.test.ts#L56</code></td>
+<td><code>backend/src/__tests__/mocked/media.mocked.test.ts#L55</code></td>
+<td><code>storage.uploadImage</code>, file system stubs</td>
+</tr>
+</tbody>
+</table>
+<h4 id="212-commit-hash-where-tests-run">2.1.2. Commit Hash Where Tests Run</h4>
+<p><code>c5f46d61177b82ff74c9c30dfd32a5e24de5d683</code></p>
+<h4 id="213-how-to-run-the-tests">2.1.3. How to Run the Tests</h4>
+<ol>
+<li><code>cd backend</code></li>
+<li><code>npm install</code></li>
+<li><code>npm test</code></li>
+</ol>
+<hr>
+<h3 id="22-github-actions-configuration-location">2.2. GitHub Actions Configuration Location</h3>
+<p><code>~/.github/workflows/backend-tests.yml</code></p>
+<h3 id="23-jest-coverage-report-screenshots-without-mocking">2.3. Jest Coverage Report Screenshots (Without Mocking)</h3>
+<p><img src="./graphics/UnmockedTests.png" alt="image info"></p>
+<h3 id="24-jest-coverage-report-screenshots-with-mocking">2.4. Jest Coverage Report Screenshots (With Mocking)</h3>
+<p><img src="./graphics/MockedTests.png" alt="image info"></p>
+<h3 id="25-combined-jest-coverage-reports-with--without-mocking">2.5. Combined Jest Coverage Reports (With &amp; Without Mocking)</h3>
+<p><img src="./graphics/TotalTestCoverage.png" alt="image info"></p>
+<hr>
+<h2 id="3-back-end-non-functional-requirements">3. Back-end Non-functional Requirements</h2>
+<h3 id="31-test-locations">3.1. Test Locations</h3>
+<table>
+<thead>
+<tr>
+<th><strong>Non-Functional Requirement</strong></th>
+<th><strong>Location in Git</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend – Search Speed</td>
+<td><code>ThingSpace.ts/backend/src/__tests__/notes.latency.test.ts</code></td>
+</tr>
+<tr>
+<td>Frontend – Two-Click Navigation</td>
+<td><code>frontend/app/src/androidTest/java/com/cpen321/usermanagement/TestReachWithTwoClicks.kt</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="backend-%E2%80%93-search-speed-noteslatencytestts">Backend – Search Speed (<code>notes.latency.test.ts</code>)</h4>
+<ul>
+<li><strong>How to run:</strong> <code>cd backend &amp;&amp; npm test -- __tests__/non-func-tests</code></li>
+<li><strong>What it checks:</strong> Seeds 400 notes, issues three representative search queries, and reports the mean latency. Latest runs average ~1.1s/query, comfortably under the 5s budget.</li>
+</ul>
+<h4 id="frontend-%E2%80%93-two-click-navigation-testreachwithtwoclickskt">Frontend – Two-Click Navigation (<code>TestReachWithTwoClicks.kt</code>)</h4>
+<ul>
+<li><strong>How to run:</strong> <code>cd frontend &amp;&amp; ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.cpen321.usermanagement.TestReachWithTwoClicks</code></li>
+<li><strong>What it checks:</strong> Starting from the main workspace screen, the test traverses to note, template, and chat views—both within the current workspace and across other workspaces—counting taps to confirm every note-bearing screen is reachable in ≤2 clicks.</li>
+</ul>
+<h3 id="32-test-verification-and-logs">3.2. Test Verification and Logs</h3>
+<h4 id="performance-search-speed">Performance: Search Speed</h4>
+<ul>
+<li>Creates 400 notes, runs 3 queries, average ~1.1s (&lt;5s target)</li>
+<li>Logs:</li>
+</ul>
+<p><img src="./graphics/backend-nonfunc-testlog.png" alt="image info"></p>
+<hr>
+<h2 id="4-front-end-test-specification">4. Front-end Test Specification</h2>
+<p>This includes the non-functional requirement that every note/message containing screen must be reachable from the main screen within two clicks. This non-functional requirement can only be verified via frontend tests, hence it is included here as <code>TestReachWith2Clicks.kt</code>.</p>
+<h3 id="41-location-in-git">4.1. Location in Git</h3>
+<p><code>./frontend/app/src/androidTest/java/com.cpen321.usermanagement</code></p>
+<h3 id="42-tests-included">4.2. Tests Included</h3>
+<h3 id="test-of-the-collaborate-feature-testcollaboratekt">Test of the “Collaborate” Feature (<code>TestCollaborate.kt</code>)</h3>
+<p><strong>Prerequisite:</strong></p>
+<ol>
+<li>Need 2 user accounts:
+<ul>
+<li>Workspace Manager</li>
+<li>Workspace Member</li>
+</ul>
+</li>
+<li>Workspace Manager must have a workspace named <strong>“Test”</strong></li>
+<li>There must be <strong>no existing workspaces</strong> named <em>“Study”</em> or <em>“Study v2”</em></li>
+</ol>
+<h4 id="scenario-steps-and-test-case-steps">Scenario Steps and Test Case Steps</h4>
+<table>
+<thead>
+<tr>
+<th>Scenario Steps</th>
+<th>Test Case Steps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Create Workspace</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>1. The user opens the “Create Workspace” screen.</td>
+<td>Open the “Create Workspace” screen.</td>
+</tr>
+<tr>
+<td>2. The app shows input fields and a disabled button.</td>
+<td>Verify “Pick a workspace name” and disabled “Create Workspace” button.</td>
+</tr>
+<tr>
+<td>3a. User enters workspace title already taken.</td>
+<td>Pre-create workspace “Test”. Enter “Test” and click Create.</td>
+</tr>
+<tr>
+<td>3a1. App shows error.</td>
+<td>Check for dialog: <strong>“Failed to create workspace.”</strong></td>
+</tr>
+<tr>
+<td>3. User enters valid title.</td>
+<td>Enter “Studies”. Verify “Create” button enabled.</td>
+</tr>
+<tr>
+<td>4. User clicks “Create”.</td>
+<td>Click “Create”. Verify workspace setup screen shown and “Studies” appears in list.</td>
+</tr>
+<tr>
+<td><strong>Update Workspace</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>10. Manager navigates to “Edit Workspace”.</td>
+<td>&lt;After workspace creation, one is already at the edit workspace screen&gt;</td>
+</tr>
+<tr>
+<td>11. Edit title and bio.</td>
+<td>Change title to “Studies v2” and bio “Study group”; click Save; expect “Profile updated successfully.”</td>
+</tr>
+<tr>
+<td><strong>Invite to Workspace</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>5. Member selects “Invite User”.</td>
+<td>Open Studies v2 → Manage Workspace → Invite icon.</td>
+</tr>
+<tr>
+<td>6. App shows input and button.</td>
+<td>Verify email field + “Invite to Workspace” button visible.</td>
+</tr>
+<tr>
+<td>7a. Enter invalid email.</td>
+<td>Enter “invalidemail”, click Invite.</td>
+</tr>
+<tr>
+<td>7a1. Error message shown.</td>
+<td>Check: <strong>“Could not retrieve profile matching the given email!”</strong></td>
+</tr>
+<tr>
+<td>7. Enter valid email.</td>
+<td>Input teammate email → click Invite → expect <strong>“The user got added to the workspace.”</strong></td>
+</tr>
+<tr>
+<td>7b. Invite already-member user.</td>
+<td>Enter existing member email and click Invite.</td>
+</tr>
+<tr>
+<td>7b1. Error message.</td>
+<td><strong>“The user is already a member!”</strong></td>
+</tr>
+<tr>
+<td><strong>Send Chat Message</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>8. User opens workspace chat.</td>
+<td>Open chat icon; verify chat screen shown.</td>
+</tr>
+<tr>
+<td>9a. Empty message.</td>
+<td>Send blank message; verify no change.</td>
+</tr>
+<tr>
+<td>9. Valid message.</td>
+<td>Send “Hello team!”; verify appears with picture &amp; timestamp.</td>
+</tr>
+<tr>
+<td><strong>Update Workspace as Non-Manager</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>10a. Non-manager tries editing workspace.</td>
+<td>Log out as the manager. Open edit screen as non-manager → fields should be greyed out.</td>
+</tr>
+<tr>
+<td><strong>Leave Workspace (Non-Manager)</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>12. Non-manager clicks Leave.</td>
+<td>Open Studies v2 → Leave Workspace.</td>
+</tr>
+<tr>
+<td>13. App removes user.</td>
+<td>Studies v2 no longer appears in workspace list.</td>
+</tr>
+<tr>
+<td><strong>Ban Users</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>14. Manager opens Members screen.</td>
+<td>Log in as manager → Workspaces Screen → &lt;select &quot;Studies v2&quot;&gt; → Manage Workspace → Members icon.</td>
+</tr>
+<tr>
+<td>15. Manager bans user.</td>
+<td>Click trash next to user.</td>
+</tr>
+<tr>
+<td>16. User banned permanently.</td>
+<td>User removed, cannot be re-invited → <strong>“That user is banned”</strong> message should show upon an invite attempt</td>
+</tr>
+<tr>
+<td><strong>Delete Workspace</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>17. Manager deletes workspace.</td>
+<td>Click Delete Workspace (trash icon).</td>
+</tr>
+<tr>
+<td>18. Workspace deleted.</td>
+<td>Studies v2 disappears and an appropriate success meassage is shown.</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./graphics/frontend-collaborate-testlog.png" alt="image info"></p>
+<hr>
+<h3 id="test-of-the-manage-notes-feature-testnoteskt">Test of the “Manage Notes” Feature (<code>TestNotes.kt</code>)</h3>
+<p><strong>Prerequisite:</strong><br>
+Two pre-existing workspaces.</p>
+<table>
+<thead>
+<tr>
+<th>Scenario Steps</th>
+<th>Test Case Steps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Create Note</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>1. Open “Create Note” screen.</td>
+<td>Tap pencil icon.</td>
+</tr>
+<tr>
+<td>2. App shows metadata fields and create button.</td>
+<td>Verify “Note Type”, “Tags”, “Fields”.</td>
+</tr>
+<tr>
+<td>3a. Create note with no fields.</td>
+<td>Click Create with no fields.</td>
+</tr>
+<tr>
+<td>3a1. Error.</td>
+<td><strong>“Please add at least one field”</strong></td>
+</tr>
+<tr>
+<td>3b. Create note with empty field label.</td>
+<td>Add field but leave label blank; click Create.</td>
+</tr>
+<tr>
+<td>3b1. Error.</td>
+<td><strong>“All fields must have a label”</strong></td>
+</tr>
+<tr>
+<td>3. User fills fields.</td>
+<td>Add tag(s), add field “Notes”, enter content.</td>
+</tr>
+<tr>
+<td>4. Click Create.</td>
+<td></td>
+</tr>
+<tr>
+<td>5. Note created.</td>
+<td>Verify note appears.</td>
+</tr>
+<tr>
+<td><strong>Update Note</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>6. Open note to edit.</td>
+<td>Click pencil icon on note.</td>
+</tr>
+<tr>
+<td>7. App shows editable fields.</td>
+<td>Verify tag add/remove.</td>
+</tr>
+<tr>
+<td>8. Modify content &amp; tags.</td>
+<td></td>
+</tr>
+<tr>
+<td>9. Click Save.</td>
+<td></td>
+</tr>
+<tr>
+<td>10. Note updated.</td>
+<td>Verify new values.</td>
+</tr>
+<tr>
+<td><strong>Share Note</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>11. Select “Share Note”.</td>
+<td>Click Share icon.</td>
+</tr>
+<tr>
+<td>12. Workspace selection dialog.</td>
+<td>Verify “Share Note” + workspace list.</td>
+</tr>
+<tr>
+<td>13. Select workspace &amp; confirm.</td>
+<td>Click Share.</td>
+</tr>
+<tr>
+<td>14. Note shared.</td>
+<td><strong>“Note shared to workspace successfully”</strong>, note moves workspaces.</td>
+</tr>
+<tr>
+<td><strong>Copy Note</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>15. Select “Copy Note”.</td>
+<td>Click Copy icon.</td>
+</tr>
+<tr>
+<td>16. Workspace selection.</td>
+<td>Verify UI.</td>
+</tr>
+<tr>
+<td>17. Select workspace.</td>
+<td>Click Copy.</td>
+</tr>
+<tr>
+<td>18. Note copied.</td>
+<td>Appears in both workspaces.</td>
+</tr>
+<tr>
+<td><strong>Delete Note</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>19. Select “Delete Note”.</td>
+<td>Tap trash.</td>
+</tr>
+<tr>
+<td>20. Confirmation dialog.</td>
+<td><strong>“Are you sure… cannot be undone”</strong></td>
+</tr>
+<tr>
+<td>21. Confirm.</td>
+<td>Click Delete.</td>
+</tr>
+<tr>
+<td>22. Note deleted.</td>
+<td>Verify removal.</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./graphics/frontend-manage-notes-testlog.png" alt="image info"></p>
+<hr>
+<h3 id="test-of-the-retrieve-notes-feature-testretrievenoteskt">Test of the “Retrieve Notes” Feature (<code>TestRetrieveNotes.kt</code>)</h3>
+<p><strong>Prerequisite:</strong><br>
+Existing workspace with notes.</p>
+<table>
+<thead>
+<tr>
+<th>Scenario Steps</th>
+<th>Test Case Steps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Search Notes</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>1. Open workspace.</td>
+<td>Navigate to workspace.</td>
+</tr>
+<tr>
+<td>2. Search bar visible.</td>
+<td>Verify presence.</td>
+</tr>
+<tr>
+<td>3a. Empty query.</td>
+<td>Search blank.</td>
+</tr>
+<tr>
+<td>3a1. All notes shown.</td>
+<td>Verify list.</td>
+</tr>
+<tr>
+<td>3. Enter query.</td>
+<td>Input string → Search.</td>
+</tr>
+<tr>
+<td>4. Matching notes shown.</td>
+<td>Relevant notes at top.</td>
+</tr>
+<tr>
+<td><strong>Filter Notes by Tags</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>5. Click filter icon.</td>
+<td></td>
+</tr>
+<tr>
+<td>6. Tag selection screen.</td>
+<td>Verify “All” + checkboxes.</td>
+</tr>
+<tr>
+<td>7. Select “All”.</td>
+<td>All tags selected.</td>
+</tr>
+<tr>
+<td>9. Deselect “All”.</td>
+<td>All tags cleared.</td>
+</tr>
+<tr>
+<td>11. Select specific tags.</td>
+<td></td>
+</tr>
+<tr>
+<td>12. Go back.</td>
+<td></td>
+</tr>
+<tr>
+<td>13. Filter applied.</td>
+<td>Only matching notes. Ordered according to the search query</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./graphics/frontend-retrieve-notes-testlog.png" alt="image info"></p>
+<hr>
+<h3 id="test-reach-note-screens-in-%E2%89%A42-clicks-testreachwith2clickskt">Test: Reach Note Screens in ≤2 Clicks (<code>TestReachWith2Clicks.kt</code>)</h3>
+<p>This test verifies that from a workspace main screen, users can reach:</p>
+<ul>
+<li>templates screen</li>
+<li>chat screen</li>
+<li>content/templates/chat of another workspace</li>
+</ul>
+<p>All screens must be reachable in <strong>2 clicks or fewer</strong>.</p>
+<p>The test counts the number of clicks for each navigation path.</p>
+<hr>
+<h3 id="test-logs">Test Logs</h3>
+<p><img src="./graphics/frontend-nonfunct-testlog.png" alt="image info"></p>
+<Place final print screens here>
+<hr>
+<h2 id="5-automated-code-review-results">5. Automated Code Review Results</h2>
+<h3 id="51-commit-hash-where-codacy-ran">5.1. Commit Hash Where Codacy Ran</h3>
+<p><code>96e4c5520f47503662f56029212714c229f3617f</code></p>
+<h3 id="52-unfixed-issues-per-codacy-category">5.2. Unfixed Issues per Codacy Category</h3>
+<p><img src="./graphics/CodacyCategory.png" alt="image info"></p>
+<h3 id="53-unfixed-issues-per-codacy-code-pattern">5.3. Unfixed Issues per Codacy Code Pattern</h3>
+<p><img src="./graphics/CodacyCodePattern.png" alt="image info"></p>
+<h3 id="54-justifications-for-unfixed-issues">5.4. Justifications for Unfixed Issues</h3>
+<h2 id="no-unfixed-codacy-issues">No unfixed codacy issues</h2>
+
+</body>
+</html>
