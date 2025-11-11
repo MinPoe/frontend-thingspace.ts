@@ -14,6 +14,7 @@
 | 25.10.2025 | 4.4 | Add more frameworks and libraries used during implementation |
 | 25.10.2025 | All | Cleaned up doc and implemented feedback from M2 |
 | 26.10.2025 | 4.6 | Added sequence diagrams for components |
+| 10.11.2025 | 3.5, 3.7 | Revised the formal use case specifications to the state of the app in M4. This is to provide a reference for testing
 ---
 
 
@@ -88,7 +89,7 @@ The target audience is the general public. If one has a large amount of differen
 <a name="uc1"></a>
 
 
-<!-- NOTES: 5 most major use cases
+NOTES: 5 most major use cases
 - Create note
 - Search notes
 - Create note template
@@ -105,10 +106,10 @@ The target audience is the general public. If one has a large amount of differen
 **Primary actor(s)**: User
    
 **Main success scenario**:
-1. User clicks the “Create Note” button
-2. System displays a default empty template (a text field plus tags)
-3. User inputs all details of the note into the fields
-4. User can add additional fields or remove fields.
+1. User clicks the “Create Note” button and selects the "Content" category
+2. System displays a default empty template (a space to input tags, no fields, but a button to add them)
+3. User can add additional fields or remove fields.
+4. User inputs all details of the note into the fields
 5. User clicks “Create” button
 6. The system creates the note with the filled in data and stores it in the database, and displays a confirmation message.
 
@@ -140,7 +141,7 @@ The target audience is the general public. If one has a large amount of differen
 
 **Failure scenario(s)**:
 - 4a. No matching notes
-	- 4a1. System simply does not display any notes
+	- 4a1. System simply does not display any notes [For now: the system will always return all notes, only sorted by their resemblance to the search query]
 - 4b. Available notes not fetched
 	- 4b1. System displays an error message stating the error code and reason the fetch failed, such as connection loss. 
 
@@ -157,7 +158,7 @@ The target audience is the general public. If one has a large amount of differen
 **Primary actor(s)**: User
    
 **Main success scenario**:
-1. User clicks the “Create Note Template” button
+1. User clicks the “Create Note” button and selects the template category.
 2. System displays a default note template, along with buttons to create new fields or delete fields
 3. User customizes the note template to their desire by adding/removing/setting default values/moving the input fields around the space available. The tag field is not removable and there must be at least one content field in the template, else the user cannot remove fields.
 4. User clicks the “Create” confirmation button
@@ -187,7 +188,7 @@ The target audience is the general public. If one has a large amount of differen
 **Main success scenario**:
 1. User clicks the “Create Workspace” button
 2. System displays input fields needed to create a new workspace (e.g. name and description)
-3. User fills in the required field: name and description
+3. User fills in the required field: name
 4. A create button becomes available to the user
 5. User clicks the “Create” confirmation button
 6. System receives the input and creates the corresponding workspace with the user being the workspace manager
@@ -220,13 +221,15 @@ The target audience is the general public. If one has a large amount of differen
 3. Workspace Member clicks the “Chat” button
 4. System displays the "Chat" screen
 5. Workspace Member inputs text and clicks the send button
-6. System receives the input and displays it on the screen of every user in the workspace
+6. The "send" button becomes enabled
+7. User presses the "send" button
+8. System receives the input and displays it on the screen of every user in the workspace
 
 
 **Failure scenario(s)**:
-- 5a. The message couldn’t be sent
-    - 5a1. System displays error message indicating the error code and reason
-    - 5a2. User tries to send the message again after fixing the error (ex. connection error)
+- 8a. The message couldn’t be sent
+    - 8a1. System displays error message indicating the error code and reason
+    - 8a2. User tries to send the message again after fixing the error (ex. connection error)
 
 
 
@@ -241,19 +244,12 @@ The target audience is the general public. If one has a large amount of differen
 ### **3.7. Non-Functional Requirements**
 <a name="nfr1"></a>
 
-<!-- **[Template Compatibility]**
-    - **Description**: Any note template shall include a field for tags, and 1 to 39 other components (distinct input fields, i.e. a text field, or a datetime). All combinations that satisfy these quotas must be a valid template from which custom note creation forms can be automatically generated. Users should be physically unable to create templates that violate the quotas.
-    - **Justification**: Versatility is the main selling point for this app. Thus, it has to be ensured that the users can shape their templates to their liking, and the templates will result in usable note creation forms, that do not experience visibly more errors than smaller forms. This will be a demanding requirement with respect to verification and might require exploratory testing on several large templates. Yet it is necessary to ensure the advertised customizability of the product.
-    On the other hand, there are hard constraints on what can be customised not to disturb app functionality - there must be at least one field, such that the notes contain content and can be searched. There also must be option to edit the note's tagging, although a default tag for "not assigned" notes should be allowed. Mandatory tagging is to facilitate the filtering functionality.
-    The upper limit on the number of components stems from the need to create forms for note creation. The size of form entry for one component has been estimated as 1/10th of a mobile screen. Then, we can have several tabs, but the buttons to switch between them should remain large enough to be comfortable. We have arbitrarily selected 4 tabs, which leads to 40 components (but that incudes the tagging). The 1/10th comes from comparison with Samsung Notes, which in their default font/zoom settings allow for 21 lines per page. We assumed that a form entry for each component would take a vertical space equivalent to 2 lines of default Samsung Notes text and rounded the result down.
-    Now this does not impair users from putting a larger amounts of data into the notes, as the text fields can be expanded similar to e.g. sections in VS Code. -->
-
 1. **[Feature Accessibility]**
    - **[Description]**: Any workspace of conversation the user is a member of has to be accessible to the user within two clicks from the main screen.
    - **Justification**: Several messaging/file sharing applications, such as Discord, have every conversation reachable with maximum of 2 clicks (Discord server - specific channel, or discord dms - particular chat; WhatsApp community - particular chat). The app will be feature-rich, however it should still be competitive wrt. usability.
 
 2. **[Searching Speed]**
-   - **Description**: Producing a page of synonymic search result should last no longer than 5 seconds
+   - **Description**: Producing a page of synonymic search result on the backend side should last no longer than 5 seconds
    - **Justification**: Synonymic searching includes calling an API to check for synonyms. While this process can take time and fitting below a second of response time is unlikely (at least not guaranteeable before actual tests with the API), we should not get close to the 10 seconds response limit mentioned in https://www.nngroup.com/articles/response-times-3-important-limits/
    The 10 seconds is the user attention limit, i.e. the time the user is said to be willing to wait without attempting to focus on other tasks. As we envision synonymic search being used frequently, getting close to this limit on regular basis would mean straining the user attention, hence we impose a safety factor of 2.
    One might point out that while the note database gets larger, there is more notes to search and more matches, hence the response time shall increase. This is why the requirement only concerns itself with one page of search results. While the note base increases, we would get more direct matches, and the first page could get populated with those ones while the app is looking for less direct matches in the background.

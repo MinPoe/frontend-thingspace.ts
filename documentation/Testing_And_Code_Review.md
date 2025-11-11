@@ -131,15 +131,7 @@
 - Creates 400 notes, runs 3 queries, average ~1.1s (<5s target)
 - Logs:
 
-<Place final print screens here>
-
-
-<!-- #### Chat Data Security
-
-- Verification:
-- Logs:
-
-<Place final print screens here> -->
+![image info](./graphics/backend-nonfunc-testlog.png)
 
 
 ---
@@ -310,8 +302,5 @@ The test counts the number of clicks for each navigation path.
 
 ### 5.4. Justifications for Unfixed Issues
 
-- **Usage of Deprecated Modules**
-  - Location: `src/services/chatService.js#L31`
-  - Justification: 
-
+No unfixed codacy issues
 ---
