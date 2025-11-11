@@ -185,17 +185,26 @@
 
 ### 3.1. Test Locations
 
-| **Non-Functional Requirement** | **Location in Git** |
-|---|---|
-| Backend – Search Speed | `ThingSpace.ts/backend/src/__tests__/notes.latency.test.ts` |
-| Frontend – Two-Click Navigation | `frontend/app/src/androidTest/java/com/cpen321/usermanagement/TestReachWithTwoClicks.kt` |
++--------------------------------------+------------------------------------------------------------------------------+
+| **Non-Functional Requirement**       | **Location in Git**                                                          |
++======================================+==============================================================================+
+| Backend – Search Speed               | `ThingSpace.ts/backend/src/\                                                 |
+|                                      | __tests__/notes.latency.\                                                    |
+|                                      | test.ts`                                                                     |
++--------------------------------------+------------------------------------------------------------------------------+
+| Frontend – Two-Click Navigation      | `frontend/app/src/androidTest/\                                              |
+|                                      | java/com/cpen321/\                                                           |
+|                                      | usermanagement/\                                                             |
+|                                      | TestReachWithTwoClicks.kt`                                                   |
++--------------------------------------+------------------------------------------------------------------------------+
 
 #### Backend – Search Speed (`notes.latency.test.ts`)
 - **How to run:** `cd backend && npm test -- __tests__/non-func-tests`
 - **What it checks:** Seeds 400 notes, issues three representative search queries, and reports the mean latency. Latest runs average ~1.1s/query, comfortably under the 5s budget.
 
 #### Frontend – Two-Click Navigation (`TestReachWithTwoClicks.kt`)
-- **How to run:** `cd frontend && ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.cpen321.usermanagement.TestReachWithTwoClicks`
+- **How to run:** `cd frontend && ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunner
+Arguments.class=com.cpen321.usermanagement.TestReachWithTwoClicks`
 - **What it checks:** Starting from the main workspace screen, the test traverses to note, template, and chat views—both within the current workspace and across other workspaces—counting taps to confirm every note-bearing screen is reachable in ≤2 clicks.
 
 ### 3.2. Test Verification and Logs
