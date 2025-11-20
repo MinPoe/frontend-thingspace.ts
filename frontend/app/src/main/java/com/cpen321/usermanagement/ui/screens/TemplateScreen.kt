@@ -41,6 +41,7 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
+import com.cpen321.usermanagement.ui.components.TemplateBottomBar
 import com.cpen321.usermanagement.ui.components.TemplateDisplayList
 import com.cpen321.usermanagement.ui.viewmodels.CreateWsUiStateE
 import com.cpen321.usermanagement.utils.FeatureActions
@@ -115,10 +116,8 @@ private fun TemplateContent(
             MainTopBar(onProfileClick = onProfileClick)
         },
         bottomBar = {
-            MainBottomBar(
-                onCreateNoteClick = actions.onCreateNoteClick,
+            TemplateBottomBar(
                 onWorkspacesClick = actions.onWorkspaceClick,
-                onTemplatesClick = {  },
                 onContentClick = actions.onContentClick,
                 onChatClick = actions.onChatClick,
                 modifier = modifier)

@@ -132,10 +132,8 @@ private fun MainContent(
         },
         bottomBar = {
             MainBottomBar(
-                onCreateNoteClick = actions.onCreateNoteClick,
                 onWorkspacesClick = actions.onWorkspaceClick,
                 onTemplatesClick = actions.onTemplateClick,
-                onContentClick = {  },
                 onChatClick = actions.onChatClick,
                 modifier = modifier)
         }

@@ -181,10 +181,8 @@ fun WorkspaceRow(
 
 @Composable
 fun MainBottomBar(
-    onCreateNoteClick: ()->Unit,
     onWorkspacesClick: ()-> Unit,
     onChatClick:()->Unit,
-    onContentClick:()->Unit,
     onTemplatesClick: ()->Unit,
     modifier: Modifier = Modifier
 ){
@@ -196,11 +194,31 @@ fun MainBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ContentNoteActionButton(onClick = onContentClick)
             TemplateActionButton(onClick = onTemplatesClick)
             ChatActionButton(onClick = onChatClick)
             WorkspaceActionButton(onClick = onWorkspacesClick)
-            CreateNoteActionButton(onClick = onCreateNoteClick)
+        }
+    }
+}
+
+@Composable
+fun TemplateBottomBar(
+    onWorkspacesClick: ()-> Unit,
+    onChatClick:()->Unit,
+    onContentClick:()->Unit,
+    modifier: Modifier = Modifier
+){
+    BottomAppBar(
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ContentNoteActionButton(onClick = onContentClick)
+            ChatActionButton(onClick = onChatClick)
+            WorkspaceActionButton(onClick = onWorkspacesClick)
         }
     }
 }
