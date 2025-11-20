@@ -196,7 +196,8 @@ private fun handleNavigationEvent(
             filterViewModel = viewModels.filterViewModel,
             membersViewModel = viewModels.membersViewModel,
             noteEditViewModel = viewModels.noteEditViewModel,
-            profileViewModel = viewModels.profileViewModel
+            profileViewModel = viewModels.profileViewModel,
+            creationViewModel = viewModels.noteCreationViewModel
         )
     )
 
@@ -224,7 +225,8 @@ private data class NavigationViewModelGroupParams(
     val filterViewModel: FilterViewModel,
     val membersViewModel: MembersViewModel,
     val noteEditViewModel: NoteEditViewModel,
-    val profileViewModel: ProfileViewModel
+    val profileViewModel: ProfileViewModel,
+    val creationViewModel: NoteCreationViewModel
 )
 
 private fun createNavigationViewModelGroups(
@@ -243,7 +245,8 @@ private fun createNavigationViewModelGroups(
         params.membersViewModel,
         params.noteEditViewModel,
         params.profileViewModel,
-        params.templateViewModel
+        params.templateViewModel,
+        params.creationViewModel
     )
 )
 
@@ -421,7 +424,8 @@ private data class FeatureNavigationViewModels(
     val membersViewModel: MembersViewModel,
     val noteEditViewModel: NoteEditViewModel,
     val profileViewModel: ProfileViewModel,
-    val templateViewModel: TemplateViewModel
+    val templateViewModel: TemplateViewModel,
+    val creationViewModel: NoteCreationViewModel
 )
 
 private fun handleFeatureNavigation(
@@ -460,6 +464,9 @@ private fun handleFeatureNavigation(
             navController.navigate(NavRoutes.NOTE)
         }
         is NavigationEvent.NavigateToNoteCreation -> {
+            viewModels.creationViewModel.setFieldsToTemplate(event.noteId)
+            viewModels.creationViewModel.setNoteType(event.noteType)
+            Log.d("creation", "NoteType ${event.noteType}")
             navController.navigate(NavRoutes.NOTE_CREATION)
         }
         is NavigationEvent.NavigateToNoteEdit -> {
@@ -629,8 +636,8 @@ class NavigationActions(private val navigationStateManager: NavigationStateManag
         navigationStateManager.note.navigateToNote(noteId)
     }
 
-    override fun navigateToNoteCreation() {
-        navigationStateManager.note.navigateToNoteCreation()
+    override fun navigateToNoteCreation(noteType: NoteType, noteId: String?) {
+        navigationStateManager.note.navigateToNoteCreation(noteType, noteId)
     }
 
     override fun navigateToNoteEdit(noteId: String) {

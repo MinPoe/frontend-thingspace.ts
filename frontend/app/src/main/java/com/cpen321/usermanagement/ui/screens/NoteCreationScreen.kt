@@ -2,6 +2,7 @@ package com.cpen321.usermanagement.ui.screens
 
 import Button
 import Icon
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -44,11 +45,28 @@ fun NoteCreationScreen(
         if (creationState.isSuccess) {
             noteCreationViewModel.reset()
             onBackClick()
+            if (creationState.noteType == NoteType.CONTENT){
+                featureActions.navs.navigateToMainWithContext(
+                    workspaceId = featureActions.state.getWorkspaceId(),
+                    searchQuery = featureActions.state.getSearchQuery(),
+                    selectedTags = featureActions.state.getSelectedTags(),
+                    allTagsSelected = featureActions.state.getAllTagsSelected())
+            }
+            else{
+                featureActions.navs.navigateToTemplate(
+                    workspaceId = featureActions.state.getWorkspaceId(),
+                    searchQuery = featureActions.state.getSearchQuery(),
+                    selectedTags = featureActions.state.getSelectedTags(),
+                    allTagsSelected = featureActions.state.getAllTagsSelected())
+            }
         }
     }
-    LaunchedEffect(Unit) { noteCreationViewModel.setNoteType(featureActions.state.getNoteType())}
 
-    NoteCreationContent(
+    if(creationState.isLoadingTemplate) CircularProgressIndicator(
+        modifier = Modifier.size(LocalSpacing.current.medium),
+        color = MaterialTheme.colorScheme.onPrimary
+    )
+    else NoteCreationContent(
         creationState = creationState,
         callbacks = NoteCreationCallbacks(
             onBackClick = onBackClick,
@@ -60,6 +78,7 @@ fun NoteCreationScreen(
             onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
         )
     )
+    Log.d("creation", "screenCentral ${creationState.noteType}")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,7 +102,9 @@ fun NoteCreationContent(
             paddingValues = paddingValues,
             callbacks = callbacks
         )
-    }
+        Log.d("creation", "screenRightAfterContent ${creationState.noteType}")
+    } //TODO: the value magically defaults to content between these two
+    Log.d("creation", "screenAfterContent ${creationState.noteType}")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -192,6 +213,7 @@ fun NoteCreationBody(
         NoteTypeSection(
             selectedType = creationState.noteType,
         )
+        Log.d("creation", "screen: ${creationState.noteType}")
 
         Spacer(modifier = Modifier.height(spacing.large))
 
@@ -212,6 +234,7 @@ fun NoteCreationBody(
             onFieldUpdated = callbacks.onFieldUpdated
         )
     }
+    Log.d("creation", "screenAfterBody ${creationState.noteType}")
 }
 
 @Composable

@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
@@ -54,7 +55,9 @@ data class TemplateActions(
     val onChatClick: () -> Unit,
     val onSearchClick: () -> Unit,
     val onQueryChange: (String) -> Unit,
-    val onCreateNoteClick: () -> Unit
+    val onCreateNoteClick: () -> Unit,
+    val onCreateTemplateClick: ()->Unit,
+    val onNoteEditClick: (String) -> Unit
 )
 
 @Composable
@@ -66,7 +69,8 @@ fun TemplateScreen(
     val fetching by templateViewModel.fetching.collectAsState()
 
     val actions = TemplateActions(
-        onNoteClick = { noteId:String -> featureActions.navs.navigateToNote(noteId) },
+        onNoteClick = { noteId:String -> featureActions.navs.navigateToNoteCreation(NoteType.CONTENT, noteId) },
+        onNoteEditClick = {noteId:String -> featureActions.navs.navigateToNote(noteId)},
         onContentClick = {  featureActions.navs.navigateToMainTagReset(
             featureActions.state.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.ws.navigateToWsSelect() },
@@ -87,7 +91,8 @@ fun TemplateScreen(
             searchQuery = featureActions.state.getSearchQuery()
         ) },
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
-        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
+        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation(NoteType.CONTENT) },
+        onCreateTemplateClick = { featureActions.navs.navigateToNoteCreation(NoteType.TEMPLATE)}
     )
 
     TemplateContent(
@@ -226,7 +231,7 @@ private fun TemplateBody(
                 start = spacing.medium, end = spacing.medium)){
             Text(stringResource(R.string.blank_note))
         }
-        Button(onClick = actions.onCreateNoteClick,
+        Button(onClick = actions.onCreateTemplateClick,
             modifier = modifier.padding(
                 start = spacing.medium, end = spacing.medium, top = spacing.small, bottom = spacing.small)) {
             Text(stringResource(R.string.new_template))
@@ -234,8 +239,8 @@ private fun TemplateBody(
         TemplateDisplayList(
             templates = templates,
             onTitleClick = actions.onNoteClick, //TODO: navigation rework later
-            onEditClick = actions.onNoteClick,
-            onDeleteClick = actions.onNoteClick
+            onEditClick = actions.onNoteEditClick,
+            onDeleteClick = actions.onNoteEditClick //TODO: To be removed
         )
     }
 }

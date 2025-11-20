@@ -16,6 +16,8 @@ import java.util.UUID
 import java.time.LocalDateTime
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.usermanagement.ui.components.FieldTypeDialog
+
 enum class FieldType {
     TEXT,
     NUMBER,
@@ -50,7 +52,8 @@ data class NoteCreationState(
     val fields: List<FieldCreationData> = emptyList(),
     val isCreating: Boolean = false,
     val error: String? = null,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val isLoadingTemplate: Boolean = false,
 )
 
 @HiltViewModel
@@ -66,6 +69,7 @@ class NoteCreationViewModel @Inject constructor(
 
     fun setNoteType(noteType: NoteType) {
         _creationState.value = _creationState.value.copy(noteType = noteType)
+        Log.d("creation", "internal: ${_creationState.value.noteType}")
     }
 
     fun addTag(tag: String) {
@@ -91,6 +95,33 @@ class NoteCreationViewModel @Inject constructor(
         _creationState.value = _creationState.value.copy(
             fields = _creationState.value.fields + newField
         )
+    }
+
+    fun setFieldsToTemplate(noteId:String?)
+    {
+        if (noteId!=null) viewModelScope.launch{
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
+            val noteRequest = noteRepository.getNote(noteId)
+            if (noteRequest.isSuccess){
+                val note = noteRequest.getOrNull()!!
+                val fields = mutableListOf<FieldCreationData>()
+                for (field in note.fields){
+                    val fieldType = when(field) {
+                        is NumberField -> {
+                            FieldType.NUMBER
+                        }
+                        is TextField -> {
+                            FieldType.TEXT
+                        }
+                        is DateTimeField -> {
+                            FieldType.DATETIME
+                        }
+                    }
+                    fields.add(FieldCreationData(type = fieldType, label = field.label))
+                }
+                _creationState.value = _creationState.value.copy(fields = fields, isLoadingTemplate = false)
+            }
+        }
     }
 
     fun removeField(fieldId: String) {
