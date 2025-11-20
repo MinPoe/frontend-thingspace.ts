@@ -40,10 +40,10 @@ fun NoteCreationScreen(
     featureActions: FeatureActions
 ) {
     val creationState by noteCreationViewModel.creationState.collectAsState()
+    Log.d("create", "Right after capture")
 
     LaunchedEffect(creationState.isSuccess) {
         if (creationState.isSuccess) {
-            noteCreationViewModel.reset()
             onBackClick()
             if (creationState.noteType == NoteType.CONTENT){
                 featureActions.navs.navigateToMainWithContext(
@@ -78,7 +78,7 @@ fun NoteCreationScreen(
             onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
         )
     )
-    Log.d("creation", "screenCentral ${creationState.noteType}")
+    Log.d("create", "After content ${creationState.noteType}")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,6 +104,7 @@ fun NoteCreationContent(
         )
         Log.d("creation", "screenRightAfterContent ${creationState.noteType}")
     } //TODO: the value magically defaults to content between these two
+
     Log.d("creation", "screenAfterContent ${creationState.noteType}")
 }
 
@@ -213,7 +214,6 @@ fun NoteCreationBody(
         NoteTypeSection(
             selectedType = creationState.noteType,
         )
-        Log.d("creation", "screen: ${creationState.noteType}")
 
         Spacer(modifier = Modifier.height(spacing.large))
 
@@ -234,7 +234,6 @@ fun NoteCreationBody(
             onFieldUpdated = callbacks.onFieldUpdated
         )
     }
-    Log.d("creation", "screenAfterBody ${creationState.noteType}")
 }
 
 @Composable

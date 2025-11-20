@@ -464,10 +464,10 @@ private fun handleFeatureNavigation(
             navController.navigate(NavRoutes.NOTE)
         }
         is NavigationEvent.NavigateToNoteCreation -> {
-            viewModels.creationViewModel.setFieldsToTemplate(event.noteId)
-            viewModels.creationViewModel.setNoteType(event.noteType)
-            Log.d("creation", "NoteType ${event.noteType}")
+            viewModels.creationViewModel.reset()
             navController.navigate(NavRoutes.NOTE_CREATION)
+            viewModels.creationViewModel.setNoteType(event.noteType)
+            viewModels.creationViewModel.setFieldsToTemplate(event.noteId)
         }
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)
@@ -880,9 +880,9 @@ private fun NavGraphBuilder.addFeatureRoutes(
     }
 
     composable(NavRoutes.NOTE_CREATION) {
-        LaunchedEffect(Unit) {
-            noteCreationViewModel.reset()
-        }
+//        LaunchedEffect(Unit) {
+//            noteCreationViewModel.reset()
+//        }
         NoteCreationScreen(
             noteCreationViewModel = noteCreationViewModel,
             onBackClick = { navigationStateManager.navigateBack() },

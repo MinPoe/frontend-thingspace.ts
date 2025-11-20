@@ -69,7 +69,6 @@ class NoteCreationViewModel @Inject constructor(
 
     fun setNoteType(noteType: NoteType) {
         _creationState.value = _creationState.value.copy(noteType = noteType)
-        Log.d("creation", "internal: ${_creationState.value.noteType}")
     }
 
     fun addTag(tag: String) {
