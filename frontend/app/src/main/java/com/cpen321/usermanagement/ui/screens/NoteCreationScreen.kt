@@ -29,7 +29,6 @@ data class NoteCreationCallbacks(
     val onFieldAdded: (FieldType) -> Unit,
     val onFieldRemoved: (String) -> Unit,
     val onFieldUpdated: (String, FieldUpdate) -> Unit,
-    val onNoteTypeChanged: (NoteType) -> Unit,
     val onCreateNote: () -> Unit
 )
 
@@ -47,6 +46,7 @@ fun NoteCreationScreen(
             onBackClick()
         }
     }
+    LaunchedEffect(Unit) { noteCreationViewModel.setNoteType(featureActions.state.getNoteType())}
 
     NoteCreationContent(
         creationState = creationState,
@@ -57,7 +57,6 @@ fun NoteCreationScreen(
             onFieldAdded = noteCreationViewModel::addField,
             onFieldRemoved = noteCreationViewModel::removeField,
             onFieldUpdated = noteCreationViewModel::updateField,
-            onNoteTypeChanged = noteCreationViewModel::setNoteType,
             onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
         )
     )
@@ -192,7 +191,6 @@ fun NoteCreationBody(
         // Note Type Selection
         NoteTypeSection(
             selectedType = creationState.noteType,
-            onTypeChanged = callbacks.onNoteTypeChanged
         )
 
         Spacer(modifier = Modifier.height(spacing.large))
@@ -219,7 +217,6 @@ fun NoteCreationBody(
 @Composable
 private fun NoteTypeSection(
     selectedType: NoteType,
-    onTypeChanged: (NoteType) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
@@ -250,7 +247,8 @@ private fun NoteTypeSection(
                 NoteType.values().forEach { type ->
                     FilterChip(
                         selected = selectedType == type,
-                        onClick = { onTypeChanged(type) },
+                        enabled = false,
+                        onClick = { },
                         label = { Text(type.name) },
                         modifier = Modifier.weight(1f)
                     )
