@@ -118,7 +118,8 @@ class NoteCreationViewModel @Inject constructor(
                     }
                     fields.add(FieldCreationData(type = fieldType, label = field.label))
                 }
-                _creationState.value = _creationState.value.copy(fields = fields, isLoadingTemplate = false)
+                //Also sets tags as they are part of template content
+                _creationState.value = _creationState.value.copy(fields = fields, tags = note.tags, isLoadingTemplate = false)
             }
         }
     }
@@ -260,10 +261,11 @@ class NoteCreationViewModel @Inject constructor(
     }
 
     private suspend fun createNoteRequest(workspaceId: String, userId: String, fields: List<Field>) {
+        val tags = _creationState.value.tags
         val result = noteRepository.createNote(
             workspaceId = workspaceId,
             authorId = userId,
-            tags = _creationState.value.tags,
+            tags = tags,
             fields = fields,
             noteType = _creationState.value.noteType
         )
@@ -275,6 +277,9 @@ class NoteCreationViewModel @Inject constructor(
                     isSuccess = true,
                     error = null
                 )
+                //We need to update the tag selection so that the created note shows on the screen we load
+                val newSelectedTags = navigationStateManager.state.getSelectedTags().union(tags).toList()
+                navigationStateManager.state.updateTagSelection(newSelectedTags, navigationStateManager.state.getAllTagsSelected())
             },
             onFailure = { exception ->
                 _creationState.value = _creationState.value.copy(
