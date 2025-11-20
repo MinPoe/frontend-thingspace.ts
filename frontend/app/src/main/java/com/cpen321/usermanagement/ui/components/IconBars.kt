@@ -1,16 +1,31 @@
 package com.cpen321.usermanagement.ui.components
 
 import Icon
+import android.R.attr.spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.style.TextOverflow
+import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
+
+object TitleTrim{
+    const val MAX_LEN = 24
+
+    fun trim(title:String):String{
+        return if(title.length<= MAX_LEN) title else title.take(MAX_LEN)+"..."
+    }
+}
 
 @Composable
 fun WsProfileBar(
@@ -66,16 +81,45 @@ fun WorkspaceMembersManagerRow(
         Button(
             onClick=onProfileClick,
             modifier=modifier) {
-            Text(
-                if(profileName.length<11) profileName else profileName.take(10)+"...")}
+            Text(TitleTrim.trim(profileName))}
         BanActionButton(onClick = onBanClick)
+    }
+}
+
+@Composable
+fun TemplateRow(
+    title:String,
+    onTitleClick:()->Unit,
+    onEditClick:()->Unit,
+    onDeleteClick:()->Unit,
+    modifier:Modifier = Modifier
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ){
+        val spacing = LocalSpacing.current
+        Card(
+            onClick = onTitleClick,
+            modifier = modifier
+                .fillMaxWidth(.7f)
+                .padding(spacing.small),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = spacing.extraSmall
+            )) { Text(TitleTrim.trim(title),
+                modifier = modifier.padding(spacing.medium)) }
+        EditActionButton(onEditClick)
+        DeleteActionButton(onDeleteClick)
     }
 }
 
 @Composable
 fun WorkspaceMembersRow(
     profileName:String,
-    onProfileClick: ()->Unit,
+    onProfileClick:()->Unit,
     modifier:Modifier = Modifier
 ){
     Row(
@@ -85,8 +129,7 @@ fun WorkspaceMembersRow(
         Button(
             onClick=onProfileClick,
             modifier=modifier) {
-            Text(
-                if(profileName.length<11) profileName else profileName.take(10)+"...")}
+            Text(TitleTrim.trim(profileName))}
     }
 }
 
@@ -108,7 +151,7 @@ fun WorkspaceRow(
             modifier = modifier.weight(1f, fill = false)
         ) {
             Text(
-                text = if(workspaceName.length < 25) workspaceName else workspaceName.take(24) + "...",
+                text = TitleTrim.trim(workspaceName),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

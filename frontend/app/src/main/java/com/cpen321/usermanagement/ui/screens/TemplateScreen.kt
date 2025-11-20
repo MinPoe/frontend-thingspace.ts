@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,6 +41,7 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
+import com.cpen321.usermanagement.ui.components.TemplateDisplayList
 import com.cpen321.usermanagement.ui.viewmodels.CreateWsUiStateE
 import com.cpen321.usermanagement.utils.FeatureActions
 
@@ -90,7 +92,7 @@ fun TemplateScreen(
     TemplateContent(
         onProfileClick = onProfileClick,
         actions = actions,
-        notes = templateViewModel.getNotesTitlesFound(0),
+        templates = templateViewModel.getNotesTitlesFound(0),
         fetching = fetching,
         wsname = templateViewModel.getWorkspaceName(),
         query = featureActions.state.getSearchQuery()
@@ -101,7 +103,7 @@ fun TemplateScreen(
 private fun TemplateContent(
     onProfileClick: () -> Unit,
     actions: TemplateActions,
-    notes:List<Note>,
+    templates:List<Note>,
     query:String,
     fetching: Boolean,
     wsname:String,
@@ -133,7 +135,7 @@ private fun TemplateContent(
             TemplateBody(
             paddingValues = paddingValues,
                 actions = actions,
-            notes = notes,
+            templates = templates,
             wsname = wsname,
             query = query)
         }
@@ -200,7 +202,7 @@ private fun TemplateBody(
     paddingValues: PaddingValues,
     query: String,
     actions: TemplateActions,
-    notes:List<Note>,
+    templates:List<Note>,
     wsname:String,
     modifier: Modifier = Modifier
 ) {
@@ -210,21 +212,36 @@ private fun TemplateBody(
             .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage(wsname = wsname)
+        val spacing = LocalSpacing.current
+        TemplateLabel(wsname = wsname)
         SearchBar(
             onSearchClick = actions.onSearchClick,//TODO: for now
             onFilterClick = actions.onFilterClick,
             onQueryChange = actions.onQueryChange,
             query = query
         )
-        NoteDisplayList(
-            onNoteClick = actions.onNoteClick,
-            notes = notes
+
+        HorizontalDivider(modifier = modifier.padding(spacing.medium))
+        Button(onClick = actions.onCreateNoteClick,
+            modifier = modifier.padding(
+                start = spacing.medium, end = spacing.medium)){
+            Text(stringResource(R.string.blank_note))
+        }
+        Button(onClick = actions.onCreateNoteClick,
+            modifier = modifier.padding(
+                start = spacing.medium, end = spacing.medium, top = spacing.small, bottom = spacing.small)) {
+            Text(stringResource(R.string.new_template))
+        }
+        TemplateDisplayList(
+            templates = templates,
+            onTitleClick = actions.onNoteClick, //TODO: navigation rework later
+            onEditClick = actions.onNoteClick,
+            onDeleteClick = actions.onNoteClick
         )
     }
 }
 @Composable
-private fun WelcomeMessage(
+private fun TemplateLabel(
     wsname: String,
     modifier: Modifier = Modifier
 ) {
