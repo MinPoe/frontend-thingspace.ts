@@ -35,8 +35,9 @@ import java.lang.Thread.sleep
 *
 *
 * It might happen the UI Automator picks the wrong button on sign in. In this case:
-* 1) run the app regularly, sign in to any account
-* 2) run the test again (this time should work)
+* 1) Invalidate cache
+* 2) run the app regularly, sign in to any account
+* 3) run the test again (this time should work)
 * */
 @HiltAndroidTest
 class TestRetrieveNotes {

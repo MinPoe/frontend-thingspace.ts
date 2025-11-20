@@ -21,8 +21,8 @@ import androidx.compose.ui.test.performClick
 * To run the test, make sure that you are signed out of the application.
 *
 * It might happen the UI Automator picks the wrong button on sign in. In this case:
-* 1) run the app regularly, sign in to any account
-* 2) run the test (it will immediately fail, as you are signed in and it assumes the opposite)
+* 1) Invalidate cache
+* 2) run the app regularly, sign in to any account
 * 3) run the test again (this time should work)
 * */
 @HiltAndroidTest
