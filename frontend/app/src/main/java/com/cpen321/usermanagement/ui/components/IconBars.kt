@@ -91,7 +91,6 @@ fun TemplateRow(
     title:String,
     onTitleClick:()->Unit,
     onEditClick:()->Unit,
-    onDeleteClick:()->Unit,
     modifier:Modifier = Modifier
 ){
     Row(
@@ -102,7 +101,7 @@ fun TemplateRow(
         Card(
             onClick = onTitleClick,
             modifier = modifier
-                .fillMaxWidth(.7f)
+                .fillMaxWidth(.85f)
                 .padding(spacing.small),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -112,7 +111,6 @@ fun TemplateRow(
             )) { Text(TitleTrim.trim(title),
                 modifier = modifier.padding(spacing.medium)) }
         EditActionButton(onEditClick)
-        DeleteActionButton(onDeleteClick)
     }
 }
 

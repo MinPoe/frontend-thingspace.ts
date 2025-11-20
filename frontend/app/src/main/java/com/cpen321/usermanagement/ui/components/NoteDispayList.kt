@@ -85,7 +85,6 @@ fun NoteDisplayList(
 fun TemplateDisplayList(
     onTitleClick: (String)->Unit, //the input is noteId
     onEditClick: (String)->Unit,
-    onDeleteClick: (String)->Unit,
     templates: List<Note>,
     modifier: Modifier = Modifier
 ){
@@ -101,8 +100,7 @@ fun TemplateDisplayList(
             TemplateRow(
                 title = templatePreview,
                 onTitleClick = { onTitleClick(template._id) },
-                onEditClick = { onEditClick(template._id) },
-                onDeleteClick = { onDeleteClick(template._id) }
+                onEditClick = { onEditClick(template._id) }
             )
         }
 

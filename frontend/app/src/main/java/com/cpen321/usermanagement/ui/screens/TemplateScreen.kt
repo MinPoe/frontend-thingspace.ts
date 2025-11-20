@@ -238,9 +238,8 @@ private fun TemplateBody(
         }
         TemplateDisplayList(
             templates = templates,
-            onTitleClick = actions.onNoteClick, //TODO: navigation rework later
+            onTitleClick = actions.onNoteClick,
             onEditClick = actions.onNoteEditClick,
-            onDeleteClick = actions.onNoteEditClick //TODO: To be removed
         )
     }
 }
