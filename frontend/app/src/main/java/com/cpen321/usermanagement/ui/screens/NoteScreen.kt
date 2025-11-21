@@ -487,9 +487,6 @@ private fun FieldCard(
                 is DateTimeField -> {
                     DateTimeFieldInfo(field = field)
                 }
-                is NumberField -> {
-                    NumberFieldInfo(field = field)
-                }
             }
         }
     }
@@ -591,57 +588,6 @@ private fun DateTimeFieldInfo(
             Spacer(modifier = Modifier.height(spacing.extraSmall))
             Text(
                 text = stringResource(R.string.max_date_label, maxDate.format(formatter)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun NumberFieldInfo(
-    field: NumberField,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    Column(modifier = modifier) {
-        // Display content if available
-        field.content?.let { content ->
-            Text(
-                text = content.toString(),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        } ?: run {
-            Text(
-                text = stringResource(R.string.no_value),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Spacer(modifier = Modifier.height(spacing.small))
-
-        Text(
-            text = stringResource(R.string.type_number_field),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        field.min?.let { min ->
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-            Text(
-                text = stringResource(R.string.min_optional, min),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        field.max?.let { max ->
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-            Text(
-                text = stringResource(R.string.max_optional, max),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

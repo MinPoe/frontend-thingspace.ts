@@ -20,7 +20,6 @@ import com.cpen321.usermanagement.ui.components.FieldTypeDialog
 
 enum class FieldType {
     TEXT,
-    NUMBER,
     DATETIME
 }
 
@@ -235,18 +234,7 @@ class NoteCreationViewModel @Inject constructor(
                         else -> fieldData.content?.toString()
                     }
                 )
-                FieldType.NUMBER -> NumberField(
-                    _id = fieldData.id,
-                    label = fieldData.label,
-                    required = fieldData.required,
-                    min = fieldData.min,
-                    max = fieldData.max,
-                    content = when (fieldData.content) {
-                        is Int -> fieldData.content
-                        is String -> fieldData.content.toIntOrNull()
-                        else -> null
-                    }
-                )
+
                 FieldType.DATETIME -> DateTimeField(
                     _id = fieldData.id,
                     label = fieldData.label,

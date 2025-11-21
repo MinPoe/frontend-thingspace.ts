@@ -201,7 +201,6 @@ private fun FieldEditor(
 
             when (field.type) {
                 FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
-                FieldType.NUMBER -> NumberFieldInput(field, onFieldUpdated)
                 FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
             }
 
@@ -230,23 +229,6 @@ private fun TextFieldInput(
         modifier = Modifier.fillMaxWidth(),
         minLines = 2,
         maxLines = 4
-    )
-}
-
-@Composable
-private fun NumberFieldInput(
-    field: FieldCreationData,
-    onFieldUpdated: (FieldUpdate) -> Unit
-) {
-    OutlinedTextField(
-        value = (field.content as? Int)?.toString() ?: "",
-        onValueChange = { 
-            val value = it.toIntOrNull()
-            onFieldUpdated(FieldUpdate.Content(value))
-        },
-        label = { Text(stringResource(R.string.number_content)) },
-        placeholder = { Text(stringResource(R.string.enter_number)) },
-        modifier = Modifier.fillMaxWidth()
     )
 }
 
