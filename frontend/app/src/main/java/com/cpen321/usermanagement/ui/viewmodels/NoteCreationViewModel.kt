@@ -18,6 +18,7 @@ import javax.inject.Inject
 import android.util.Log
 enum class FieldType {
     TEXT,
+    TITLE,
     DATETIME
 }
 
@@ -63,6 +64,17 @@ class NoteCreationViewModel @Inject constructor(
     private val _creationState = MutableStateFlow(NoteCreationState())
     val creationState: StateFlow<NoteCreationState> = _creationState.asStateFlow()
 
+    init {
+        val titleField = FieldCreationData(
+            type = FieldType.TITLE,
+            label = "Title",
+            required = true
+        )
+        _creationState.value = _creationState.value.copy(
+            fields = listOf(titleField)
+        )
+    }
+
     fun setNoteType(noteType: NoteType) {
         _creationState.value = _creationState.value.copy(noteType = noteType)
     }
@@ -94,7 +106,9 @@ class NoteCreationViewModel @Inject constructor(
 
     fun removeField(fieldId: String) {
         _creationState.value = _creationState.value.copy(
-            fields = _creationState.value.fields.filter { it.id != fieldId }
+            fields = _creationState.value.fields.filter {
+                it.id != fieldId && it.type != FieldType.TITLE
+            }
         )
     }
 
@@ -189,6 +203,13 @@ class NoteCreationViewModel @Inject constructor(
     private fun convertFieldsToDto(): List<Field> {
         return _creationState.value.fields.map { fieldData ->
             when (fieldData.type) {
+                FieldType.TITLE -> TitleField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    content = fieldData.content as? String
+                )
+
                 FieldType.TEXT -> TextField(
                     _id = fieldData.id,
                     label = fieldData.label,
