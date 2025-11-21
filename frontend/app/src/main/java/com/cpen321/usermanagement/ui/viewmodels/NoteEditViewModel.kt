@@ -306,6 +306,7 @@ class NoteEditViewModel @Inject constructor(
         _editState.value = _editState.value.copy(
             shareSuccess = false,
             copySuccess = false,
+            isDeleted = false,
             error = null
         )
     }
@@ -339,7 +340,7 @@ class NoteEditViewModel @Inject constructor(
         viewModelScope.launch {
             _editState.value = _editState.value.copy(isLoading = true)
             val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
-            editState.value.copy(isLoading = false, user = user)
+            _editState.value = editState.value.copy(isLoading = false, user = user)
         }
     }
 }

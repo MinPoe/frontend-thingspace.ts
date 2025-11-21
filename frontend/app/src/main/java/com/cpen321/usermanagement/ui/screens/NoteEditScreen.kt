@@ -54,7 +54,8 @@ fun NoteEditScreen(
         featureActions = featureActions,
         onBackClick = onBackClick,
         onShareDialogDismiss = { showShareDialog = false },
-        onCopyDialogDismiss = { showCopyDialog = false }
+        onCopyDialogDismiss = { showCopyDialog = false },
+        onDeleteDialogDismiss = { showDeleteDialog = false }
     )
 
     when {
@@ -89,7 +90,8 @@ private fun NoteEditScreenLaunchedEffects(
     featureActions: FeatureActions,
     onBackClick: () -> Unit,
     onShareDialogDismiss: () -> Unit,
-    onCopyDialogDismiss: () -> Unit
+    onCopyDialogDismiss: () -> Unit,
+    onDeleteDialogDismiss: ()->Unit
 ) {
     LaunchedEffect(Unit) {
         noteEditViewModel.loadNote(featureActions.state.getNoteId())
@@ -120,6 +122,8 @@ private fun NoteEditScreenLaunchedEffects(
     // Handle successful deletion
     LaunchedEffect(editState.isDeleted) {
         if (editState.isDeleted) {
+            onDeleteDialogDismiss()
+            noteEditViewModel.resetActionStates()
             onBackClick()
         }
     }
@@ -186,9 +190,7 @@ private fun NoteEditScreenContent(
     DeleteNoteDialog(
         showDialog = dialogState.showDeleteDialog,
         onDismiss = { dialogState.onDeleteDialogChange(false) },
-        onConfirm = {
-            noteEditViewModel.deleteNote(featureActions.state.getNoteId())
-        }
+        onConfirm = { noteEditViewModel.deleteNote(featureActions.state.getNoteId()) }
     )
 }
 
