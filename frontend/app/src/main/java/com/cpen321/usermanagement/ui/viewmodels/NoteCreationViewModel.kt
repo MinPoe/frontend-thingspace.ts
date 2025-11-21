@@ -29,7 +29,6 @@ data class FieldCreationData(
     val id: String = UUID.randomUUID().toString(),
     val type: FieldType,
     val label: String = "",
-    val required: Boolean = false,
     val placeholder: String? = null,
     val content: Any? = null,
     val userId: String? = null
@@ -37,7 +36,6 @@ data class FieldCreationData(
 
 sealed class FieldUpdate {
     data class Label(val value: String) : FieldUpdate()
-    data class Required(val value: Boolean) : FieldUpdate()
     data class Placeholder(val value: String) : FieldUpdate()
     data class Content(val value: Any?) : FieldUpdate()
 }
@@ -134,7 +132,6 @@ class NoteCreationViewModel @Inject constructor(
                 if (field.id == fieldId) {
                     when (update) {
                         is FieldUpdate.Label -> field.copy(label = update.value)
-                        is FieldUpdate.Required -> field.copy(required = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
                     }
@@ -222,7 +219,6 @@ class NoteCreationViewModel @Inject constructor(
                 FieldType.TEXT -> TextField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     placeholder = fieldData.placeholder,
                     content = when (fieldData.content) {
                         is String -> fieldData.content
@@ -233,7 +229,6 @@ class NoteCreationViewModel @Inject constructor(
                 FieldType.DATETIME -> DateTimeField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     content = when (fieldData.content) {
                         is LocalDateTime -> fieldData.content
                         is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
@@ -244,7 +239,6 @@ class NoteCreationViewModel @Inject constructor(
                 FieldType.SIGNATURE -> SignatureField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     userId = fieldData.userId,
                     userName = fieldData.placeholder
                 )

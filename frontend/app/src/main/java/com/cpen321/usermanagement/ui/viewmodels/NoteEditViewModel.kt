@@ -95,7 +95,6 @@ class NoteEditViewModel @Inject constructor(
                                 id = field._id,
                                 type = FieldType.TEXT,
                                 label = field.label,
-                                required = field.required,
                                 placeholder = field.placeholder,
                                 content = field.content
                             )
@@ -104,7 +103,6 @@ class NoteEditViewModel @Inject constructor(
                                 id = field._id,
                                 type = FieldType.DATETIME,
                                 label = field.label,
-                                required = field.required,
                                 content = field.content
                             )
 
@@ -112,7 +110,6 @@ class NoteEditViewModel @Inject constructor(
                                 id = field._id,
                                 type = FieldType.DATETIME,
                                 label = field.label,
-                                required = field.required,
                                 userId = field.userId,
                                 placeholder = field.userName
                             )
@@ -184,7 +181,6 @@ class NoteEditViewModel @Inject constructor(
                 if (field.id == fieldId) {
                     when (update) {
                         is FieldUpdate.Label -> field.copy(label = update.value)
-                        is FieldUpdate.Required -> field.copy(required = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
                     }
@@ -207,7 +203,6 @@ class NoteEditViewModel @Inject constructor(
                 FieldType.TEXT -> TextField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     placeholder = fieldData.placeholder,
                     content = when (fieldData.content) {
                         is String -> fieldData.content
@@ -218,7 +213,6 @@ class NoteEditViewModel @Inject constructor(
                 FieldType.DATETIME -> DateTimeField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     content = when (fieldData.content) {
                         is LocalDateTime -> fieldData.content
                         is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
@@ -229,7 +223,6 @@ class NoteEditViewModel @Inject constructor(
                 FieldType.SIGNATURE -> SignatureField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     userId = fieldData.userId,
                     userName = fieldData.placeholder
                 )

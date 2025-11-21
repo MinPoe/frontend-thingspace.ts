@@ -591,16 +591,6 @@ private fun FieldEditCard(
 
             Spacer(modifier = Modifier.height(spacing.small))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = field.required,
-                    onCheckedChange = { onFieldUpdated(FieldUpdate.Required(it)) }
-                )
-                Text(stringResource(R.string.required))
-            }
-
             FieldContentInputSection(
                 field = field,
                 noteType = noteType,
