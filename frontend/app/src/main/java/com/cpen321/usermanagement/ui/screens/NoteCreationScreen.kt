@@ -645,6 +645,7 @@ private fun FieldConfigurationSection(
     Spacer(modifier = Modifier.height(spacing.small))
     
     when (field.type) {
+
         FieldType.TEXT -> {
             OutlinedTextField(
                 value = field.placeholder ?: "",
