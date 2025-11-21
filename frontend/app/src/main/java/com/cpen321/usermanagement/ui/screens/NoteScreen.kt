@@ -532,14 +532,6 @@ private fun TextFieldInfo(
             )
         }
 
-        field.maxLength?.let { maxLength ->
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-            Text(
-                text = stringResource(R.string.max_length_label, maxLength),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 
@@ -574,23 +566,6 @@ private fun DateTimeFieldInfo(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
-        field.minDate?.let { minDate ->
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-            Text(
-                text = stringResource(R.string.min_date_label, minDate.format(formatter)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        field.maxDate?.let { maxDate ->
-            Spacer(modifier = Modifier.height(spacing.extraSmall))
-            Text(
-                text = stringResource(R.string.max_date_label, maxDate.format(formatter)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        
     }
 }
