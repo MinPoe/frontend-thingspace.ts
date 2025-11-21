@@ -1,5 +1,6 @@
 package com.cpen321.usermanagement.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.*
@@ -86,6 +87,8 @@ class NoteEditViewModel @Inject constructor(
             _editState.value = _editState.value.copy(isLoading = true, loadError = null)
 
             val result = noteRepository.getNote(noteId)
+            //loading profile to interpret signature fields
+            val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign the signature
 
             result.fold(
                 onSuccess = { note ->
@@ -108,7 +111,7 @@ class NoteEditViewModel @Inject constructor(
 
                             is SignatureField -> FieldCreationData(
                                 id = field._id,
-                                type = FieldType.DATETIME,
+                                type = FieldType.SIGNATURE,
                                 label = field.label,
                                 userId = field.userId,
                                 placeholder = field.userName
@@ -124,21 +127,19 @@ class NoteEditViewModel @Inject constructor(
                         isLoading = false,
                         loadError = null,
                         createdAtString = note.createdAt,
-                        lastEditString = note.updatedAt
+                        lastEditString = note.updatedAt,
+                        user = user
                     )
                 },
                 onFailure = { exception ->
                     _editState.value = _editState.value.copy(
                         isLoading = false,
+                        user = user,
                         loadError = exception.message ?: "Failed to load note"
                     )
                 }
             )
         }
-    }
-
-    fun updateNoteType(noteType: NoteType) {
-        _editState.value = _editState.value.copy(noteType = noteType)
     }
 
     fun addTag(tag: String) {
@@ -183,6 +184,7 @@ class NoteEditViewModel @Inject constructor(
                         is FieldUpdate.Label -> field.copy(label = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
+                        is FieldUpdate.Signature -> field.copy(placeholder = update.placeholder, userId = update.userId)
                     }
                 } else field
             }
@@ -307,6 +309,7 @@ class NoteEditViewModel @Inject constructor(
             shareSuccess = false,
             copySuccess = false,
             isDeleted = false,
+            isSuccess = false,
             error = null
         )
     }
@@ -337,10 +340,5 @@ class NoteEditViewModel @Inject constructor(
 
     fun reset() {
         _editState.value = NoteEditState()
-        viewModelScope.launch {
-            _editState.value = _editState.value.copy(isLoading = true)
-            val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
-            _editState.value = editState.value.copy(isLoading = false, user = user)
-        }
     }
 }

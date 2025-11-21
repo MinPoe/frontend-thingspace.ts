@@ -1,6 +1,7 @@
 package com.cpen321.usermanagement.ui.screens
 
 import Button
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
@@ -116,6 +118,7 @@ private fun AddTagDialog(
 @Composable
 fun FieldsEditSection(
     fields: List<FieldCreationData>,
+    currentUser: User?,
     onFieldAdded: (FieldType) -> Unit,
     onFieldRemoved: (String) -> Unit,
     onFieldUpdated: (String, FieldUpdate) -> Unit
@@ -141,7 +144,8 @@ fun FieldsEditSection(
                 FieldEditor(
                     field = field,
                     onFieldRemoved = { onFieldRemoved(field.id) },
-                    onFieldUpdated = { update -> onFieldUpdated(field.id, update) }
+                    onFieldUpdated = { update -> onFieldUpdated(field.id, update) },
+                    currentUser = currentUser
                 )
                 Spacer(modifier = Modifier.height(spacing.medium))
             }
@@ -167,6 +171,7 @@ fun FieldsEditSection(
 @Composable
 private fun FieldEditor(
     field: FieldCreationData,
+    currentUser: User?,
     onFieldRemoved: () -> Unit,
     onFieldUpdated: (FieldUpdate) -> Unit
 ) {
@@ -201,7 +206,7 @@ private fun FieldEditor(
             when (field.type) {
                 FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
                 FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
-                FieldType.SIGNATURE -> TextFieldInput(field, onFieldUpdated) //TODO: update later
+                FieldType.SIGNATURE -> SignatureFieldInput(field, currentUser, onFieldUpdated) //TODO: update later
             }
 
             Spacer(modifier = Modifier.height(spacing.small))
@@ -231,6 +236,77 @@ private fun TextFieldInput(
         maxLines = 4
     )
 }
+
+@Composable
+private fun SignatureFieldInput(
+    field: FieldCreationData,
+    currentUser: User?,
+    onFieldUpdated: (FieldUpdate) -> Unit
+) {
+    var isFieldChecked by remember(field.userId) { mutableStateOf(field.userId != null) }
+
+    /* Mechanics of the field:
+    * 1) If the field is not checked everyone can check it
+    * 2) If they do so, their name appears next to the checkbox and only they can un-check the field
+    * */
+
+    val onCheckedChange = {checked: Boolean ->
+        Log.d("signature", "user: ${currentUser?.profile?.name}")
+        isFieldChecked = checked
+        if (checked) {
+            onFieldUpdated(
+                FieldUpdate.Signature(
+                    userId = currentUser?._id,
+                    placeholder = currentUser?.profile?.name
+                )
+            )
+        }
+        else{
+            onFieldUpdated(
+                FieldUpdate.Signature(
+                    userId = null,
+                    placeholder = null
+                )
+            )
+        }
+    }
+    SignatureCheckbox(
+        isChecked = isFieldChecked,
+        enabled = (field.userId == currentUser?._id) || (!isFieldChecked),
+        text = field.placeholder ?: stringResource(R.string.signature),
+        onCheckedChange = onCheckedChange
+    )
+    Log.d("signature", "isFieldChecked: $isFieldChecked")
+}
+
+@Composable
+private fun SignatureCheckbox(
+    isChecked: Boolean,
+    enabled: Boolean,
+    text: String,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Log.d("signature", "enabled: $enabled")
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+    ) {
+        Checkbox(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            modifier = Modifier.testTag(stringResource(R.string.all))
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+
 
 @Composable
 private fun DateTimeFieldInput(

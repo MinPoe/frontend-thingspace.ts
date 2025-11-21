@@ -99,6 +99,7 @@ private fun NoteEditScreenLaunchedEffects(
 
     LaunchedEffect(editState.isSuccess) {
         if (editState.isSuccess) {
+            noteEditViewModel.resetActionStates()
             onBackClick()
         }
     }
@@ -372,7 +373,8 @@ fun NoteEditBody(
             fields = editState.fields,
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
-            onFieldUpdated = callbacks.onFieldUpdated
+            onFieldUpdated = callbacks.onFieldUpdated,
+            currentUser = editState.user
         )
     }
 }

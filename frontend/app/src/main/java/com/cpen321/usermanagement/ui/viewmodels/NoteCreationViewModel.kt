@@ -38,6 +38,7 @@ sealed class FieldUpdate {
     data class Label(val value: String) : FieldUpdate()
     data class Placeholder(val value: String) : FieldUpdate()
     data class Content(val value: Any?) : FieldUpdate()
+    data class Signature(val userId: String?, val placeholder: String?): FieldUpdate()
 }
 
 data class NoteCreationState(
@@ -134,6 +135,7 @@ class NoteCreationViewModel @Inject constructor(
                         is FieldUpdate.Label -> field.copy(label = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
+                        is FieldUpdate.Signature -> field.copy(userId = update.userId, placeholder = update.placeholder)
                     }
                 } else {
                     field
