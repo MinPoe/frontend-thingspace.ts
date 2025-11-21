@@ -105,9 +105,6 @@ class NoteCreationViewModel @Inject constructor(
                 val fields = mutableListOf<FieldCreationData>()
                 for (field in note.fields){
                     val fieldType = when(field) {
-                        is NumberField -> {
-                            FieldType.NUMBER
-                        }
                         is TextField -> {
                             FieldType.TEXT
                         }
