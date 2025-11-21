@@ -558,6 +558,7 @@ private fun FieldContentInputSection(
         when (field.type) {
             FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
             FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
+            FieldType.SIGNATURE -> TextFieldInput(field, onFieldUpdated) //TODO: update Later
         }
     }
 }
@@ -661,6 +662,9 @@ private fun FieldConfigurationSection(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+        FieldType.SIGNATURE -> {
+            //TODO: update later
         }
     }
 }

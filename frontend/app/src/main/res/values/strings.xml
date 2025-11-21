@@ -132,4 +132,7 @@
     <!-- Revised template screen -->
     <string name="blank_note">Create a blank note…</string>
     <string name="new_template">Create a new template…</string>
+    <!-- Signature Field -->
+    <string name="unsigned">Unsigned</string>
+    <string name="signature">Signature</string>
 </resources>

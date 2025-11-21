@@ -46,7 +46,14 @@ data class DateTimeField(
     val content: LocalDateTime? = null
 ) : Field()
 
-// TODO: ADD MORE ENUMS FOR NOTETYPE LATER
+data class SignatureField(
+    override val _id: String,
+    override val label: String,
+    override val required: Boolean = false,
+    val userId: String? = null,
+    val userName: String? = null
+) : Field()
+
 enum class NoteType {
     CONTENT,
     CHAT,
@@ -74,8 +81,6 @@ class FieldDeserializer : JsonDeserializer<Field> {
             "text" -> context.deserialize(cleanJson, TextField::class.java)
             "datetime" -> {
                 // Convert string dates to LocalDateTime objects and create DateTimeField directly
-                val minDate = jsonObject.get("minDate")?.asString?.let { LocalDateTime.parse(it) }
-                val maxDate = jsonObject.get("maxDate")?.asString?.let { LocalDateTime.parse(it) }
                 val content = jsonObject.get("content")?.asString?.let { LocalDateTime.parse(it) }
 
                 DateTimeField(
@@ -84,6 +89,13 @@ class FieldDeserializer : JsonDeserializer<Field> {
                     required = jsonObject.get("required")?.asBoolean ?: false,
                     content = content
                 )
+            }
+            "signature" -> {
+                SignatureField(_id = jsonObject.get("_id")?.asString ?: "",
+                    label = jsonObject.get("label")?.asString ?: "",
+                    required = jsonObject.get("required")?.asBoolean ?: false,
+                    userId = jsonObject.get("userId")?.asString,
+                    userName = jsonObject.get("userName")?.asString)
             }
             null -> {
                 // Handle missing fieldType - default to TextField for backward compatibility

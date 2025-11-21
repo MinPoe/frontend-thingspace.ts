@@ -42,6 +42,14 @@ class NoteRepositoryImpl @Inject constructor(
                     "required" to field.required,
                     "content" to field.content?.toString()
                 )
+                is SignatureField -> mapOf(
+                    "_id" to field._id,
+                    "fieldType" to "signature",
+                    "label" to field.label,
+                    "required" to field.required,
+                    "userId" to field.userId,
+                    "userName" to field.userName
+                )
             }
         }
     }

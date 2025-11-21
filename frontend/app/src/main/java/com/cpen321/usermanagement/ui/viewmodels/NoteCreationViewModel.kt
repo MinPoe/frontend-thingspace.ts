@@ -16,11 +16,13 @@ import java.util.UUID
 import java.time.LocalDateTime
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.ui.components.FieldTypeDialog
 
 enum class FieldType {
     TEXT,
-    DATETIME
+    DATETIME,
+    SIGNATURE
 }
 
 data class FieldCreationData(
@@ -29,7 +31,8 @@ data class FieldCreationData(
     val label: String = "",
     val required: Boolean = false,
     val placeholder: String? = null,
-    val content: Any? = null
+    val content: Any? = null,
+    val userId: String? = null
 )
 
 sealed class FieldUpdate {
@@ -47,6 +50,7 @@ data class NoteCreationState(
     val error: String? = null,
     val isSuccess: Boolean = false,
     val isLoadingTemplate: Boolean = false,
+    val user: User? = null
 )
 
 @HiltViewModel
@@ -54,6 +58,7 @@ class NoteCreationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val noteRepository: NoteRepository,
     private val workspaceRepository: WorkspaceRepository,
+    private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -89,7 +94,7 @@ class NoteCreationViewModel @Inject constructor(
         )
     }
 
-    fun setFieldsToTemplate(noteId:String?)
+    private fun setFieldsToTemplate(noteId:String?)
     {
         if (noteId!=null) viewModelScope.launch{
             _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
@@ -104,6 +109,9 @@ class NoteCreationViewModel @Inject constructor(
                         }
                         is DateTimeField -> {
                             FieldType.DATETIME
+                        }
+                        is SignatureField -> {
+                            FieldType.SIGNATURE
                         }
                     }
                     fields.add(FieldCreationData(type = fieldType, label = field.label))
@@ -232,6 +240,14 @@ class NoteCreationViewModel @Inject constructor(
                         else -> null
                     }
                 )
+
+                FieldType.SIGNATURE -> SignatureField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    userId = fieldData.userId,
+                    userName = fieldData.placeholder
+                )
             }
         }
     }
@@ -266,7 +282,18 @@ class NoteCreationViewModel @Inject constructor(
         )
     }
 
-    fun reset() {
+    fun reset(noteType: NoteType, noteId: String?) {
         _creationState.value = NoteCreationState()
+        setFieldsToTemplate(noteId)
+        getProfile()
+        setNoteType(noteType)
+    }
+
+    private fun getProfile(){
+        viewModelScope.launch {
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
+            val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = false, user = user)
+        }
     }
 }

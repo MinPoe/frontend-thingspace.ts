@@ -449,10 +449,8 @@ private fun handleFeatureNavigation(
             viewModels.membersViewModel.loadUsers()
         }
         is NavigationEvent.NavigateToNoteCreation -> {
-            viewModels.creationViewModel.reset()
+            viewModels.creationViewModel.reset(event.noteType, event.noteId)
             navController.navigate(NavRoutes.NOTE_CREATION)
-            viewModels.creationViewModel.setNoteType(event.noteType)
-            viewModels.creationViewModel.setFieldsToTemplate(event.noteId)
         }
         is NavigationEvent.NavigateToNoteEdit -> {
             navController.navigate(NavRoutes.NOTE_EDIT)

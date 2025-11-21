@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.data.repository.NoteRepository
+import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,14 +33,15 @@ data class NoteEditState(
     val lastEditString: String = "",
     val createdAtString: String = "",
     val isDeleting: Boolean = false,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    val user: User? = null
 )
 
 @HiltViewModel
 class NoteEditViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     private val workspaceRepository: WorkspaceRepository,
-    private val navigationStateManager: NavigationStateManager
+    private val profileRepository: ProfileRepository,
 ) : ViewModel() {
 
     private val _editState = MutableStateFlow(NoteEditState())
@@ -105,6 +107,15 @@ class NoteEditViewModel @Inject constructor(
                                 required = field.required,
                                 content = field.content
                             )
+
+                            is SignatureField -> FieldCreationData(
+                                id = field._id,
+                                type = FieldType.DATETIME,
+                                label = field.label,
+                                required = field.required,
+                                userId = field.userId,
+                                placeholder = field.userName
+                            )
                         }
                     }
 
@@ -153,6 +164,7 @@ class NoteEditViewModel @Inject constructor(
             label = when (type) {
                 FieldType.TEXT -> "New Text Field"
                 FieldType.DATETIME -> "New DateTime Field"
+                FieldType.SIGNATURE -> "New Signature Field"
             }
         )
         _editState.value = _editState.value.copy(
@@ -212,6 +224,14 @@ class NoteEditViewModel @Inject constructor(
                         is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
                         else -> null
                     }
+                )
+
+                FieldType.SIGNATURE -> SignatureField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    required = fieldData.required,
+                    userId = fieldData.userId,
+                    userName = fieldData.placeholder
                 )
             }
         }
@@ -323,5 +343,10 @@ class NoteEditViewModel @Inject constructor(
 
     fun reset() {
         _editState.value = NoteEditState()
+        viewModelScope.launch {
+            _editState.value = _editState.value.copy(isLoading = true)
+            val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
+            editState.value.copy(isLoading = false, user = user)
+        }
     }
 }
