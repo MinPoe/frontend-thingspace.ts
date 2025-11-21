@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.*
-import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldCreationData
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
@@ -544,7 +543,6 @@ private fun FieldContentInputSection(
         
         when (field.type) {
             FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
-            FieldType.NUMBER -> NumberFieldInput(field, onFieldUpdated)
             FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
         }
     }
@@ -566,22 +564,7 @@ private fun TextFieldInput(
     )
 }
 
-@Composable
-private fun NumberFieldInput(
-    field: FieldCreationData,
-    onFieldUpdated: (FieldUpdate) -> Unit
-) {
-    OutlinedTextField(
-        value = (field.content as? Int)?.toString() ?: "",
-        onValueChange = { 
-            val value = it.toIntOrNull()
-            onFieldUpdated(FieldUpdate.Content(value))
-        },
-        label = { Text(stringResource(R.string.number_content)) },
-        placeholder = { Text(stringResource(R.string.enter_number)) },
-        modifier = Modifier.fillMaxWidth()
-    )
-}
+
 
 @Composable
 private fun DateTimeFieldInput(
@@ -666,27 +649,7 @@ private fun FieldConfigurationSection(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        FieldType.NUMBER -> {
-            OutlinedTextField(
-                value = field.min?.toString() ?: "",
-                onValueChange = {
-                    val value = it.toIntOrNull()
-                    onFieldUpdated(FieldUpdate.Min(value))
-                },
-                label = { Text(stringResource(R.string.min_optional)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(spacing.small))
-            OutlinedTextField(
-                value = field.max?.toString() ?: "",
-                onValueChange = {
-                    val value = it.toIntOrNull()
-                    onFieldUpdated(FieldUpdate.Max(value))
-                },
-                label = { Text(stringResource(R.string.max_optional)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+
         FieldType.DATETIME -> {
             Text(
                 text = stringResource(R.string.datetime_config_coming_soon),

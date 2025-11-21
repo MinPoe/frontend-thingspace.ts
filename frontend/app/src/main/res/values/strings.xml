@@ -65,7 +65,6 @@
     <string name="last_edited">Last Edited</string>
     <string name="type_text_field">Type: Text Field</string>
     <string name="type_datetime_field">Type: Date/Time Field</string>
-    <string name="type_number_field">Type: Number Field</string>
     <string name="placeholder_label">Placeholder: %1$s</string>
     <string name="max_length_label">Max Length: %1$s</string>
     <string name="min_date_label">Min Date: %1$s</string>
@@ -85,16 +84,12 @@
     <string name="required">Required</string>
     <string name="text_content">Text Content</string>
     <string name="enter_text_content">Enter text content...</string>
-    <string name="number_content">Number Content</string>
-    <string name="enter_number">Enter number...</string>
     <string name="datetime_content">Date/Time Content</string>
     <string name="datetime_format">YYYY-MM-DDTHH:mm:ss</string>
     <string name="pick_date">Pick Date</string>
     <string name="pick_time">Pick Time</string>
     <string name="placeholder_optional">Placeholder (optional)</string>
     <string name="max_length_optional">Max Length (optional)</string>
-    <string name="min_optional">Min (optional)</string>
-    <string name="max_optional">Max (optional)</string>
     <string name="datetime_config_coming_soon">Date/Time field configuration options coming soon</string>
     <string name="add_field">Add Field</string>
     <string name="no_fields_added">No fields added yet. Click \'Add Field\' to create one.</string>

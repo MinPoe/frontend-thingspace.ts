@@ -45,15 +45,6 @@ class NoteRepositoryImpl @Inject constructor(
                     "maxDate" to field.maxDate?.toString(),
                     "content" to field.content?.toString()
                 )
-                is NumberField -> mapOf(
-                    "_id" to field._id,
-                    "fieldType" to "number",
-                    "label" to field.label,
-                    "required" to field.required,
-                    "min" to field.min,
-                    "max" to field.max,
-                    "content" to field.content
-                )
             }
         }
     }

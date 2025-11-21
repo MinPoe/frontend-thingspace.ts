@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.TextField
-import com.cpen321.usermanagement.data.remote.dto.NumberField
 import com.cpen321.usermanagement.data.remote.dto.DateTimeField
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
@@ -30,8 +29,6 @@ import com.cpen321.usermanagement.data.remote.dto.Field
 private fun getFieldPreview(field: Field): String {
     return when (field) {
         is TextField -> field.content?.takeIf { it.isNotEmpty() } 
-            ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
-        is NumberField -> field.content?.toString() 
             ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
         is DateTimeField -> field.content?.toString() 
             ?: field.label.ifEmpty { stringResource(R.string.empty_note) }

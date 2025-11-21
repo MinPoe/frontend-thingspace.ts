@@ -98,15 +98,7 @@ class NoteEditViewModel @Inject constructor(
                                 maxLength = field.maxLength,
                                 content = field.content
                             )
-                            is NumberField -> FieldCreationData(
-                                id = field._id,
-                                type = FieldType.NUMBER,
-                                label = field.label,
-                                required = field.required,
-                                min = field.min,
-                                max = field.max,
-                                content = field.content
-                            )
+
                             is DateTimeField -> FieldCreationData(
                                 id = field._id,
                                 type = FieldType.DATETIME,
@@ -159,7 +151,6 @@ class NoteEditViewModel @Inject constructor(
             type = type,
             label = when (type) {
                 FieldType.TEXT -> "New Text Field"
-                FieldType.NUMBER -> "New Number Field"
                 FieldType.DATETIME -> "New DateTime Field"
             }
         )
@@ -214,18 +205,7 @@ class NoteEditViewModel @Inject constructor(
                         else -> fieldData.content?.toString()
                     }
                 )
-                FieldType.NUMBER -> NumberField(
-                    _id = fieldData.id,
-                    label = fieldData.label,
-                    required = fieldData.required,
-                    min = fieldData.min,
-                    max = fieldData.max,
-                    content = when (fieldData.content) {
-                        is Int -> fieldData.content
-                        is String -> fieldData.content.toIntOrNull()
-                        else -> null
-                    }
-                )
+
                 FieldType.DATETIME -> DateTimeField(
                     _id = fieldData.id,
                     label = fieldData.label,

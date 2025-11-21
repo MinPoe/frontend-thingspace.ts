@@ -49,15 +49,6 @@ data class DateTimeField(
     val content: LocalDateTime? = null
 ) : Field()
 
-data class NumberField(
-    override val _id: String,
-    override val label: String,
-    override val required: Boolean = false,
-    val min: Int? = null,
-    val max: Int? = null,
-    val content: Int? = null
-): Field()
-
 // TODO: ADD MORE ENUMS FOR NOTETYPE LATER
 enum class NoteType {
     CONTENT,
@@ -89,7 +80,7 @@ class FieldDeserializer : JsonDeserializer<Field> {
                 val minDate = jsonObject.get("minDate")?.asString?.let { LocalDateTime.parse(it) }
                 val maxDate = jsonObject.get("maxDate")?.asString?.let { LocalDateTime.parse(it) }
                 val content = jsonObject.get("content")?.asString?.let { LocalDateTime.parse(it) }
-                
+
                 DateTimeField(
                     _id = jsonObject.get("_id")?.asString ?: "",
                     label = jsonObject.get("label")?.asString ?: "",
@@ -99,7 +90,6 @@ class FieldDeserializer : JsonDeserializer<Field> {
                     content = content
                 )
             }
-            "number" -> context.deserialize(cleanJson, NumberField::class.java)
             null -> {
                 // Handle missing fieldType - default to TextField for backward compatibility
                 // This ensures existing data without fieldType still works
