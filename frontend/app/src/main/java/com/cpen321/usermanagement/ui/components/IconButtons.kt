@@ -50,24 +50,6 @@ fun ChatActionButton(
 }
 
 @Composable
-fun CreateNoteActionButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        Icon(
-            name = R.drawable.ic_edit,
-            contentDescription = stringResource(R.string.create)
-        )
-    }
-}
-
-@Composable
 fun TemplateActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

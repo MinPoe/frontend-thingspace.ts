@@ -16,6 +16,8 @@ import java.util.UUID
 import java.time.LocalDateTime
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.usermanagement.ui.components.FieldTypeDialog
+
 enum class FieldType {
     TEXT,
     TITLE,
@@ -50,7 +52,8 @@ data class NoteCreationState(
     val fields: List<FieldCreationData> = emptyList(),
     val isCreating: Boolean = false,
     val error: String? = null,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val isLoadingTemplate: Boolean = false,
 )
 
 @HiltViewModel
@@ -102,6 +105,31 @@ class NoteCreationViewModel @Inject constructor(
         _creationState.value = _creationState.value.copy(
             fields = _creationState.value.fields + newField
         )
+    }
+
+    fun setFieldsToTemplate(noteId:String?)
+    {
+        if (noteId!=null) viewModelScope.launch{
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
+            val noteRequest = noteRepository.getNote(noteId)
+            if (noteRequest.isSuccess){
+                val note = noteRequest.getOrNull()!!
+                val fields = mutableListOf<FieldCreationData>()
+                for (field in note.fields){
+                    val fieldType = when(field) {
+                        is TextField -> {
+                            FieldType.TEXT
+                        }
+                        is DateTimeField -> {
+                            FieldType.DATETIME
+                        }
+                    }
+                    fields.add(FieldCreationData(type = fieldType, label = field.label))
+                }
+                //Also sets tags as they are part of template content
+                _creationState.value = _creationState.value.copy(fields = fields, tags = note.tags, isLoadingTemplate = false)
+            }
+        }
     }
 
     fun removeField(fieldId: String) {
@@ -182,6 +210,9 @@ class NoteCreationViewModel @Inject constructor(
         if (_creationState.value.fields.isEmpty()) {
             return "Please add at least one field"
         }
+        if (_creationState.value.tags.isEmpty()){
+            return "Please add at least one tag"
+        }
         val hasEmptyLabel = _creationState.value.fields.any { it.label.isBlank() }
         if (hasEmptyLabel) {
             return "All fields must have a label"
@@ -239,10 +270,11 @@ class NoteCreationViewModel @Inject constructor(
     }
 
     private suspend fun createNoteRequest(workspaceId: String, userId: String, fields: List<Field>) {
+        val tags = _creationState.value.tags
         val result = noteRepository.createNote(
             workspaceId = workspaceId,
             authorId = userId,
-            tags = _creationState.value.tags,
+            tags = tags,
             fields = fields,
             noteType = _creationState.value.noteType
         )
@@ -254,6 +286,9 @@ class NoteCreationViewModel @Inject constructor(
                     isSuccess = true,
                     error = null
                 )
+                //We need to update the tag selection so that the created note shows on the screen we load
+                val newSelectedTags = navigationStateManager.state.getSelectedTags().union(tags).toList()
+                navigationStateManager.state.updateTagSelection(newSelectedTags, navigationStateManager.state.getAllTagsSelected())
             },
             onFailure = { exception ->
                 _creationState.value = _creationState.value.copy(

@@ -46,7 +46,7 @@ interface INavigationActions {
 
 
     fun navigateToNote(noteId: String)
-    fun navigateToNoteCreation()
+    fun navigateToNoteCreation(noteType: NoteType = NoteType.CONTENT, noteId: String? = null)
     fun navigateToNoteEdit(noteId: String)
 
     fun navigateToOtherProfile(otherUserId: String)
