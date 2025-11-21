@@ -43,9 +43,6 @@ interface INavigationActions {
         allTagsSelected: Boolean
     )
 
-
-
-    fun navigateToNote(noteId: String)
     fun navigateToNoteCreation(noteType: NoteType = NoteType.CONTENT, noteId: String? = null)
     fun navigateToNoteEdit(noteId: String)
 

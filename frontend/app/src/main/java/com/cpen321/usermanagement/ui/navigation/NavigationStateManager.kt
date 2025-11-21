@@ -55,8 +55,6 @@ sealed class NavigationEvent {
 
     object NavigateToMembers : NavigationEvent()
 
-    /* for now, only needed note id TODO: might experiment later with workspace movement on copy*/
-    data class NavigateToNote(val noteId: String) : NavigationEvent()
     data class NavigateToNoteCreation(
         val noteType: NoteType = NoteType.CONTENT,
         val noteId: String? = null
@@ -391,18 +389,6 @@ class NoteRoutesWrapper(private val _navigationState: MutableStateFlow<Navigatio
     fun navigateToFields() {
         _navigationEvent.value = NavigationEvent.NavigateToFields
         _navigationState.value = _navigationState.value.copy(currentRoute = NavRoutes.FIELDS)
-    }
-
-
-    /**
-     * Navigate to note screen with standard context
-     */
-    fun navigateToNote(noteId: String) {
-        _navigationEvent.value = NavigationEvent.NavigateToNote(noteId)
-        _navigationState.value = _navigationState.value.copy(
-            currentRoute = NavRoutes.NOTE,
-            noteId = noteId
-        )
     }
 
     /**
