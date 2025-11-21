@@ -2,7 +2,6 @@ package com.cpen321.usermanagement.ui.screens
 
 import Button
 import Icon
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.*
-import com.cpen321.usermanagement.ui.theme.LocalFontSizes
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldCreationData
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
@@ -40,7 +38,6 @@ fun NoteCreationScreen(
     featureActions: FeatureActions
 ) {
     val creationState by noteCreationViewModel.creationState.collectAsState()
-    Log.d("create", "Right after capture")
 
     LaunchedEffect(creationState.isSuccess) {
         if (creationState.isSuccess) {
@@ -78,7 +75,6 @@ fun NoteCreationScreen(
             onCreateNote = { noteCreationViewModel.createNote(featureActions.state.getWorkspaceId()) }
         )
     )
-    Log.d("create", "After content ${creationState.noteType}")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,10 +98,7 @@ fun NoteCreationContent(
             paddingValues = paddingValues,
             callbacks = callbacks
         )
-        Log.d("creation", "screenRightAfterContent ${creationState.noteType}")
-    } //TODO: the value magically defaults to content between these two
-
-    Log.d("creation", "screenAfterContent ${creationState.noteType}")
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

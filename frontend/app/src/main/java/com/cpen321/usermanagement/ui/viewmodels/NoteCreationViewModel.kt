@@ -200,6 +200,9 @@ class NoteCreationViewModel @Inject constructor(
         if (_creationState.value.fields.isEmpty()) {
             return "Please add at least one field"
         }
+        if (_creationState.value.tags.isEmpty()){
+            return "Please add at least one tag"
+        }
         val hasEmptyLabel = _creationState.value.fields.any { it.label.isBlank() }
         if (hasEmptyLabel) {
             return "All fields must have a label"
