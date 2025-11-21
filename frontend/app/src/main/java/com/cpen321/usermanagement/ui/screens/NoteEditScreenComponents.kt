@@ -116,7 +116,6 @@ private fun AddTagDialog(
 @Composable
 fun FieldsEditSection(
     fields: List<FieldCreationData>,
-    noteType: NoteType,
     onFieldAdded: (FieldType) -> Unit,
     onFieldRemoved: (String) -> Unit,
     onFieldUpdated: (String, FieldUpdate) -> Unit

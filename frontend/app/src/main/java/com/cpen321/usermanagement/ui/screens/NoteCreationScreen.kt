@@ -219,9 +219,8 @@ fun NoteCreationBody(
         Spacer(modifier = Modifier.height(spacing.large))
 
         // Fields Section
-        FieldsSection(
+        FieldsEditSection(
             fields = creationState.fields,
-            noteType = creationState.noteType,
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated
