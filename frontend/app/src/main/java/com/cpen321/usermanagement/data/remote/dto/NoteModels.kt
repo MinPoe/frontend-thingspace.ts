@@ -36,7 +36,6 @@ data class TextField(
     override val label: String,
     override val required: Boolean = false,
     val placeholder: String? = null,
-    val maxLength: Int? = null,
     val content: String? = null
 ) : Field()
 
@@ -44,8 +43,6 @@ data class DateTimeField(
     override val _id: String,
     override val label: String,
     override val required: Boolean = false,
-    val minDate: LocalDateTime? = null,
-    val maxDate: LocalDateTime? = null,
     val content: LocalDateTime? = null
 ) : Field()
 
@@ -85,8 +82,6 @@ class FieldDeserializer : JsonDeserializer<Field> {
                     _id = jsonObject.get("_id")?.asString ?: "",
                     label = jsonObject.get("label")?.asString ?: "",
                     required = jsonObject.get("required")?.asBoolean ?: false,
-                    minDate = minDate,
-                    maxDate = maxDate,
                     content = content
                 )
             }

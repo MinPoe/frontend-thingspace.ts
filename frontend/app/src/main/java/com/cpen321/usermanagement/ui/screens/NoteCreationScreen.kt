@@ -654,15 +654,6 @@ private fun FieldConfigurationSection(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(spacing.small))
-            OutlinedTextField(
-                value = field.maxLength?.toString() ?: "",
-                onValueChange = {
-                    val value = it.toIntOrNull()
-                    onFieldUpdated(FieldUpdate.MaxLength(value))
-                },
-                label = { Text(stringResource(R.string.max_length_optional)) },
-                modifier = Modifier.fillMaxWidth()
-            )
         }
 
         FieldType.DATETIME -> {

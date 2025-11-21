@@ -29,9 +29,6 @@ data class FieldCreationData(
     val label: String = "",
     val required: Boolean = false,
     val placeholder: String? = null,
-    val maxLength: Int? = null,
-    val min: Int? = null,
-    val max: Int? = null,
     val content: Any? = null
 )
 
@@ -39,9 +36,6 @@ sealed class FieldUpdate {
     data class Label(val value: String) : FieldUpdate()
     data class Required(val value: Boolean) : FieldUpdate()
     data class Placeholder(val value: String) : FieldUpdate()
-    data class MaxLength(val value: Int?) : FieldUpdate()
-    data class Min(val value: Int?) : FieldUpdate()
-    data class Max(val value: Int?) : FieldUpdate()
     data class Content(val value: Any?) : FieldUpdate()
 }
 
@@ -136,9 +130,6 @@ class NoteCreationViewModel @Inject constructor(
                         is FieldUpdate.Label -> field.copy(label = update.value)
                         is FieldUpdate.Required -> field.copy(required = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
-                        is FieldUpdate.MaxLength -> field.copy(maxLength = update.value)
-                        is FieldUpdate.Min -> field.copy(min = update.value)
-                        is FieldUpdate.Max -> field.copy(max = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
                     }
                 } else {
@@ -234,7 +225,6 @@ class NoteCreationViewModel @Inject constructor(
                     label = fieldData.label,
                     required = fieldData.required,
                     placeholder = fieldData.placeholder,
-                    maxLength = fieldData.maxLength,
                     content = when (fieldData.content) {
                         is String -> fieldData.content
                         else -> fieldData.content?.toString()
@@ -245,8 +235,6 @@ class NoteCreationViewModel @Inject constructor(
                     _id = fieldData.id,
                     label = fieldData.label,
                     required = fieldData.required,
-                    minDate = null,
-                    maxDate = null,
                     content = when (fieldData.content) {
                         is LocalDateTime -> fieldData.content
                         is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }

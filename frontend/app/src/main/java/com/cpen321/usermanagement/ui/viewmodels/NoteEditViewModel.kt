@@ -95,7 +95,6 @@ class NoteEditViewModel @Inject constructor(
                                 label = field.label,
                                 required = field.required,
                                 placeholder = field.placeholder,
-                                maxLength = field.maxLength,
                                 content = field.content
                             )
 
@@ -173,9 +172,6 @@ class NoteEditViewModel @Inject constructor(
                         is FieldUpdate.Label -> field.copy(label = update.value)
                         is FieldUpdate.Required -> field.copy(required = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
-                        is FieldUpdate.MaxLength -> field.copy(maxLength = update.value)
-                        is FieldUpdate.Min -> field.copy(min = update.value)
-                        is FieldUpdate.Max -> field.copy(max = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
                     }
                 } else field
@@ -199,7 +195,6 @@ class NoteEditViewModel @Inject constructor(
                     label = fieldData.label,
                     required = fieldData.required,
                     placeholder = fieldData.placeholder,
-                    maxLength = fieldData.maxLength,
                     content = when (fieldData.content) {
                         is String -> fieldData.content
                         else -> fieldData.content?.toString()
