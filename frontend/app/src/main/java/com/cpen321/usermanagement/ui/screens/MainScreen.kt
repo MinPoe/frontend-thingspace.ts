@@ -81,7 +81,7 @@ fun MainScreen(
         onChatClick = { featureActions.navs.navigateToChatTagReset(
             featureActions.state.getWorkspaceId()) },
         onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
-        onNoteClick = {noteId:String -> featureActions.navs.navigateToNote(noteId)},
+        onNoteClick = {noteId:String -> featureActions.navs.navigateToNoteEdit(noteId)},
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)}
     )
 

@@ -28,7 +28,11 @@ data class NoteEditState(
     val shareSuccess: Boolean = false,
     val copySuccess: Boolean = false,
     val workspaces: List<Workspace> = emptyList(),
-    val isLoadingWorkspaces: Boolean = false
+    val isLoadingWorkspaces: Boolean = false,
+    val lastEditString: String = "",
+    val createdAtString: String = "",
+    val isDeleting: Boolean = false,
+    val isDeleted: Boolean = false
 )
 
 @HiltViewModel
@@ -40,10 +44,6 @@ class NoteEditViewModel @Inject constructor(
 
     private val _editState = MutableStateFlow(NoteEditState())
     val editState: StateFlow<NoteEditState> = _editState.asStateFlow()
-
-//    init {
-//        loadWorkspaces()
-//    }
 
     fun loadWorkspaces() {
         viewModelScope.launch {
@@ -114,7 +114,9 @@ class NoteEditViewModel @Inject constructor(
                         fields = fieldCreationData,
                         workspaces = _editState.value.workspaces,
                         isLoading = false,
-                        loadError = null
+                        loadError = null,
+                        createdAtString = note.createdAt,
+                        lastEditString = note.updatedAt
                     )
                 },
                 onFailure = { exception ->
@@ -293,6 +295,30 @@ class NoteEditViewModel @Inject constructor(
             copySuccess = false,
             error = null
         )
+    }
+
+    fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            _editState.value = _editState.value.copy(isDeleting = true, error = null)
+
+            val result = noteRepository.deleteNote(noteId)
+
+            result.fold(
+                onSuccess = {
+                    _editState.value = _editState.value.copy(
+                        isDeleting = false,
+                        isDeleted = true,
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _editState.value = _editState.value.copy(
+                        isDeleting = false,
+                        error = exception.message ?: "Failed to delete note"
+                    )
+                }
+            )
+        }
     }
 
     fun reset() {

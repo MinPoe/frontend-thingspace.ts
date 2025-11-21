@@ -24,6 +24,8 @@ import com.cpen321.usermanagement.ui.components.FieldTypeDialog
 import com.cpen321.usermanagement.ui.components.LoadingEditContent
 import com.cpen321.usermanagement.ui.components.ErrorEditContent
 import com.cpen321.usermanagement.ui.components.CopyNoteDialog
+import com.cpen321.usermanagement.ui.components.DeleteNoteDialog
+import com.cpen321.usermanagement.ui.components.NoteInfoRow
 import com.cpen321.usermanagement.ui.components.ShareNoteDialog
 
 data class NoteEditCallbacks(
@@ -31,12 +33,12 @@ data class NoteEditCallbacks(
     val onSaveClick: () -> Unit,
     val onShareClick: () -> Unit,
     val onCopyClick: () -> Unit,
+    val onDeleteClick: () -> Unit,
     val onTagAdded: (String) -> Unit,
     val onTagRemoved: (String) -> Unit,
     val onFieldAdded: (FieldType) -> Unit,
     val onFieldRemoved: (String) -> Unit,
     val onFieldUpdated: (String, FieldUpdate) -> Unit,
-    val onNoteTypeChanged: (NoteType) -> Unit
 )
 
 @Composable
@@ -48,6 +50,7 @@ fun NoteEditScreen(
     val editState by noteEditViewModel.editState.collectAsState()
     var showShareDialog by remember { mutableStateOf(false) }
     var showCopyDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     NoteEditScreenLaunchedEffects(
         noteEditViewModel = noteEditViewModel,
@@ -74,7 +77,9 @@ fun NoteEditScreen(
                     showShareDialog = showShareDialog,
                     showCopyDialog = showCopyDialog,
                     onShareDialogChange = { showShareDialog = it },
-                    onCopyDialogChange = { showCopyDialog = it }
+                    onCopyDialogChange = { showCopyDialog = it },
+                    showDeleteDialog = showDeleteDialog,
+                    onDeleteDialogChange = { showDeleteDialog = it }
                 )
             )
         }
@@ -115,13 +120,22 @@ private fun NoteEditScreenLaunchedEffects(
             onBackClick()
         }
     }
+
+    // Handle successful deletion
+    LaunchedEffect(editState.isDeleted) {
+        if (editState.isDeleted) {
+            onBackClick()
+        }
+    }
 }
 
 private data class DialogState(
     val showShareDialog: Boolean,
     val showCopyDialog: Boolean,
     val onShareDialogChange: (Boolean) -> Unit,
-    val onCopyDialogChange: (Boolean) -> Unit
+    val onCopyDialogChange: (Boolean) -> Unit,
+    val showDeleteDialog: Boolean,
+    val onDeleteDialogChange: (Boolean) -> Unit
 )
 
 @Composable
@@ -135,6 +149,7 @@ private fun NoteEditScreenContent(
     val onSaveClick = { noteEditViewModel.saveNote(featureActions.state.getNoteId()) }
     val onShareClick = { dialogState.onShareDialogChange(true) }
     val onCopyClick = { dialogState.onCopyDialogChange(true) }
+    val onDeleteClick = { dialogState.onDeleteDialogChange(true) }
 
     NoteEditContent(
         editState = editState,
@@ -143,12 +158,12 @@ private fun NoteEditScreenContent(
             onSaveClick = onSaveClick,
             onShareClick = onShareClick,
             onCopyClick = onCopyClick,
+            onDeleteClick = onDeleteClick,
             onTagAdded = noteEditViewModel::addTag,
             onTagRemoved = noteEditViewModel::removeTag,
             onFieldAdded = noteEditViewModel::addField,
             onFieldRemoved = noteEditViewModel::removeField,
-            onFieldUpdated = noteEditViewModel::updateField,
-            onNoteTypeChanged = noteEditViewModel::updateNoteType
+            onFieldUpdated = noteEditViewModel::updateField
         )
     )
 
@@ -171,6 +186,14 @@ private fun NoteEditScreenContent(
             noteEditViewModel.copyNote(featureActions.state.getNoteId(), workspaceId)
         }
     )
+
+    DeleteNoteDialog(
+        showDialog = dialogState.showDeleteDialog,
+        onDismiss = { dialogState.onDeleteDialogChange(false) },
+        onConfirm = {
+            noteEditViewModel.deleteNote(featureActions.state.getNoteId())
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -185,7 +208,8 @@ fun NoteEditContent(
         topBar = { NoteEditTopBar(
             onBackClick = callbacks.onBackClick,
             onShareClick = callbacks.onShareClick,
-            onCopyClick = callbacks.onCopyClick
+            onCopyClick = callbacks.onCopyClick,
+            onDeleteClick = callbacks.onDeleteClick
         ) },
         bottomBar = { NoteEditBottomBar(
             onBackClick = callbacks.onBackClick,
@@ -206,7 +230,8 @@ fun NoteEditContent(
 private fun NoteEditTopBar(
     onBackClick: () -> Unit,
     onShareClick: () -> Unit,
-    onCopyClick: () -> Unit
+    onCopyClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val shareDesc = stringResource(R.string.share)
     val copyDesc = stringResource(R.string.copy)
@@ -234,6 +259,12 @@ private fun NoteEditTopBar(
             IconButton(onClick = onCopyClick) {
                 Icon(
                     name = R.drawable.ic_copy,
+                    contentDescription = copyDesc
+                )
+            }
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    name = R.drawable.ic_delete_forever,
                     contentDescription = copyDesc
                 )
             }
@@ -325,10 +356,7 @@ fun NoteEditBody(
         }
 
         // Note Type Selection
-        NoteTypeEditSection(
-            selectedType = editState.noteType,
-            onTypeChanged = callbacks.onNoteTypeChanged
-        )
+        NoteInfoRow(editState.noteType, editState.createdAtString, editState.lastEditString)
 
         Spacer(modifier = Modifier.height(spacing.large))
 
@@ -349,50 +377,6 @@ fun NoteEditBody(
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated
         )
-    }
-}
-
-@Composable
-private fun NoteTypeEditSection(
-    selectedType: NoteType,
-    onTypeChanged: (NoteType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.medium)
-        ) {
-            Text(
-                text = stringResource(R.string.note_type),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(spacing.small))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.small)
-            ) {
-                NoteType.values().forEach { type ->
-                    FilterChip(
-                        selected = selectedType == type,
-                        onClick = { onTypeChanged(type) },
-                        label = { Text(type.name) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
     }
 }
 

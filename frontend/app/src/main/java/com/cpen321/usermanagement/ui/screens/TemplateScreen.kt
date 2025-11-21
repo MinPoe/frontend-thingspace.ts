@@ -70,7 +70,7 @@ fun TemplateScreen(
 
     val actions = TemplateActions(
         onNoteClick = { noteId:String -> featureActions.navs.navigateToNoteCreation(NoteType.CONTENT, noteId) },
-        onNoteEditClick = {noteId:String -> featureActions.navs.navigateToNote(noteId)},
+        onNoteEditClick = {noteId:String -> featureActions.navs.navigateToNoteEdit(noteId)},
         onContentClick = {  featureActions.navs.navigateToMainTagReset(
             featureActions.state.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.ws.navigateToWsSelect() },
