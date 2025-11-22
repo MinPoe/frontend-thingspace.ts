@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -14,6 +15,11 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
   let mongo: MongoMemoryServer;
   let testData: TestData;
   let app: ReturnType<typeof createTestApp>;
+
+  // Ensure OPENAI_API_KEY is loaded
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is required for tests');
+  }
 
   // Spin up in-memory Mongo
   beforeAll(async () => {

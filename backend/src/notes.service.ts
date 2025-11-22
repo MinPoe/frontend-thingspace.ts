@@ -31,17 +31,12 @@ export class NoteService {
 
         let vectorData: number[] = [];
         
-        try {
-            if (vectorInput.trim().length > 0) {
-                const vectorResponse = await this.getClient().embeddings.create({
-                    model: "text-embedding-3-large",
-                    input: vectorInput.trim(),
-                });
-                vectorData = vectorResponse.data[0].embedding;
-            }
-        } catch (error) {
-            console.error('Failed to generate embeddings (continuing with empty vector):', error);
-            // Continue with empty vector instead of failing
+        if (vectorInput.trim().length > 0) {
+            const vectorResponse = await this.getClient().embeddings.create({
+                model: "text-embedding-3-large",
+                input: vectorInput.trim(),
+            });
+            vectorData = vectorResponse.data[0].embedding;
         }
 
         const newNote = await noteModel.create({

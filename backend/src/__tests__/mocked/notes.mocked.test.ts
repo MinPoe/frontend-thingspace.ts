@@ -46,6 +46,21 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
   // Fresh DB state before each test
   beforeEach(async () => {
     testData = await setupTestDatabase(app);
+    
+    // Mock OpenAI client for beforeEach note creation (used in setup for other tests)
+    // Reset client cache to ensure fresh mock
+    (noteService as any).client = null;
+    
+    const mockEmbedding = Array(3072).fill(0).map(() => Math.random() * 0.1 - 0.05);
+    const mockClient = {
+      embeddings: {
+        create: jest.fn().mockResolvedValue({
+          data: [{ embedding: mockEmbedding }],
+        }),
+      },
+    };
+    
+    jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
   });
 
   describe('POST /api/notes - Create Note, with mocks', () => {
@@ -132,40 +147,12 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
       expect(res.body.data.note.vectorData).toBeDefined();
     });
 
-    test('OpenAI failure path does not crash create flow (service decides behavior)', async () => {
-      // Mocked behavior: OpenAI API call fails (implicitly, service handles)
+    test('500 – OpenAI failure causes note creation to fail', async () => {
+      // Mocked behavior: OpenAI API call fails
       // Input: noteData with fields that would trigger OpenAI
-      // Expected status code: 201 or 500 (service decides)
-      // Expected behavior: service catches OpenAI errors gracefully
-      // Expected output: note created or error message
-      // This assumes your service catches OpenAI errors and proceeds with empty vectors.
-      const res = await request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${testData.testUserToken}`)
-        .send({
-          workspaceId: testData.testWorkspaceId,
-          noteType: NoteType.CONTENT,
-          tags: ['openai-error-test'],
-          fields: [
-            { fieldType: 'title', content: 'OpenAI Error Test', _id: '1' },
-            { fieldType: 'textbox', content: 'This should still work even if OpenAI fails', _id: '2' },
-          ],
-        });
-
-      // Expect success if service swallows OpenAI errors; otherwise 500.
-      // Adjust to your implementation contract if needed.
-      expect([201, 500]).toContain(res.status);
-    });
-
-    test('OpenAI embeddings error is caught and logged (line 43)', async () => {
-      // Mocked behavior: OpenAI embeddings.create throws error
-      // Input: noteData with fields that trigger OpenAI embeddings
-      // Expected status code: 201
-      // Expected behavior: error is caught, logged (line 43), and note created with empty vector
-      // Expected output: note created successfully
-      // This tests line 43 in notes.service.ts (console.error for embeddings failure)
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
+      // Expected status code: 500
+      // Expected behavior: error propagates and note creation fails
+      // Expected output: error message
       // Reset the client cache and mock getClient to return a client that throws
       (noteService as any).client = null;
       
@@ -183,19 +170,49 @@ describe('Notes API – Mocked Tests (Jest Mocks)', () => {
         .send({
           workspaceId: testData.testWorkspaceId,
           noteType: NoteType.CONTENT,
-          tags: ['openai-error-log-test'],
+          tags: ['openai-error-test'],
           fields: [
-            { fieldType: 'title', content: 'OpenAI Error Log Test', _id: '1' },
+            { fieldType: 'title', content: 'OpenAI Error Test', _id: '1' },
+            { fieldType: 'textbox', content: 'This should fail when OpenAI fails', _id: '2' },
+          ],
+        });
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBeDefined();
+    });
+
+    test('500 – OpenAI embeddings error propagates and fails note creation', async () => {
+      // Mocked behavior: OpenAI embeddings.create throws error
+      // Input: noteData with fields that trigger OpenAI embeddings
+      // Expected status code: 500
+      // Expected behavior: error propagates and note creation fails
+      // Expected output: error message
+      // Reset the client cache and mock getClient to return a client that throws
+      (noteService as any).client = null;
+      
+      const mockClient = {
+        embeddings: {
+          create: jest.fn().mockRejectedValue(new Error('OpenAI API error')),
+        },
+      };
+      
+      jest.spyOn(noteService as any, 'getClient').mockReturnValue(mockClient);
+
+      const res = await request(app)
+        .post('/api/notes')
+        .set('Authorization', `Bearer ${testData.testUserToken}`)
+        .send({
+          workspaceId: testData.testWorkspaceId,
+          noteType: NoteType.CONTENT,
+          tags: ['openai-error-test'],
+          fields: [
+            { fieldType: 'title', content: 'OpenAI Error Test', _id: '1' },
             { fieldType: 'textbox', content: 'This triggers embeddings', _id: '2' },
           ],
         });
 
-      expect(res.status).toBe(201);
-      expect(res.body.data.note).toBeDefined();
-      // Verify error was logged (line 43)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to generate embeddings (continuing with empty vector):', expect.any(Error));
-      
-      consoleErrorSpy.mockRestore();
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBeDefined();
     });
   });
 
