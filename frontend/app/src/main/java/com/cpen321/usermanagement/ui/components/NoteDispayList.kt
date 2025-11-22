@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
 import com.cpen321.usermanagement.data.remote.dto.TextField
-import com.cpen321.usermanagement.data.remote.dto.NumberField
 import com.cpen321.usermanagement.data.remote.dto.DateTimeField
 import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
@@ -30,8 +29,6 @@ import com.cpen321.usermanagement.data.remote.dto.Field
 private fun getFieldPreview(field: Field): String {
     return when (field) {
         is TextField -> field.content?.takeIf { it.isNotEmpty() } 
-            ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
-        is NumberField -> field.content?.toString() 
             ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
         is DateTimeField -> field.content?.toString() 
             ?: field.label.ifEmpty { stringResource(R.string.empty_note) }
@@ -82,49 +79,26 @@ fun NoteDisplayList(
 }
 
 @Composable
-fun ChatDisplayList(
-    onProfileClick: (String)->Unit, //the input is noteId
-    notes: List<Note>,
-    profiles: List<User>?,
+fun TemplateDisplayList(
+    onTitleClick: (String)->Unit, //the input is noteId
+    onEditClick: (String)->Unit,
+    templates: List<Note>,
     modifier: Modifier = Modifier
 ){
-    for(i in 0 until notes.size ){
+    for(template in templates){
+        val templatePreview = template.fields.firstOrNull()?.let { getFieldPreview(it) }
+            ?: stringResource(R.string.empty_note)
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = modifier
         ){
-            val fontSizes = LocalFontSizes.current
-            if (profiles!=null){
-                Button(onClick = {onProfileClick(profiles[i]._id)}){
-                    Text(
-                        text = profiles[i].profile.name, //TODO: for now just displays a note id, we need to add note header-ing
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontSize = fontSizes.extraLarge3,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = modifier
-                    )
-                }
-            }
-            else{
-                Button(onClick = {}){
-                    Text(
-                        text = stringResource(R.string.unknown), //TODO: for now just displays a note id, we need to add note header-ing
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontSize = fontSizes.extraLarge3,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        //modifier = modifier
-                    )
-                }
-            }
-            Text(
-                text = notes[i]._id, //TODO: for now just displays a note id, we need to add note header-ing
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = fontSizes.extraLarge3,
-                color = MaterialTheme.colorScheme.inverseSurface,
-                //modifier = modifier
+            TemplateRow(
+                title = templatePreview,
+                onTitleClick = { onTitleClick(template._id) },
+                onEditClick = { onEditClick(template._id) }
             )
-
         }
 
     }

@@ -39,13 +39,13 @@ fun SearchBar(
     
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = spacing.medium)
     ){
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth()
         ){
             OutlinedTextField(
                 value = _query,
@@ -53,7 +53,7 @@ fun SearchBar(
                                 onQueryChange(_query)},
                 label = { Text(stringResource(R.string.search)) },
                 placeholder = { Text(stringResource(R.string.search_placeholder)) },
-                modifier = Modifier
+                modifier = modifier
                     .weight(1f)
                     .padding(end = spacing.small)
                     .testTag(stringResource(R.string.search_textbox)),

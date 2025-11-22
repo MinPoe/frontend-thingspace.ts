@@ -26,7 +26,6 @@ import com.cpen321.usermanagement.ui.screens.TemplateScreen
 import com.cpen321.usermanagement.ui.screens.WorkspacesScreen
 import com.cpen321.usermanagement.ui.viewmodels.AuthViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ChatViewModel
-import com.cpen321.usermanagement.ui.viewmodels.CopyViewModel
 import com.cpen321.usermanagement.ui.viewmodels.FieldsViewModel
 import com.cpen321.usermanagement.ui.viewmodels.FilterViewModel
 import com.cpen321.usermanagement.ui.viewmodels.InviteViewModel
@@ -34,13 +33,11 @@ import com.cpen321.usermanagement.ui.viewmodels.MainViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MembersManagerViewModel
 import com.cpen321.usermanagement.ui.viewmodels.MembersViewModel
 import com.cpen321.usermanagement.ui.viewmodels.NavigationViewModel
-import com.cpen321.usermanagement.ui.viewmodels.NoteViewModel
 import com.cpen321.usermanagement.ui.screens.NoteCreationScreen
 import com.cpen321.usermanagement.ui.viewmodels.NoteCreationViewModel
 import com.cpen321.usermanagement.ui.screens.NoteEditScreen
 import com.cpen321.usermanagement.ui.viewmodels.NoteEditViewModel
 import com.cpen321.usermanagement.ui.viewmodels.ProfileViewModel
-import com.cpen321.usermanagement.ui.viewmodels.SharingViewModel
 import com.cpen321.usermanagement.ui.viewmodels.TemplateViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsCreationViewModel
 import com.cpen321.usermanagement.ui.viewmodels.WsProfileManagerViewModel
@@ -49,7 +46,6 @@ import com.cpen321.usermanagement.ui.viewmodels.WsSelectViewModel
 import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.screens.CreateWorkspaceScreen
 import com.cpen321.usermanagement.ui.screens.FilterScreen
-import com.cpen321.usermanagement.ui.screens.NoteScreen
 import com.cpen321.usermanagement.ui.screens.WsInviteScreen
 import com.cpen321.usermanagement.ui.screens.WsMembersManagerScreen
 import com.cpen321.usermanagement.ui.screens.WsMembersScreen
@@ -74,7 +70,6 @@ object NavRoutes {
     const val INVITE = "invite"
     const val MEMBERS_MANAGER = "members_manager"
     const val MEMBERS = "members"
-    const val NOTE = "note"
     const val NOTE_CREATION = "note_creation"
     const val NOTE_EDIT = "note_edit"
     const val OTHER_PROFILE = "other_profile"
@@ -139,16 +134,13 @@ private fun initializeNavigationViewModels(): NavigationViewModels {
         profileViewModel = hiltViewModel(),
         mainViewModel = hiltViewModel(),
         chatViewModel = hiltViewModel(),
-        copyViewModel = hiltViewModel(),
         fieldsViewModel = hiltViewModel(),
         filterViewModel = hiltViewModel(),
         inviteViewModel = hiltViewModel(),
         membersManagerViewModel = hiltViewModel(),
         membersViewModel = hiltViewModel(),
-        noteViewModel = hiltViewModel(),
         noteCreationViewModel = hiltViewModel(),
         noteEditViewModel = hiltViewModel(),
-        sharingViewModel = hiltViewModel(),
         templateViewModel = hiltViewModel(),
         wsCreationViewModel = hiltViewModel(),
         wsProfileManagerViewModel = hiltViewModel(),
@@ -162,16 +154,13 @@ private data class NavigationViewModels(
     val profileViewModel: ProfileViewModel,
     val mainViewModel: MainViewModel,
     val chatViewModel: ChatViewModel,
-    val copyViewModel: CopyViewModel,
     val fieldsViewModel: FieldsViewModel,
     val filterViewModel: FilterViewModel,
     val inviteViewModel: InviteViewModel,
     val membersManagerViewModel: MembersManagerViewModel,
     val membersViewModel: MembersViewModel,
-    val noteViewModel: NoteViewModel,
     val noteCreationViewModel: NoteCreationViewModel,
     val noteEditViewModel: NoteEditViewModel,
-    val sharingViewModel: SharingViewModel,
     val templateViewModel: TemplateViewModel,
     val wsCreationViewModel: WsCreationViewModel,
     val wsProfileManagerViewModel: WsProfileManagerViewModel,
@@ -196,7 +185,8 @@ private fun handleNavigationEvent(
             filterViewModel = viewModels.filterViewModel,
             membersViewModel = viewModels.membersViewModel,
             noteEditViewModel = viewModels.noteEditViewModel,
-            profileViewModel = viewModels.profileViewModel
+            profileViewModel = viewModels.profileViewModel,
+            creationViewModel = viewModels.noteCreationViewModel
         )
     )
 
@@ -224,7 +214,8 @@ private data class NavigationViewModelGroupParams(
     val filterViewModel: FilterViewModel,
     val membersViewModel: MembersViewModel,
     val noteEditViewModel: NoteEditViewModel,
-    val profileViewModel: ProfileViewModel
+    val profileViewModel: ProfileViewModel,
+    val creationViewModel: NoteCreationViewModel
 )
 
 private fun createNavigationViewModelGroups(
@@ -243,7 +234,8 @@ private fun createNavigationViewModelGroups(
         params.membersViewModel,
         params.noteEditViewModel,
         params.profileViewModel,
-        params.templateViewModel
+        params.templateViewModel,
+        params.creationViewModel
     )
 )
 
@@ -294,7 +286,6 @@ private fun routeNavigationEvent(
         is NavigationEvent.NavigateToInvite,
         is NavigationEvent.NavigateToMembersManager,
         is NavigationEvent.NavigateToMembers,
-        is NavigationEvent.NavigateToNote,
         is NavigationEvent.NavigateToNoteCreation,
         is NavigationEvent.NavigateToNoteEdit,
         is NavigationEvent.NavigateToSharing,
@@ -421,7 +412,8 @@ private data class FeatureNavigationViewModels(
     val membersViewModel: MembersViewModel,
     val noteEditViewModel: NoteEditViewModel,
     val profileViewModel: ProfileViewModel,
-    val templateViewModel: TemplateViewModel
+    val templateViewModel: TemplateViewModel,
+    val creationViewModel: NoteCreationViewModel
 )
 
 private fun handleFeatureNavigation(
@@ -456,10 +448,8 @@ private fun handleFeatureNavigation(
             navController.navigate(NavRoutes.MEMBERS)
             viewModels.membersViewModel.loadUsers()
         }
-        is NavigationEvent.NavigateToNote -> {
-            navController.navigate(NavRoutes.NOTE)
-        }
         is NavigationEvent.NavigateToNoteCreation -> {
+            viewModels.creationViewModel.reset(event.noteType, event.noteId)
             navController.navigate(NavRoutes.NOTE_CREATION)
         }
         is NavigationEvent.NavigateToNoteEdit -> {
@@ -625,12 +615,8 @@ class NavigationActions(private val navigationStateManager: NavigationStateManag
         )
     }
 
-    override fun navigateToNote(noteId: String) {
-        navigationStateManager.note.navigateToNote(noteId)
-    }
-
-    override fun navigateToNoteCreation() {
-        navigationStateManager.note.navigateToNoteCreation()
+    override fun navigateToNoteCreation(noteType: NoteType, noteId: String?) {
+        navigationStateManager.note.navigateToNoteCreation(noteType, noteId)
     }
 
     override fun navigateToNoteEdit(noteId: String) {
@@ -704,7 +690,7 @@ private fun AppNavHost(
         addProfileRoutes(viewModels.authViewModel, viewModels.profileViewModel, navigationStateManager)
         addWorkspaceRoutes(viewModels.wsSelectViewModel, navigationStateManager, featureActions)
         addFeatureRoutes(
-            viewModels.chatViewModel, viewModels.filterViewModel, viewModels.noteViewModel, viewModels.noteCreationViewModel,
+            viewModels.chatViewModel, viewModels.filterViewModel, viewModels.noteCreationViewModel,
             viewModels.noteEditViewModel, navigationStateManager, featureActions
         )
         addWorkspaceManagementRoutes(
@@ -841,7 +827,6 @@ private fun NavGraphBuilder.addWorkspaceRoutes(
 private fun NavGraphBuilder.addFeatureRoutes(
     chatViewModel: ChatViewModel,
     filterViewModel: FilterViewModel,
-    noteViewModel: NoteViewModel,
     noteCreationViewModel: NoteCreationViewModel,
     noteEditViewModel: NoteEditViewModel,
     navigationStateManager: NavigationStateManager,
@@ -864,18 +849,10 @@ private fun NavGraphBuilder.addFeatureRoutes(
         )
     }
 
-    composable(NavRoutes.NOTE) {
-        NoteScreen(
-            noteViewModel = noteViewModel,
-            featureActions = featureActions,
-            onBackClick = { navigationStateManager.navigateBack() }
-        )
-    }
-
     composable(NavRoutes.NOTE_CREATION) {
-        LaunchedEffect(Unit) {
-            noteCreationViewModel.reset()
-        }
+//        LaunchedEffect(Unit) {
+//            noteCreationViewModel.reset()
+//        }
         NoteCreationScreen(
             noteCreationViewModel = noteCreationViewModel,
             onBackClick = { navigationStateManager.navigateBack() },

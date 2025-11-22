@@ -33,7 +33,6 @@ class NoteRepositoryImpl @Inject constructor(
                     "label" to field.label,
                     "required" to field.required,
                     "placeholder" to field.placeholder,
-                    "maxLength" to field.maxLength,
                     "content" to field.content
                 )
                 is DateTimeField -> mapOf(
@@ -41,18 +40,15 @@ class NoteRepositoryImpl @Inject constructor(
                     "fieldType" to "datetime",
                     "label" to field.label,
                     "required" to field.required,
-                    "minDate" to field.minDate?.toString(),
-                    "maxDate" to field.maxDate?.toString(),
                     "content" to field.content?.toString()
                 )
-                is NumberField -> mapOf(
+                is SignatureField -> mapOf(
                     "_id" to field._id,
-                    "fieldType" to "number",
+                    "fieldType" to "signature",
                     "label" to field.label,
                     "required" to field.required,
-                    "min" to field.min,
-                    "max" to field.max,
-                    "content" to field.content
+                    "userId" to field.userId,
+                    "userName" to field.userName
                 )
             }
         }
