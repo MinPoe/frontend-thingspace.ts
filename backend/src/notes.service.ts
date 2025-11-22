@@ -102,8 +102,8 @@ export class NoteService {
         } as Note;
     }
 
-    async getNote(noteId: string, userId: mongoose.Types.ObjectId): Promise<Note | null> {
-        const note = await noteModel.findOne({ _id: noteId, userId });
+    async getNote(noteId: string): Promise<Note | null> {
+        const note = await noteModel.findOne({ _id: noteId });
         return note
             ? {
                 ...note.toObject(),

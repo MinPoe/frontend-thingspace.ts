@@ -513,15 +513,16 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.body.error).toBe('Note not found');
     });
 
-    test("404 – accessing another user's note", async () => {
+    test("200 – accessing another user's note (notes are shareable)", async () => {
       // Input: noteId of another user's note, different userId
-      // Expected status code: 404
-      // Expected behavior: error message due to ownership check
-      // Expected output: error message
+      // Expected status code: 200
+      // Expected behavior: note is accessible since notes are shareable
+      // Expected output: note details
       const res = await request(app).get(`/api/notes/${noteId}`).set('Authorization', `Bearer ${testData.testUser2Token}`);
 
-      expect(res.status).toBe(404);
-      expect(res.body.error).toBe('Note not found');
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Note successfully retrieved');
+      expect(res.body.data.note._id).toBe(noteId);
     });
   });
 
