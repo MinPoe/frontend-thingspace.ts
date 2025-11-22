@@ -93,22 +93,23 @@ class NoteCreationViewModel @Inject constructor(
         )
     }
 
-    private fun setFieldsToTemplate(noteId:String?)
+    private suspend fun setFieldsToTemplate(noteId:String?)
     {
-        if (noteId!=null) viewModelScope.launch{
-            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
+        if (noteId!=null){
             val noteRequest = noteRepository.getNote(noteId)
-            if (noteRequest.isSuccess){
+            if (noteRequest.isSuccess) { //if it is not successful the fields will not load
                 val note = noteRequest.getOrNull()!!
                 val fields = mutableListOf<FieldCreationData>()
-                for (field in note.fields){
-                    val fieldType = when(field) {
+                for (field in note.fields) {
+                    val fieldType = when (field) {
                         is TextField -> {
                             FieldType.TEXT
                         }
+
                         is DateTimeField -> {
                             FieldType.DATETIME
                         }
+
                         is SignatureField -> {
                             FieldType.SIGNATURE
                         }
@@ -116,7 +117,10 @@ class NoteCreationViewModel @Inject constructor(
                     fields.add(FieldCreationData(type = fieldType, label = field.label))
                 }
                 //Also sets tags as they are part of template content
-                _creationState.value = _creationState.value.copy(fields = fields, tags = note.tags, isLoadingTemplate = false)
+                _creationState.value = _creationState.value.copy(
+                    fields = fields,
+                    tags = note.tags
+                )
             }
         }
     }
@@ -280,16 +284,17 @@ class NoteCreationViewModel @Inject constructor(
 
     fun reset(noteType: NoteType, noteId: String?) {
         _creationState.value = NoteCreationState()
-        setFieldsToTemplate(noteId)
-        getProfile()
-        setNoteType(noteType)
+        viewModelScope.launch{
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
+            getProfile() //loading profile to read the signatures correctly
+            setFieldsToTemplate(noteId)
+            setNoteType(noteType)
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = false)
+        }
     }
 
-    private fun getProfile(){
-        viewModelScope.launch {
-            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
-            val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
-            _creationState.value = _creationState.value.copy(isLoadingTemplate = false, user = user)
-        }
+    private suspend fun getProfile(){
+        val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
+        _creationState.value = _creationState.value.copy(user = user)
     }
 }
