@@ -155,13 +155,10 @@ export class NoteService {
 
     // Copy note to a different workspace
     async copyNoteToWorkspace(noteId: string, userId: mongoose.Types.ObjectId, workspaceId: string): Promise<Note> {
-        // Verify note exists and the requester is the owner of the note
+        // Verify note exists
         const note = await noteModel.findById(noteId);
         if (!note) {
             throw new Error('Note not found');
-        }
-        if (note.userId.toString() !== userId.toString()) {
-            throw new Error('Access denied: Only the note owner can copy');
         }
 
         // Verify target workspace exists and the user is allowed (owner or member and not banned)
@@ -182,7 +179,7 @@ export class NoteService {
             dateCreation: new Date(),
             dateLastEdit: new Date(),
             tags: note.tags,
-            noteType: NoteType.CONTENT,
+            noteType: note.noteType,
             fields: note.fields,
             vectorData: note.vectorData
         });

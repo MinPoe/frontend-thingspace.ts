@@ -817,6 +817,7 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.body.data.note.workspaceId).toBe(testData.testWorkspace2Id);
       expect(res.body.data.note._id).not.toBe(noteId);
       expect(res.body.data.note.fields[0].content).toBe('Copy This');
+      expect(res.body.data.note.noteType).toBe(NoteType.CONTENT);
     });
 
     test('404 – target workspace not found', async () => {
@@ -848,18 +849,25 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.body.error).toContain('Access denied');
     });
 
-    test('403 – cannot copy another user\'s note (not owner)', async () => {
+    test('201 – can copy another user\'s note (notes are shareable)', async () => {
       // Input: noteId of another user's note, workspaceId, different userId
-      // Expected status code: 403
-      // Expected behavior: error message returned due to ownership check
-      // Expected output: error message
+      // Expected status code: 201
+      // Expected behavior: note is copied successfully since notes are shareable
+      // Expected output: copied note details
+      // First, ensure testUser2 is a member of the workspace
+      await workspaceModel.findByIdAndUpdate(testData.testWorkspaceId, {
+        $push: { members: new mongoose.Types.ObjectId(testData.testUser2Id) },
+      });
+
       const res = await request(app)
         .post(`/api/notes/${noteId}/copy`)
         .set('Authorization', `Bearer ${testData.testUser2Token}`)
         .send({ workspaceId: testData.testWorkspaceId });
 
-      expect(res.status).toBe(403);
-      expect(res.body.error).toBe('Access denied: Only the note owner can copy');
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe('Note copied to workspace successfully');
+      expect(res.body.data.note._id).not.toBe(noteId);
+      expect(res.body.data.note.noteType).toBe(NoteType.CONTENT);
     });
 
     test('400 – missing workspaceId', async () => {
