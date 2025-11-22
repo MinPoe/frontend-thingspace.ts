@@ -143,7 +143,8 @@ fun MainBottomBar(
     onChatClick:()->Unit,
     onContentClick:()->Unit,
     onTemplatesClick: ()->Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabels: Boolean = true  // Set to true to show text labels with icons
 ){
     BottomAppBar(
         modifier = modifier
@@ -153,11 +154,11 @@ fun MainBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ContentNoteActionButton(onClick = onContentClick)
-            TemplateActionButton(onClick = onTemplatesClick)
-            ChatActionButton(onClick = onChatClick)
-            WorkspaceActionButton(onClick = onWorkspacesClick)
-            CreateNoteActionButton(onClick = onCreateNoteClick)
+            ContentNoteActionButton(onClick = onContentClick, showLabel = showLabels)
+            TemplateActionButton(onClick = onTemplatesClick, showLabel = showLabels)
+            ChatActionButton(onClick = onChatClick, showLabel = showLabels)
+            WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = showLabels)
+            CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = showLabels)
         }
     }
 }
