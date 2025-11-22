@@ -81,7 +81,6 @@ export class NotesController {
         res.status(401).json({ error: 'User not authenticated' });
         return;
       }
-      const userId = user._id;
       const noteId = req.params.id;
       const note = await noteService.getNote(noteId);
 
