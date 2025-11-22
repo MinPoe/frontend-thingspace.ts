@@ -30,6 +30,13 @@ router.delete(
   asyncHandler(notesController.deleteNote.bind(notesController))
 );
 
+
+router.get(
+  '/:id/workspaces',
+  authenticateToken,
+  asyncHandler(notesController.getWorkspacesForNote.bind(notesController))
+)
+
 router.get(
   '/:id',
   authenticateToken,
@@ -41,12 +48,6 @@ router.get(
   authenticateToken,
   asyncHandler(notesController.findNotes.bind(notesController))
 );
-
-router.get(
-  '/:id/workspaces',
-  authenticateToken,
-  asyncHandler(notesController.getWorkspacesForNote.bind(notesController))
-)
 
 router.post(
   '/:id/share',
