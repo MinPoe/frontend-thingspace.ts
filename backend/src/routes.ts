@@ -1,12 +1,12 @@
 import { Router } from 'express';
 
-import { authenticateToken } from './auth.middleware';
-import authRoutes from './auth.routes';
-import mediaRoutes from './media.routes';
-import usersRoutes from './user.routes';
-import noteRoutes from './notes.routes';
-import workspaceRoutes from './workspace.routes';
-import { messageRouter } from './message.routes';
+import { authenticateToken } from './authentication/auth.middleware';
+import authRoutes from './authentication/auth.routes';
+import mediaRoutes from './media/media.routes';
+import usersRoutes from './users/user.routes';
+import noteRoutes from './notes/notes.routes';
+import workspaceRoutes from './workspaces/workspace.routes';
+import { messageRouter } from './messages/message.routes';
 
 const router = Router();
 

@@ -5,11 +5,11 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
 import type { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from 'express';
 
-import logger from '../../logger.util';
-import { authMiddleware as legacyAuthMiddleware } from '../../auth.middleware';
-import { userModel } from '../../user.model';
-import { workspaceModel } from '../../workspace.model';
-import { authService } from '../../auth.service';
+import logger from '../../utils/logger.util';
+import { authMiddleware as legacyAuthMiddleware } from '../../authentication/auth.middleware';
+import { userModel } from '../../users/user.model';
+import { workspaceModel } from '../../workspaces/workspace.model';
+import { authService } from '../../authentication/auth.service';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
@@ -282,7 +282,7 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
         process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
       }
 
-      const { AuthController } = await import('../../auth.controller.js') as typeof import('../../auth.controller');
+      const { AuthController } = await import('../../authentication/auth.controller.js') as typeof import('../../authentication/auth.controller');
       jest
         .spyOn(AuthController.prototype, 'devLogin')
         .mockImplementation(async function devLoginMock(req, res, next) {
@@ -536,7 +536,7 @@ describe('Auth API – Normal Tests (No Mocking)', () => {
 
       let middleware: ((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => unknown) | undefined;
       jest.isolateModules(() => {
-        ({ authMiddleware: middleware } = require('../../auth.middleware'));
+        ({ authMiddleware: middleware } = require('../../authentication/auth.middleware'));
       });
 
       if (!middleware) {

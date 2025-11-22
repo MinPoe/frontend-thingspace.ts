@@ -41,7 +41,7 @@
     <string name="plusTemplates">&#160;- Templates</string>
     <string name="plusChat">&#160;- Chat</string>
     <!-- Icon content descriptions -->
-    <string name="content">Content</string>
+    <string name="content">Notes</string>
     <string name="create">Create</string>
     <string name="templates">Templates</string>
     <string name="workspaces">Workspaces</string>

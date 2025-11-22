@@ -5,8 +5,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { NoteType } from '../../notes.types';
-import { noteService } from '../../notes.service';
+import { NoteType } from '../../notes/notes.types';
+import { noteService } from '../../notes/notes.service';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 jest.setTimeout(60000);

@@ -4,10 +4,10 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
 
-import { authService, AuthService } from '../../auth.service';
-import { workspaceService } from '../../workspace.service';
-import { userModel } from '../../user.model';
-import { connectDB, disconnectDB } from '../../database';
+import { authService, AuthService } from '../../authentication/auth.service';
+import { workspaceService } from '../../workspaces/workspace.service';
+import { userModel } from '../../users/user.model';
+import { connectDB, disconnectDB } from '../../utils/database';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
@@ -62,7 +62,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       // Expected behavior: validation middleware catches non-ZodError and returns 500
       // Expected output: error message "Validation processing failed"
       // This tests the non-ZodError catch branch in validation.middleware.ts
-      const { authenticateUserSchema } = require('../../auth.types');
+      const { authenticateUserSchema } = require('../../authentication/auth.types');
       const originalParse = authenticateUserSchema.parse;
       
       jest.spyOn(authenticateUserSchema, 'parse').mockImplementation(() => {
@@ -713,8 +713,8 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
 
       // Clear module cache and re-import to get fresh JWT_SECRET value
       jest.resetModules();
-      const { AuthService: FreshAuthService } = require('../../auth.service');
-      const { userModel: freshUserModel } = require('../../user.model');
+      const { AuthService: FreshAuthService } = require('../../authentication/auth.service');
+      const { userModel: freshUserModel } = require('../../users/user.model');
       const serviceInstance = new FreshAuthService();
 
       // Mock Google client to avoid verification issues
@@ -753,8 +753,8 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
       }
       jest.resetModules();
       // Re-import to restore
-      require('../../auth.service');
-      require('../../user.model');
+      require('../../authentication/auth.service');
+      require('../../users/user.model');
     });
 
     test('generateAccessToken handles token generation failure', async () => {

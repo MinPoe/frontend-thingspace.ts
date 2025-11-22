@@ -8,10 +8,10 @@ import os from 'os';
 
 import type { Request, Response } from 'express';
 
-import { MediaController } from '../../media.controller';
-import * as sanitizeModule from '../../sanitizeInput.util';
-import { IMAGES_DIR, MAX_FILE_SIZE } from '../../constants';
-import { mediaService } from '../../media.service';
+import { MediaController } from '../../media/media.controller';
+import * as sanitizeModule from '../../utils/sanitizeInput.util';
+import { IMAGES_DIR, MAX_FILE_SIZE } from '../../utils/constants';
+import { mediaService } from '../../media/media.service';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------

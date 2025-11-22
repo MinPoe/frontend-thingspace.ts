@@ -4,10 +4,10 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import type { Request, Response, NextFunction } from 'express';
 
-import { messageModel } from '../../message.model';
-import { workspaceModel } from '../../workspace.model';
-import * as authMiddleware from '../../auth.middleware';
-import logger from '../../logger.util';
+import { messageModel } from '../../messages/message.model';
+import { workspaceModel } from '../../workspaces/workspace.model';
+import * as authMiddleware from '../../authentication/auth.middleware';
+import logger from '../../utils/logger.util';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
@@ -183,7 +183,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
       jest.resetModules();
 
       // Mock authenticateToken before requiring routes
-      jest.doMock('../../auth.middleware', () => ({
+      jest.doMock('../../authentication/auth.middleware', () => ({
         authenticateToken: async (req: Request, res: Response, next: NextFunction) => {
           req.user = userMock;
           next();
@@ -196,7 +196,7 @@ describe('Message API – Mocked Tests (Jest Mocks)', () => {
 
     afterEach(() => {
       jest.resetModules();
-      jest.dontMock('../../auth.middleware');
+      jest.dontMock('../../authentication/auth.middleware');
     });
 
     test('GET /api/messages/workspace/:workspaceId - 401 when req.user._id is undefined (line 18)', async () => {

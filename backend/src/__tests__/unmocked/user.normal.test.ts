@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import { workspaceModel } from '../../workspace.model';
-import { userModel } from '../../user.model';
-import { noteModel } from '../../note.model';
+import { workspaceModel } from '../../workspaces/workspace.model';
+import { userModel } from '../../users/user.model';
+import { noteModel } from '../../notes/note.model';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------

@@ -10,7 +10,8 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 fun Icon(
     type: String = "dark",
     contentDescription: String = "",
-    name: Int
+    name: Int,
+    modifier: Modifier = Modifier
 ) {
     val spacing = LocalSpacing.current
     val color = if (type == "dark") {
@@ -22,7 +23,7 @@ fun Icon(
     Icon(
         painter = painterResource(name),
         contentDescription = contentDescription,
-        modifier = Modifier.size(spacing.large),
+        modifier = modifier.size(spacing.large),
         tint = color
     )
 }

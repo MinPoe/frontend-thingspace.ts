@@ -6,8 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-import { mediaService } from '../../media.service';
-import { IMAGES_DIR } from '../../constants';
+import { mediaService } from '../../media/media.service';
+import { IMAGES_DIR } from '../../utils/constants';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
@@ -166,7 +166,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
       try {
         jest.isolateModules(() => {
           // Re-require storage module so the top-level directory creation runs with our spies
-          require('../../storage');
+          require('../../utils/storage');
         });
 
         // Check spy calls before restoring
@@ -399,7 +399,7 @@ describe('Media API – Mocked Tests (Jest Mocks)', () => {
           // Re-require storage module - this will execute lines 8-10
           // The module will call fs.existsSync(IMAGES_DIR) which returns false (mocked)
           // Then it will call fs.mkdirSync(IMAGES_DIR, { recursive: true })
-          require('../../storage');
+          require('../../utils/storage');
         });
         
         // Verify existsSync was called with IMAGES_DIR - line 8

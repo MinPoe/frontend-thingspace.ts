@@ -1,0 +1,33 @@
+import { Request, Response, NextFunction } from 'express';
+
+import logger from '../utils/logger.util';
+
+export const notFoundHandler = (req: Request, res: Response) => {
+  res.status(404).json({
+    error: 'Route not found',
+    message: `Cannot ${req.method} ${req.originalUrl}`,
+    timestamp: new Date().toISOString(),
+    path: req.originalUrl,
+    method: req.method,
+  });
+};
+
+export const errorHandler = (error: unknown, req: Request, res: Response, next: NextFunction) => {
+  logger.error('Error:', error);
+
+  if (error instanceof Error) {
+    return res.status(500).json({
+      message: 'Internal server error',
+    });
+  }
+
+  // Log when we're about to call next with a non-Error object
+  logger.error('WARNING: Calling next(error) with non-Error object:', {
+    errorType: typeof error,
+    errorValue: error,
+    route: req.path,
+    method: req.method,
+  });
+  next(error);
+};
+

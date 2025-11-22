@@ -1,11 +1,12 @@
+/// <reference path="./express.d.ts" />
 import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 
-import { connectDB } from './database';
-import { errorHandler, notFoundHandler } from './errorHandler.middleware';
+import { connectDB } from './utils/database';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware';
 import router from './routes';
-import logger from './logger.util';
+import logger from './utils/logger.util';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;

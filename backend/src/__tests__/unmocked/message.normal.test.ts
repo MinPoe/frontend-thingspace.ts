@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import { workspaceModel } from '../../workspace.model';
-import { messageModel } from '../../message.model';
+import { workspaceModel } from '../../workspaces/workspace.model';
+import { messageModel } from '../../messages/message.model';
 import { createTestApp, setupTestDatabase, TestData } from '../test-utils/test-helpers';
 
 // ---------------------------
