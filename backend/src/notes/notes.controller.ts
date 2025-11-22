@@ -83,7 +83,7 @@ export class NotesController {
       }
       const userId = user._id;
       const noteId = req.params.id;
-      const note = await noteService.getNote(noteId, userId);
+      const note = await noteService.getNote(noteId);
 
       if (!note) {
         res.status(404).json({ error: 'Note not found' });

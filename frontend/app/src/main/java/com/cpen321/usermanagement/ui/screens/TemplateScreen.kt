@@ -122,9 +122,11 @@ private fun TemplateContent(
         },
         bottomBar = {
             TemplateBottomBar(
+                onCreateNoteClick = actions.onCreateNoteClick,
                 onWorkspacesClick = actions.onWorkspaceClick,
-                onContentClick = actions.onContentClick,
                 onChatClick = actions.onChatClick,
+                onContentClick = actions.onContentClick,
+                onTemplatesClick = { /* Already on templates screen */ },
                 modifier = modifier)
         }
     ) { paddingValues ->

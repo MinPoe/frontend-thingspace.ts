@@ -132,9 +132,11 @@ private fun MainContent(
         },
         bottomBar = {
             MainBottomBar(
+                onCreateNoteClick = actions.onCreateNoteClick,
                 onWorkspacesClick = actions.onWorkspaceClick,
-                onTemplatesClick = actions.onTemplateClick,
                 onChatClick = actions.onChatClick,
+                onContentClick = { /* Already on content screen */ },
+                onTemplatesClick = actions.onTemplateClick,
                 modifier = modifier)
         }
     ) { paddingValues ->

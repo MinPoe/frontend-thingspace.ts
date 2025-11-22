@@ -1,23 +1,20 @@
 package com.cpen321.usermanagement.ui.components
 
 import Icon
-import android.R.attr.spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
@@ -183,32 +180,64 @@ fun WorkspaceRow(
 
 @Composable
 fun MainBottomBar(
+    onCreateNoteClick: ()->Unit,
     onWorkspacesClick: ()-> Unit,
     onChatClick:()->Unit,
+    onContentClick:()->Unit,
     onTemplatesClick: ()->Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabels: Boolean = true  // Set to true to show text labels with icons
 ){
-    BottomAppBar(
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+    if (showLabels) {
+        // Use Surface when labels are shown - it can expand to fit content
+        Surface(
+            modifier = modifier,
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
         ) {
-            TemplateActionButton(onClick = onTemplatesClick)
-            ChatActionButton(onClick = onChatClick)
-            WorkspaceActionButton(onClick = onWorkspacesClick)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ContentNoteActionButton(onClick = onContentClick, showLabel = true)
+                TemplateActionButton(onClick = onTemplatesClick, showLabel = true)
+                ChatActionButton(onClick = onChatClick, showLabel = true)
+                WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = true)
+                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = true)
+            }
+        }
+    } else {
+        // Use BottomAppBar when no labels - more compact
+        BottomAppBar(
+            modifier = modifier
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ContentNoteActionButton(onClick = onContentClick, showLabel = false)
+                TemplateActionButton(onClick = onTemplatesClick, showLabel = false)
+                ChatActionButton(onClick = onChatClick, showLabel = false)
+                WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = false)
+                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = false)
+            }
         }
     }
 }
 
 @Composable
 fun TemplateBottomBar(
+    onCreateNoteClick: ()->Unit,
     onWorkspacesClick: ()-> Unit,
     onChatClick:()->Unit,
     onContentClick:()->Unit,
-    modifier: Modifier = Modifier
+    onTemplatesClick: ()->Unit,
+    modifier: Modifier = Modifier,
+    showLabels: Boolean = true  // Set to true to show text labels with icons
 ){
     if (showLabels) {
         // Use Surface when labels are shown - it can expand to fit content
