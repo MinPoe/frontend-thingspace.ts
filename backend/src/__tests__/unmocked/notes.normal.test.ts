@@ -386,18 +386,20 @@ describe('Notes API – Normal Tests (No Mocking)', () => {
       expect(res.body.error).toBeDefined();
     });
 
-    test("500 – cannot update another user's note (Note not found)", async () => {
+    test("200 – can update another user's note (notes are shareable)", async () => {
       // Input: noteId of another user's note, updated data in body, different userId
-      // Expected status code: 500
-      // Expected behavior: database error due to ownership check
-      // Expected output: None
+      // Expected status code: 200
+      // Expected behavior: note is updated successfully since notes are shareable
+      // Expected output: updated note details
       const res = await request(app)
         .put(`/api/notes/${noteId}`)
         .set('Authorization', `Bearer ${testData.testUser2Token}`)
-        .send({ tags: ['new-tag'], fields: [{ fieldType: 'title', content: 'Hacked!', _id: '1' }] });
+        .send({ tags: ['new-tag'], fields: [{ fieldType: 'title', content: 'Updated by another user', _id: '1' }] });
 
-      expect(res.status).toBe(500);
-      expect(res.body.error).toBeDefined();
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Note successfully updated');
+      expect(res.body.data.note.tags).toEqual(['new-tag']);
+      expect(res.body.data.note.fields[0].content).toBe('Updated by another user');
     });
   });
 

@@ -61,9 +61,9 @@ export class NoteService {
     }
 
     // Update a note
-    async updateNote(noteId: string, userId: mongoose.Types.ObjectId, updateData: UpdateNoteRequest): Promise<Note> {
+    async updateNote(noteId: string, updateData: UpdateNoteRequest): Promise<Note> {
         const updatedNote = await noteModel.findOneAndUpdate(
-            { _id: noteId, userId },
+            { _id: noteId },
             { 
                 ...updateData,
                 updatedAt: new Date()
