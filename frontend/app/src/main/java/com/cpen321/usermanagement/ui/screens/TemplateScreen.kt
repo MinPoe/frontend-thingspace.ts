@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.Note
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.components.MessageSnackbar
 import com.cpen321.usermanagement.ui.components.MessageSnackbarState
 import com.cpen321.usermanagement.ui.viewmodels.MainUiState
@@ -40,6 +42,8 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.components.MainBottomBar
 import com.cpen321.usermanagement.ui.components.NoteDisplayList
 import com.cpen321.usermanagement.ui.components.SearchBar
+import com.cpen321.usermanagement.ui.components.TemplateBottomBar
+import com.cpen321.usermanagement.ui.components.TemplateDisplayList
 import com.cpen321.usermanagement.ui.viewmodels.CreateWsUiStateE
 import com.cpen321.usermanagement.utils.FeatureActions
 
@@ -51,7 +55,9 @@ data class TemplateActions(
     val onChatClick: () -> Unit,
     val onSearchClick: () -> Unit,
     val onQueryChange: (String) -> Unit,
-    val onCreateNoteClick: () -> Unit
+    val onCreateNoteClick: () -> Unit,
+    val onCreateTemplateClick: ()->Unit,
+    val onNoteEditClick: (String) -> Unit
 )
 
 @Composable
@@ -63,7 +69,8 @@ fun TemplateScreen(
     val fetching by templateViewModel.fetching.collectAsState()
 
     val actions = TemplateActions(
-        onNoteClick = { noteId:String -> featureActions.navs.navigateToNote(noteId) },
+        onNoteClick = { noteId:String -> featureActions.navs.navigateToNoteCreation(NoteType.CONTENT, noteId) },
+        onNoteEditClick = {noteId:String -> featureActions.navs.navigateToNoteEdit(noteId)},
         onContentClick = {  featureActions.navs.navigateToMainTagReset(
             featureActions.state.getWorkspaceId()) },
         onWorkspaceClick = { featureActions.ws.navigateToWsSelect() },
@@ -84,13 +91,14 @@ fun TemplateScreen(
             searchQuery = featureActions.state.getSearchQuery()
         ) },
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)},
-        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
+        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation(NoteType.CONTENT) },
+        onCreateTemplateClick = { featureActions.navs.navigateToNoteCreation(NoteType.TEMPLATE)}
     )
 
     TemplateContent(
         onProfileClick = onProfileClick,
         actions = actions,
-        notes = templateViewModel.getNotesTitlesFound(0),
+        templates = templateViewModel.getNotesTitlesFound(0),
         fetching = fetching,
         wsname = templateViewModel.getWorkspaceName(),
         query = featureActions.state.getSearchQuery()
@@ -101,7 +109,7 @@ fun TemplateScreen(
 private fun TemplateContent(
     onProfileClick: () -> Unit,
     actions: TemplateActions,
-    notes:List<Note>,
+    templates:List<Note>,
     query:String,
     fetching: Boolean,
     wsname:String,
@@ -113,10 +121,8 @@ private fun TemplateContent(
             MainTopBar(onProfileClick = onProfileClick)
         },
         bottomBar = {
-            MainBottomBar(
-                onCreateNoteClick = actions.onCreateNoteClick,
+            TemplateBottomBar(
                 onWorkspacesClick = actions.onWorkspaceClick,
-                onTemplatesClick = {  },
                 onContentClick = actions.onContentClick,
                 onChatClick = actions.onChatClick,
                 modifier = modifier)
@@ -133,7 +139,7 @@ private fun TemplateContent(
             TemplateBody(
             paddingValues = paddingValues,
                 actions = actions,
-            notes = notes,
+            templates = templates,
             wsname = wsname,
             query = query)
         }
@@ -200,7 +206,7 @@ private fun TemplateBody(
     paddingValues: PaddingValues,
     query: String,
     actions: TemplateActions,
-    notes:List<Note>,
+    templates:List<Note>,
     wsname:String,
     modifier: Modifier = Modifier
 ) {
@@ -210,21 +216,35 @@ private fun TemplateBody(
             .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        WelcomeMessage(wsname = wsname)
+        val spacing = LocalSpacing.current
+        TemplateLabel(wsname = wsname)
         SearchBar(
             onSearchClick = actions.onSearchClick,//TODO: for now
             onFilterClick = actions.onFilterClick,
             onQueryChange = actions.onQueryChange,
             query = query
         )
-        NoteDisplayList(
-            onNoteClick = actions.onNoteClick,
-            notes = notes
+
+        HorizontalDivider(modifier = modifier.padding(spacing.medium))
+        Button(onClick = actions.onCreateNoteClick,
+            modifier = modifier.padding(
+                start = spacing.medium, end = spacing.medium)){
+            Text(stringResource(R.string.blank_note))
+        }
+        Button(onClick = actions.onCreateTemplateClick,
+            modifier = modifier.padding(
+                start = spacing.medium, end = spacing.medium, top = spacing.small, bottom = spacing.small)) {
+            Text(stringResource(R.string.new_template))
+        }
+        TemplateDisplayList(
+            templates = templates,
+            onTitleClick = actions.onNoteClick,
+            onEditClick = actions.onNoteEditClick,
         )
     }
 }
 @Composable
-private fun WelcomeMessage(
+private fun TemplateLabel(
     wsname: String,
     modifier: Modifier = Modifier
 ) {

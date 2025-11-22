@@ -1,9 +1,11 @@
 package com.cpen321.usermanagement.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cpen321.usermanagement.data.remote.dto.*
 import com.cpen321.usermanagement.data.repository.NoteRepository
+import com.cpen321.usermanagement.data.repository.ProfileRepository
 import com.cpen321.usermanagement.data.repository.WorkspaceRepository
 import com.cpen321.usermanagement.ui.navigation.NavigationStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,22 +30,23 @@ data class NoteEditState(
     val shareSuccess: Boolean = false,
     val copySuccess: Boolean = false,
     val workspaces: List<Workspace> = emptyList(),
-    val isLoadingWorkspaces: Boolean = false
+    val isLoadingWorkspaces: Boolean = false,
+    val lastEditString: String = "",
+    val createdAtString: String = "",
+    val isDeleting: Boolean = false,
+    val isDeleted: Boolean = false,
+    val user: User? = null
 )
 
 @HiltViewModel
 class NoteEditViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     private val workspaceRepository: WorkspaceRepository,
-    private val navigationStateManager: NavigationStateManager
+    private val profileRepository: ProfileRepository,
 ) : ViewModel() {
 
     private val _editState = MutableStateFlow(NoteEditState())
     val editState: StateFlow<NoteEditState> = _editState.asStateFlow()
-
-//    init {
-//        loadWorkspaces()
-//    }
 
     fun loadWorkspaces() {
         viewModelScope.launch {
@@ -84,6 +87,8 @@ class NoteEditViewModel @Inject constructor(
             _editState.value = _editState.value.copy(isLoading = true, loadError = null)
 
             val result = noteRepository.getNote(noteId)
+            //loading profile to interpret signature fields
+            val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign the signature
 
             result.fold(
                 onSuccess = { note ->
@@ -93,26 +98,23 @@ class NoteEditViewModel @Inject constructor(
                                 id = field._id,
                                 type = FieldType.TEXT,
                                 label = field.label,
-                                required = field.required,
                                 placeholder = field.placeholder,
-                                maxLength = field.maxLength,
                                 content = field.content
                             )
-                            is NumberField -> FieldCreationData(
-                                id = field._id,
-                                type = FieldType.NUMBER,
-                                label = field.label,
-                                required = field.required,
-                                min = field.min,
-                                max = field.max,
-                                content = field.content
-                            )
+
                             is DateTimeField -> FieldCreationData(
                                 id = field._id,
                                 type = FieldType.DATETIME,
                                 label = field.label,
-                                required = field.required,
                                 content = field.content
+                            )
+
+                            is SignatureField -> FieldCreationData(
+                                id = field._id,
+                                type = FieldType.SIGNATURE,
+                                label = field.label,
+                                userId = field.userId,
+                                placeholder = field.userName
                             )
                         }
                     }
@@ -123,21 +125,21 @@ class NoteEditViewModel @Inject constructor(
                         fields = fieldCreationData,
                         workspaces = _editState.value.workspaces,
                         isLoading = false,
-                        loadError = null
+                        loadError = null,
+                        createdAtString = note.createdAt,
+                        lastEditString = note.updatedAt,
+                        user = user
                     )
                 },
                 onFailure = { exception ->
                     _editState.value = _editState.value.copy(
                         isLoading = false,
+                        user = user,
                         loadError = exception.message ?: "Failed to load note"
                     )
                 }
             )
         }
-    }
-
-    fun updateNoteType(noteType: NoteType) {
-        _editState.value = _editState.value.copy(noteType = noteType)
     }
 
     fun addTag(tag: String) {
@@ -159,8 +161,8 @@ class NoteEditViewModel @Inject constructor(
             type = type,
             label = when (type) {
                 FieldType.TEXT -> "New Text Field"
-                FieldType.NUMBER -> "New Number Field"
                 FieldType.DATETIME -> "New DateTime Field"
+                FieldType.SIGNATURE -> "New Signature Field"
             }
         )
         _editState.value = _editState.value.copy(
@@ -180,12 +182,9 @@ class NoteEditViewModel @Inject constructor(
                 if (field.id == fieldId) {
                     when (update) {
                         is FieldUpdate.Label -> field.copy(label = update.value)
-                        is FieldUpdate.Required -> field.copy(required = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
-                        is FieldUpdate.MaxLength -> field.copy(maxLength = update.value)
-                        is FieldUpdate.Min -> field.copy(min = update.value)
-                        is FieldUpdate.Max -> field.copy(max = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
+                        is FieldUpdate.Signature -> field.copy(placeholder = update.placeholder, userId = update.userId)
                     }
                 } else field
             }
@@ -206,35 +205,28 @@ class NoteEditViewModel @Inject constructor(
                 FieldType.TEXT -> TextField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     placeholder = fieldData.placeholder,
-                    maxLength = fieldData.maxLength,
                     content = when (fieldData.content) {
                         is String -> fieldData.content
                         else -> fieldData.content?.toString()
                     }
                 )
-                FieldType.NUMBER -> NumberField(
-                    _id = fieldData.id,
-                    label = fieldData.label,
-                    required = fieldData.required,
-                    min = fieldData.min,
-                    max = fieldData.max,
-                    content = when (fieldData.content) {
-                        is Int -> fieldData.content
-                        is String -> fieldData.content.toIntOrNull()
-                        else -> null
-                    }
-                )
+
                 FieldType.DATETIME -> DateTimeField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     content = when (fieldData.content) {
                         is LocalDateTime -> fieldData.content
                         is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
                         else -> null
                     }
+                )
+
+                FieldType.SIGNATURE -> SignatureField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    userId = fieldData.userId,
+                    userName = fieldData.placeholder
                 )
             }
         }
@@ -316,8 +308,34 @@ class NoteEditViewModel @Inject constructor(
         _editState.value = _editState.value.copy(
             shareSuccess = false,
             copySuccess = false,
+            isDeleted = false,
+            isSuccess = false,
             error = null
         )
+    }
+
+    fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            _editState.value = _editState.value.copy(isDeleting = true, error = null)
+
+            val result = noteRepository.deleteNote(noteId)
+
+            result.fold(
+                onSuccess = {
+                    _editState.value = _editState.value.copy(
+                        isDeleting = false,
+                        isDeleted = true,
+                        error = null
+                    )
+                },
+                onFailure = { exception ->
+                    _editState.value = _editState.value.copy(
+                        isDeleting = false,
+                        error = exception.message ?: "Failed to delete note"
+                    )
+                }
+            )
+        }
     }
 
     fun reset() {

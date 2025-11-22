@@ -31,17 +31,12 @@ export class NoteService {
 
         let vectorData: number[] = [];
         
-        try {
-            if (vectorInput.trim().length > 0) {
-                const vectorResponse = await this.getClient().embeddings.create({
-                    model: "text-embedding-3-large",
-                    input: vectorInput.trim(),
-                });
-                vectorData = vectorResponse.data[0].embedding;
-            }
-        } catch (error) {
-            console.error('Failed to generate embeddings (continuing with empty vector):', error);
-            // Continue with empty vector instead of failing
+        if (vectorInput.trim().length > 0) {
+            const vectorResponse = await this.getClient().embeddings.create({
+                model: "text-embedding-3-large",
+                input: vectorInput.trim(),
+            });
+            vectorData = vectorResponse.data[0].embedding;
         }
 
         const newNote = await noteModel.create({
@@ -102,8 +97,8 @@ export class NoteService {
         } as Note;
     }
 
-    async getNote(noteId: string, userId: mongoose.Types.ObjectId): Promise<Note | null> {
-        const note = await noteModel.findOne({ _id: noteId, userId });
+    async getNote(noteId: string): Promise<Note | null> {
+        const note = await noteModel.findById(noteId);
         return note
             ? {
                 ...note.toObject(),
@@ -155,13 +150,10 @@ export class NoteService {
 
     // Copy note to a different workspace
     async copyNoteToWorkspace(noteId: string, userId: mongoose.Types.ObjectId, workspaceId: string): Promise<Note> {
-        // Verify note exists and the requester is the owner of the note
+        // Verify note exists
         const note = await noteModel.findById(noteId);
         if (!note) {
             throw new Error('Note not found');
-        }
-        if (note.userId.toString() !== userId.toString()) {
-            throw new Error('Access denied: Only the note owner can copy');
         }
 
         // Verify target workspace exists and the user is allowed (owner or member and not banned)
@@ -182,7 +174,7 @@ export class NoteService {
             dateCreation: new Date(),
             dateLastEdit: new Date(),
             tags: note.tags,
-            noteType: NoteType.CONTENT,
+            noteType: note.noteType,
             fields: note.fields,
             vectorData: note.vectorData
         });

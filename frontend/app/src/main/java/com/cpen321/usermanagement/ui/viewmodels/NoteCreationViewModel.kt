@@ -16,32 +16,29 @@ import java.util.UUID
 import java.time.LocalDateTime
 import javax.inject.Inject
 import android.util.Log
+import com.cpen321.usermanagement.data.repository.ProfileRepository
+import com.cpen321.usermanagement.ui.components.FieldTypeDialog
+
 enum class FieldType {
     TEXT,
-    NUMBER,
-    DATETIME
+    DATETIME,
+    SIGNATURE
 }
 
 data class FieldCreationData(
     val id: String = UUID.randomUUID().toString(),
     val type: FieldType,
     val label: String = "",
-    val required: Boolean = false,
     val placeholder: String? = null,
-    val maxLength: Int? = null,
-    val min: Int? = null,
-    val max: Int? = null,
-    val content: Any? = null
+    val content: Any? = null,
+    val userId: String? = null
 )
 
 sealed class FieldUpdate {
     data class Label(val value: String) : FieldUpdate()
-    data class Required(val value: Boolean) : FieldUpdate()
     data class Placeholder(val value: String) : FieldUpdate()
-    data class MaxLength(val value: Int?) : FieldUpdate()
-    data class Min(val value: Int?) : FieldUpdate()
-    data class Max(val value: Int?) : FieldUpdate()
     data class Content(val value: Any?) : FieldUpdate()
+    data class Signature(val userId: String?, val placeholder: String?): FieldUpdate()
 }
 
 data class NoteCreationState(
@@ -50,7 +47,9 @@ data class NoteCreationState(
     val fields: List<FieldCreationData> = emptyList(),
     val isCreating: Boolean = false,
     val error: String? = null,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val isLoadingTemplate: Boolean = false,
+    val user: User? = null
 )
 
 @HiltViewModel
@@ -58,6 +57,7 @@ class NoteCreationViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val noteRepository: NoteRepository,
     private val workspaceRepository: WorkspaceRepository,
+    private val profileRepository: ProfileRepository,
     private val navigationStateManager: NavigationStateManager
 ) : ViewModel() {
 
@@ -93,6 +93,38 @@ class NoteCreationViewModel @Inject constructor(
         )
     }
 
+    private suspend fun setFieldsToTemplate(noteId:String?)
+    {
+        if (noteId!=null){
+            val noteRequest = noteRepository.getNote(noteId)
+            if (noteRequest.isSuccess) { //if it is not successful the fields will not load
+                val note = noteRequest.getOrNull()!!
+                val fields = mutableListOf<FieldCreationData>()
+                for (field in note.fields) {
+                    val fieldType = when (field) {
+                        is TextField -> {
+                            FieldType.TEXT
+                        }
+
+                        is DateTimeField -> {
+                            FieldType.DATETIME
+                        }
+
+                        is SignatureField -> {
+                            FieldType.SIGNATURE
+                        }
+                    }
+                    fields.add(FieldCreationData(type = fieldType, label = field.label))
+                }
+                //Also sets tags as they are part of template content
+                _creationState.value = _creationState.value.copy(
+                    fields = fields,
+                    tags = note.tags
+                )
+            }
+        }
+    }
+
     fun removeField(fieldId: String) {
         _creationState.value = _creationState.value.copy(
             fields = _creationState.value.fields.filter { it.id != fieldId }
@@ -105,12 +137,9 @@ class NoteCreationViewModel @Inject constructor(
                 if (field.id == fieldId) {
                     when (update) {
                         is FieldUpdate.Label -> field.copy(label = update.value)
-                        is FieldUpdate.Required -> field.copy(required = update.value)
                         is FieldUpdate.Placeholder -> field.copy(placeholder = update.value)
-                        is FieldUpdate.MaxLength -> field.copy(maxLength = update.value)
-                        is FieldUpdate.Min -> field.copy(min = update.value)
-                        is FieldUpdate.Max -> field.copy(max = update.value)
                         is FieldUpdate.Content -> field.copy(content = update.value)
+                        is FieldUpdate.Signature -> field.copy(userId = update.userId, placeholder = update.placeholder)
                     }
                 } else {
                     field
@@ -169,6 +198,9 @@ class NoteCreationViewModel @Inject constructor(
         if (_creationState.value.fields.isEmpty()) {
             return "Please add at least one field"
         }
+        if (_creationState.value.tags.isEmpty()){
+            return "Please add at least one tag"
+        }
         val hasEmptyLabel = _creationState.value.fields.any { it.label.isBlank() }
         if (hasEmptyLabel) {
             return "All fields must have a label"
@@ -193,47 +225,39 @@ class NoteCreationViewModel @Inject constructor(
                 FieldType.TEXT -> TextField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
                     placeholder = fieldData.placeholder,
-                    maxLength = fieldData.maxLength,
                     content = when (fieldData.content) {
                         is String -> fieldData.content
                         else -> fieldData.content?.toString()
                     }
                 )
-                FieldType.NUMBER -> NumberField(
-                    _id = fieldData.id,
-                    label = fieldData.label,
-                    required = fieldData.required,
-                    min = fieldData.min,
-                    max = fieldData.max,
-                    content = when (fieldData.content) {
-                        is Int -> fieldData.content
-                        is String -> fieldData.content.toIntOrNull()
-                        else -> null
-                    }
-                )
+
                 FieldType.DATETIME -> DateTimeField(
                     _id = fieldData.id,
                     label = fieldData.label,
-                    required = fieldData.required,
-                    minDate = null,
-                    maxDate = null,
                     content = when (fieldData.content) {
                         is LocalDateTime -> fieldData.content
                         is String -> try { LocalDateTime.parse(fieldData.content) } catch (e: java.time.format.DateTimeParseException) { null }
                         else -> null
                     }
                 )
+
+                FieldType.SIGNATURE -> SignatureField(
+                    _id = fieldData.id,
+                    label = fieldData.label,
+                    userId = fieldData.userId,
+                    userName = fieldData.placeholder
+                )
             }
         }
     }
 
     private suspend fun createNoteRequest(workspaceId: String, userId: String, fields: List<Field>) {
+        val tags = _creationState.value.tags
         val result = noteRepository.createNote(
             workspaceId = workspaceId,
             authorId = userId,
-            tags = _creationState.value.tags,
+            tags = tags,
             fields = fields,
             noteType = _creationState.value.noteType
         )
@@ -245,6 +269,9 @@ class NoteCreationViewModel @Inject constructor(
                     isSuccess = true,
                     error = null
                 )
+                //We need to update the tag selection so that the created note shows on the screen we load
+                val newSelectedTags = navigationStateManager.state.getSelectedTags().union(tags).toList()
+                navigationStateManager.state.updateTagSelection(newSelectedTags, navigationStateManager.state.getAllTagsSelected())
             },
             onFailure = { exception ->
                 _creationState.value = _creationState.value.copy(
@@ -255,7 +282,19 @@ class NoteCreationViewModel @Inject constructor(
         )
     }
 
-    fun reset() {
+    fun reset(noteType: NoteType, noteId: String?) {
         _creationState.value = NoteCreationState()
+        viewModelScope.launch{
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
+            getProfile() //loading profile to read the signatures correctly
+            setFieldsToTemplate(noteId)
+            setNoteType(noteType)
+            _creationState.value = _creationState.value.copy(isLoadingTemplate = false)
+        }
+    }
+
+    private suspend fun getProfile(){
+        val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign in the screen
+        _creationState.value = _creationState.value.copy(user = user)
     }
 }
