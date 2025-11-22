@@ -98,7 +98,7 @@ export class NoteService {
     }
 
     async getNote(noteId: string): Promise<Note | null> {
-        const note = await noteModel.findOne({ _id: noteId });
+        const note = await noteModel.findById(noteId);
         return note
             ? {
                 ...note.toObject(),
