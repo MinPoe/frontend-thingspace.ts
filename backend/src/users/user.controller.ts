@@ -110,7 +110,7 @@ export class UserController {
 
       const updatedUser = await userModel.updateFcmToken(
         user._id,
-        validatedData.fcmToken as string
+        validatedData.fcmToken
       );
 
       if (!updatedUser) {

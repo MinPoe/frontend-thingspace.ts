@@ -40,14 +40,14 @@ export class MessageController {
         workspaceId: new mongoose.Types.ObjectId(workspaceId) 
       };
       if (before) {
-        query.createdAt = { $lt: new Date(before as string) };
+        query.createdAt = { $lt: new Date(before) };
       }
 
       // Fetch messages
       const messages = await messageModel
         .find(query)
         .sort({ createdAt: -1 })
-        .limit(limit as number)
+        .limit(limit)
         .lean();
 
       res.json(messages);

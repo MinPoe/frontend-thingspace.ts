@@ -19,7 +19,7 @@ export class AuthController {
     try {
       const { idToken } = req.body;
 
-      const data = await authService.signUpWithGoogle(idToken as string);
+      const data = await authService.signUpWithGoogle(idToken);
       const workspace_data = {
         name: `${data.user.profile.name}'s Personal Workspace`, 
         profilePicture: data.user.profile.imagePath ?? '', 
@@ -74,7 +74,7 @@ export class AuthController {
     try {
       const { idToken } = req.body;
 
-      const data = await authService.signInWithGoogle(idToken as string);
+      const data = await authService.signInWithGoogle(idToken);
 
       return res.status(200).json({
         message: 'User signed in successfully',
