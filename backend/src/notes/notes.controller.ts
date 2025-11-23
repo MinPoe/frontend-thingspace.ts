@@ -36,12 +36,10 @@ export class NotesController {
         return;
       }
 
-      const userId = user._id;
-
       const noteId = req.params.id;
       const updateData = req.body as UpdateNoteRequest;
 
-      const updatedNote = await noteService.updateNote(noteId, userId, updateData);
+      const updatedNote = await noteService.updateNote(noteId, updateData);
 
       res.status(200).json({
         message: 'Note successfully updated',
@@ -81,7 +79,6 @@ export class NotesController {
         res.status(401).json({ error: 'User not authenticated' });
         return;
       }
-      const userId = user._id;
       const noteId = req.params.id;
       const note = await noteService.getNote(noteId);
 
