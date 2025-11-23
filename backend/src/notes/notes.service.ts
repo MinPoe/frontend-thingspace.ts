@@ -13,13 +13,10 @@ export class NoteService {
         return this.client || (this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY }));
     }
 
-    async createNote(userId: mongoose.Types.ObjectId, data: CreateNoteRequest): Promise<Note> {
-
-        console.log("Creating note");
-        
+    private async createVectorization(fields: unknown[]): Promise<number[]> {
         let vectorInput = "";
 
-        for (const field of data.fields) {
+        for (const field of fields) {
             if (typeof field === 'object' && field !== null) {
                 const fieldObj = field as Record<string, unknown>;
                 vectorInput += "field label: " + String(fieldObj.label ?? '') + " ";
@@ -38,6 +35,17 @@ export class NoteService {
             });
             vectorData = vectorResponse.data[0].embedding;
         }
+
+        return vectorData
+
+    }
+
+    async createNote(userId: mongoose.Types.ObjectId, data: CreateNoteRequest): Promise<Note> {
+
+        console.log("Creating note");
+        
+        
+        let vectorData = await this.createVectorization(data.fields);
 
         const newNote = await noteModel.create({
             userId,
@@ -62,10 +70,14 @@ export class NoteService {
 
     // Update a note
     async updateNote(noteId: string, userId: mongoose.Types.ObjectId, updateData: UpdateNoteRequest): Promise<Note> {
+
+        let updatedVectorData = await this.createVectorization(updateData.fields);
+
         const updatedNote = await noteModel.findOneAndUpdate(
             { _id: noteId, userId },
             { 
                 ...updateData,
+                vectorData: updatedVectorData,
                 updatedAt: new Date()
             },
             { new: true }
