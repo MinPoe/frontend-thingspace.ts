@@ -69,6 +69,9 @@ export class NoteService {
 
     // Update a note
     async updateNote(noteId: string, updateData: UpdateNoteRequest): Promise<Note> {
+
+        let updatedVectorData = await this.createVectorization(updateData.fields);
+
         const updatedNote = await noteModel.findOneAndUpdate(
             { _id: noteId },
             { 
