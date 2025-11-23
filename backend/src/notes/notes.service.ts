@@ -44,7 +44,6 @@ export class NoteService {
 
         console.log("Creating note");
         
-        
         let vectorData = await this.createVectorization(data.fields);
 
         const newNote = await noteModel.create({
