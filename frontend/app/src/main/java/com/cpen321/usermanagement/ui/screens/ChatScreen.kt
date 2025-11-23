@@ -246,7 +246,7 @@ private fun MessageInputBar(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(name = R.drawable.chat, contentDescription = stringResource(R.string.chat))
+                    Icon(name = R.drawable.send, contentDescription = stringResource(R.string.send))
                 }
             }
         }
