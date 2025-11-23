@@ -160,19 +160,18 @@ fun EditActionButton(
 @Composable
 fun MembersActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabel: Boolean = false
 ) {
-    val spacing = LocalSpacing.current
+    val label = if (showLabel) stringResource(R.string.members) else null
 
-    IconButton(
+    IconWithLabel(
+        iconRes = R.drawable.ic_account_circle,
+        label = label,
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        Icon(
-            name = R.drawable.ic_account_circle,
-            contentDescription = stringResource(R.string.members)
-        )
-    }
+        modifier = modifier,
+        contentDescription = stringResource(R.string.members)
+    )
 }
 
 
@@ -215,19 +214,23 @@ fun LeaveActionButton(
 @Composable
 fun DeleteActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabel: Boolean = false,
+    labelText: String? = null
 ) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        Icon(
-            name = R.drawable.ic_delete_forever,
-            contentDescription = stringResource(R.string.delete)
-        )
+    val label = when {
+        labelText != null -> labelText
+        showLabel -> stringResource(R.string.delete)
+        else -> null
     }
+
+    IconWithLabel(
+        iconRes = R.drawable.ic_delete_forever,
+        label = label,
+        onClick = onClick,
+        modifier = modifier,
+        contentDescription = stringResource(R.string.delete)
+    )
 }
 
 @Composable
@@ -250,18 +253,22 @@ fun CreateNoteActionButton(
 @Composable
 fun BanActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabel: Boolean = false,
+    labelText: String? = null
 ) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        Icon(
-            name = R.drawable.ic_delete_forever,
-            contentDescription = stringResource(R.string.ban)
-        )
+    val label = when {
+        labelText != null -> labelText
+        showLabel -> stringResource(R.string.ban)
+        else -> null
     }
+
+    IconWithLabel(
+        iconRes = R.drawable.ic_delete_forever,
+        label = label,
+        onClick = onClick,
+        modifier = modifier,
+        contentDescription = stringResource(R.string.ban)
+    )
 }
 

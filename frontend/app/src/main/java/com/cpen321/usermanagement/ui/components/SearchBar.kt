@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.ui.theme.LocalFontSizes
+import com.cpen321.usermanagement.ui.components.IconWithLabel
 
 @Composable
 fun SearchBar(
@@ -85,18 +86,11 @@ private fun FilterActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalSpacing.current
-
-    IconButton(
+    IconWithLabel(
+        iconRes = R.drawable.filter,
+        label = stringResource(R.string.filter),
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2).testTag(stringResource(R.string.filter))
-    ) {
-        FilterIcon()
-    }
-}
-@Composable
-private fun FilterIcon() {
-    Icon(
-        name = R.drawable.filter
+        modifier = modifier.testTag(stringResource(R.string.filter)),
+        contentDescription = stringResource(R.string.filter)
     )
 }
