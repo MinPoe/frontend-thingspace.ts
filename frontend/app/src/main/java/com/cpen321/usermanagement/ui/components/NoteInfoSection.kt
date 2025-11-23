@@ -27,16 +27,13 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun NoteInfoRow(
-    noteType: NoteType,
     creationDateString: String,
     lastEditDateSting: String,
-    modifier: Modifier = Modifier
 ){
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center
     ){
-        NoteTypeBadge(noteType = noteType, modifier = modifier)
         // Creation Date
         DateInfoCard(
             title = stringResource(R.string.created),
@@ -47,39 +44,6 @@ fun NoteInfoRow(
         DateInfoCard(
             title = stringResource(R.string.last_edited),
             dateString =lastEditDateSting
-        )
-    }
-}
-
-@Composable
-fun NoteTypeBadge(
-    noteType: NoteType,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.small,
-        color = when (noteType) {
-            NoteType.CONTENT -> MaterialTheme.colorScheme.primaryContainer
-            NoteType.CHAT -> MaterialTheme.colorScheme.secondaryContainer
-            NoteType.TEMPLATE -> MaterialTheme.colorScheme.tertiaryContainer
-        }
-    ) {
-        Text(
-            text = noteType.name,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-            color = when (noteType) {
-                NoteType.CONTENT -> MaterialTheme.colorScheme.onPrimaryContainer
-                NoteType.CHAT -> MaterialTheme.colorScheme.onSecondaryContainer
-                NoteType.TEMPLATE -> MaterialTheme.colorScheme.onTertiaryContainer
-            },
-            modifier = Modifier.padding(
-                horizontal = spacing.medium,
-                vertical = spacing.small
-            )
         )
     }
 }
