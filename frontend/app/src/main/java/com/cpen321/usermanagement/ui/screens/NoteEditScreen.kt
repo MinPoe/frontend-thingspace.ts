@@ -24,6 +24,7 @@ import com.cpen321.usermanagement.ui.components.CopyNoteDialog
 import com.cpen321.usermanagement.ui.components.DeleteNoteDialog
 import com.cpen321.usermanagement.ui.components.NoteInfoRow
 import com.cpen321.usermanagement.ui.components.ShareNoteDialog
+import com.cpen321.usermanagement.ui.components.IconWithLabel
 
 data class NoteEditCallbacks(
     val onBackClick: () -> Unit,
@@ -253,24 +254,24 @@ private fun NoteEditTopBar(
             }
         },
         actions = {
-            IconButton(onClick = onShareClick) {
-                Icon(
-                    name = R.drawable.ic_share_note,
-                    contentDescription = shareDesc
-                )
-            }
-            IconButton(onClick = onCopyClick) {
-                Icon(
-                    name = R.drawable.ic_copy,
-                    contentDescription = copyDesc
-                )
-            }
-            IconButton(onClick = onDeleteClick) {
-                Icon(
-                    name = R.drawable.ic_delete_forever,
-                    contentDescription = copyDesc
-                )
-            }
+            IconWithLabel(
+                iconRes = R.drawable.ic_share_note,
+                label = shareDesc,
+                onClick = onShareClick,
+                contentDescription = shareDesc
+            )
+            IconWithLabel(
+                iconRes = R.drawable.ic_copy,
+                label = copyDesc,
+                onClick = onCopyClick,
+                contentDescription = copyDesc
+            )
+            IconWithLabel(
+                iconRes = R.drawable.ic_delete_forever,
+                label = stringResource(R.string.delete),
+                onClick = onDeleteClick,
+                contentDescription = stringResource(R.string.delete)
+            )
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surface

@@ -50,7 +50,9 @@
     <string name="invite">Invite</string>
     <string name="leave">Leave</string>
     <string name="delete">Delete</string>
+    <string name="delete_workspace">Delete Workspace</string>
     <string name="ban">Ban</string>
+    <string name="ban_member">Ban Member</string>
     <!-- Note screen -->
     <string name="note_details">Note Details</string>
     <string name="error_loading_note">Error loading note</string>
@@ -110,6 +112,7 @@
     <string name="no_messages_yet">No messages yet</string>
     <string name="start_conversation">Start the conversation!</string>
     <string name="type_message">Type a message…</string>
+    <string name="send">Send</string>
     <!-- Workspace screens -->
     <string name="create_workspace_title">Create a Workspace</string>
     <string name="pick_workspace_name">Pick a workspace name</string>

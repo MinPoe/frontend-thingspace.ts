@@ -19,6 +19,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
+import com.cpen321.usermanagement.R
+import androidx.compose.ui.res.stringResource
 
 object TitleTrim{
     const val MAX_LEN = 24
@@ -58,9 +60,9 @@ fun WsProfileManagerBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                MembersActionButton(onClick = onMembersClick)
-                InviteActionButton(onClick = onInviteClick)
-                DeleteActionButton(onClick = onDeleteClick)
+                MembersActionButton(onClick = onMembersClick, showLabel = true)
+                BanActionButton(onClick = onInviteClick, showLabel = true, labelText = stringResource(R.string.ban_member))
+                DeleteActionButton(onClick = onDeleteClick, showLabel = true, labelText = stringResource(R.string.delete_workspace))
             }
         },
         modifier = modifier
@@ -159,21 +161,25 @@ fun WorkspaceRow(
             onClick = onContentClick,
             modifier=modifier,
             relatedWorkspace = workspaceName,
+            showLabel = true
         )
         TemplateActionButton(
             onClick = onTemplatesClick,
             modifier=modifier,
             relatedWorkspace = workspaceName,
+            showLabel = true
         )
         ChatActionButton(
             onClick = onChatClick,
             modifier=modifier,
             relatedWorkspace = workspaceName,
+            showLabel = true
         )
         EditActionButton(
             onClick = onProfileClick,
             modifier=modifier,
             relatedWorkspace = workspaceName,
+            showLabel = true
         )
     }
 }
