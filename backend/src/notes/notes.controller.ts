@@ -222,9 +222,15 @@ export class NotesController {
       const tagsArray = Array.isArray(tags) ? tags as string[] : [];
       const notes = await noteService.getNotes(userId, workspaceId as string, noteType as string, tagsArray, q as string);
 
+      // Exclude vectorData from response
+      const notesWithoutVectorData = notes.map(note => {
+        const { vectorData, ...noteWithoutVectorData } = note;
+        return noteWithoutVectorData;
+      });
+
       res.status(200).json({
         message: 'Notes retrieved successfully',
-        data: { notes },
+        data: { notes: notesWithoutVectorData },
       });
     } catch (error) {
       console.error('Error retrieving notes:', error);
