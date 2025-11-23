@@ -39,6 +39,7 @@ jobs:
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}
+          FIREBASE_JSON=${{secrets.FIREBASE_JSON}}
           EOF
 
           # write into the firebase json file

@@ -74,7 +74,6 @@ class WsSelectViewModel@Inject constructor(
             val error = profileResult.exceptionOrNull()
             Log.e(TAG, "Failed to load personal workspace", error)
             error?.message ?: "Failed to load profile"
-            //TODO: for now!!!
             return Workspace(_id = "personal",
                 profile = Profile(imagePath = null, name = "personal", description = null))
         }
