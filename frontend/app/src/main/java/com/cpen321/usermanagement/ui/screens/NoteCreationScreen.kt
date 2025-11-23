@@ -220,7 +220,8 @@ fun NoteCreationBody(
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated,
-            currentUser = creationState.user
+            currentUser = creationState.user,
+            noteType = creationState.noteType
         )
     }
 }

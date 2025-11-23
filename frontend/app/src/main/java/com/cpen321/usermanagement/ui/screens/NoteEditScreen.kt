@@ -379,7 +379,8 @@ fun NoteEditBody(
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated,
-            currentUser = editState.user
+            currentUser = editState.user,
+            noteType = editState.noteType
         )
     }
 }

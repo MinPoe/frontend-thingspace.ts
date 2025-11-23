@@ -105,6 +105,9 @@
     <string name="create_note">Create Note</string>
     <string name="create_template">Create Template</string>
     <string name="create_workspace">Create Workspace</string>
+    <string name="text_template">[TEXT FIELD]</string>
+    <string name="datetime_template">[DATETIME FIELD]</string>
+    <string name="signature_template">[SIGNATURE FIELD]</string>
     <!-- Filter screen -->
     <string name="all">All</string>
     <string name="filter">Filter</string>

@@ -119,6 +119,7 @@ private fun AddTagDialog(
 fun FieldsEditSection(
     fields: List<FieldCreationData>,
     currentUser: User?,
+    noteType: NoteType,
     onFieldAdded: (FieldType) -> Unit,
     onFieldRemoved: (String) -> Unit,
     onFieldUpdated: (String, FieldUpdate) -> Unit
@@ -145,7 +146,8 @@ fun FieldsEditSection(
                     field = field,
                     onFieldRemoved = { onFieldRemoved(field.id) },
                     onFieldUpdated = { update -> onFieldUpdated(field.id, update) },
-                    currentUser = currentUser
+                    currentUser = currentUser,
+                    noteType = noteType
                 )
                 Spacer(modifier = Modifier.height(spacing.medium))
             }
@@ -172,6 +174,7 @@ fun FieldsEditSection(
 private fun FieldEditor(
     field: FieldCreationData,
     currentUser: User?,
+    noteType: NoteType,
     onFieldRemoved: () -> Unit,
     onFieldUpdated: (FieldUpdate) -> Unit
 ) {
@@ -189,9 +192,11 @@ private fun FieldEditor(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = field.label.ifEmpty { stringResource(R.string.field_content) },
-                    style = MaterialTheme.typography.titleSmall
+                OutlinedTextField(
+                    value = field.label,
+                    onValueChange = { onFieldUpdated(FieldUpdate.Label(it)) },
+                    label = { Text(stringResource(R.string.label)) },
+                    modifier = Modifier.fillMaxWidth(.8f)
                 )
                 IconButton(onClick = onFieldRemoved) {
                     Icon(
@@ -203,20 +208,20 @@ private fun FieldEditor(
 
             Spacer(modifier = Modifier.height(spacing.small))
 
-            when (field.type) {
-                FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
-                FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
-                FieldType.SIGNATURE -> SignatureFieldInput(field, currentUser, onFieldUpdated) //TODO: update later
+            if (noteType == NoteType.CONTENT){
+                when (field.type) {
+                    FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
+                    FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
+                    FieldType.SIGNATURE -> SignatureFieldInput(field, currentUser, onFieldUpdated)
+                }
             }
-
-            Spacer(modifier = Modifier.height(spacing.small))
-
-            OutlinedTextField(
-                value = field.label,
-                onValueChange = { onFieldUpdated(FieldUpdate.Label(it)) },
-                label = { Text(stringResource(R.string.label)) },
-                modifier = Modifier.fillMaxWidth()
-            )
+            else{
+                when (field.type) {
+                    FieldType.TEXT -> Text(stringResource(R.string.text_template))
+                    FieldType.DATETIME -> Text(stringResource(R.string.datetime_template))
+                    FieldType.SIGNATURE -> Text(stringResource(R.string.signature_template))
+                }
+            }
         }
     }
 }
