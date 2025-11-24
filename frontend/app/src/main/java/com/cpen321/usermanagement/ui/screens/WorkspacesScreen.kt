@@ -64,9 +64,9 @@ fun WorkspacesScreen(
             val onWsTemplateClick = {index:Int ->
                 featureActions.navs.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
-            val onPersonalChatClick={ featureActions.navs.navigateToMainTagReset(
+            val onPersonalChatClick={ featureActions.navs.navigateToChatTagReset(
                 personalWs._id) }
-            val onPersonalContentClick={ featureActions.navs.navigateToChatTagReset(
+            val onPersonalContentClick={ featureActions.navs.navigateToMainTagReset(
                 personalWs._id) }
             val onPersonalTemplateClick={ featureActions.navs.navigateToTemplateTagReset(
                 personalWs._id) }
@@ -151,7 +151,7 @@ private fun WsBody(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             WorkspaceRow(
-                workspaceName = username, //TODO: for now
+                workspaceName = username,
                 onContentClick = wsMenuActions.onPersonalContentClick,
                 onTemplatesClick = wsMenuActions.onPersonalTemplateClick,
                 onProfileClick = wsMenuActions.onPersonalProfileClick,
@@ -161,7 +161,7 @@ private fun WsBody(
                 WorkspaceRow(
                     workspaceName = availableWs[i],
                     onContentClick = {wsMenuActions.onWsMainClick(i)},
-                    onProfileClick = {wsMenuActions.onWsProfileClick(i)},//TODO: for Now,
+                    onProfileClick = {wsMenuActions.onWsProfileClick(i)},
                     onChatClick = {wsMenuActions.onWsChatClick(i)},
                     onTemplatesClick = {wsMenuActions.onWsTemplateClick(i)}
                 )
