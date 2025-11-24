@@ -6,7 +6,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 # Configuration - SET THESE VALUES BEFORE RUNNING
-BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MDk4ZmQ3NzgyOWY4YjFhOTdmZTAyZiIsImlhdCI6MTc2Mzk0MDg2NywiZXhwIjoxNzY0MDA5MjY3fQ.L9Pe9mttwBRT1ZNGSZwLz-0jEJrBKiQv_aYAINuKWDc"
+BEARER_TOKEN = None
 WORKSPACE_ID = "69239a2a1927db3f78e8a159"
 API_BASE_URL = "http://3.14.160.244/api/notes"
 JSON_FILE_PATH = "500_notes.json"
