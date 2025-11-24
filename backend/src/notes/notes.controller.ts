@@ -219,7 +219,15 @@ export class NotesController {
 
       // Query param is optional, default to empty string if not provided
       const q = query ?? '';
-      const tagsArray = Array.isArray(tags) ? tags as string[] : [];
+      // Handle tags: can be array, single string, or undefined
+      let tagsArray: string[] = [];
+      if (tags) {
+        if (Array.isArray(tags)) {
+          tagsArray = tags as string[];
+        } else if (typeof tags === 'string') {
+          tagsArray = [tags];
+        }
+      }
       const notes = await noteService.getNotes(userId, workspaceId as string, noteType as string, tagsArray, q as string);
 
       // Exclude vectorData from response

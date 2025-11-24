@@ -160,7 +160,7 @@ def main():
     success_count = 0
     failure_count = 0
     
-    notes = notes[:NUM_NOTES]
+    notes = notes[100:300]
     for index, note_data in enumerate(notes):
         # Skip number field (outdated, as per user request)
         if "number" in note_data:
