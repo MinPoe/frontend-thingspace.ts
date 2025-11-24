@@ -99,31 +99,7 @@ class NoteCreationViewModel @Inject constructor(
             val noteRequest = noteRepository.getNote(noteId)
             if (noteRequest.isSuccess) { //if it is not successful the fields will not load
                 val note = noteRequest.getOrNull()!!
-                val fields = mutableListOf<FieldCreationData>()
-                for (field in note.fields) {
-                    val fieldType = when (field) {
-                        is TextField -> {
-                            FieldType.TEXT
-                        }
-
-                        is DateTimeField -> {
-                            FieldType.DATETIME
-                        }
-
-                        is SignatureField -> {
-                            FieldType.SIGNATURE
-                        }
-                    }
-                    fields.add(FieldCreationData(type = fieldType, label = field.label))
-                }
-                // Ensure title field exists as first field
-                if (fields.isEmpty() || fields.first().label != "Title") {
-                    fields.add(0, FieldCreationData(
-                        type = FieldType.TEXT,
-                        label = "Title",
-                        placeholder = "Enter title"
-                    ))
-                }
+                val fields = getFieldsForNote(note)
 
                 //Also sets tags as they are part of template content
                 _creationState.value = _creationState.value.copy(
@@ -132,6 +108,36 @@ class NoteCreationViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun getFieldsForNote(note: Note):List<FieldCreationData>{
+        val fields = mutableListOf<FieldCreationData>()
+        for (field in note.fields) {
+            val fieldType = when (field) {
+                is TextField -> {
+                    FieldType.TEXT
+                }
+
+                is DateTimeField -> {
+                    FieldType.DATETIME
+                }
+
+                is SignatureField -> {
+                    FieldType.SIGNATURE
+                }
+            }
+            fields.add(FieldCreationData(type = fieldType, label = field.label))
+        }
+
+        // Ensure title field exists as first field
+        if (fields.isEmpty() || fields.first().label != "Title") {
+            fields.add(0, FieldCreationData(
+                type = FieldType.TEXT,
+                label = "Title",
+                placeholder = "Enter title"
+            ))
+        }
+        return fields
     }
 
     fun removeField(fieldId: String) {
