@@ -201,9 +201,9 @@ fun MainBottomBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = true)
                 ChatActionButton(onClick = onChatClick, showLabel = true)
                 WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = true)
-                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = true)
             }
         }
     } else {
@@ -216,9 +216,9 @@ fun MainBottomBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = false)
                 ChatActionButton(onClick = onChatClick, showLabel = false)
                 WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = false)
-                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = false)
             }
         }
     }

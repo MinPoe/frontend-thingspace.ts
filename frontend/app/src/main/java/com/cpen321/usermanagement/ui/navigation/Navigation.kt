@@ -787,20 +787,7 @@ private fun NavGraphBuilder.addWorkspaceRoutes(
     composable(NavRoutes.WS_SELECT) {
         WorkspacesScreen(
             workspacesViewModel = wsSelectViewModel,
-            onBackClick = {
-                when (navigationStateManager.state.getNoteType()) {
-                    NoteType.CONTENT -> {
-                        navigationStateManager.display.navigateToMainTagReset(
-                            navigationStateManager.state.getWorkspaceId()
-                        )
-                    }
-                    NoteType.TEMPLATE -> {
-                        navigationStateManager.display.navigateToTemplateTagReset(
-                            navigationStateManager.state.getWorkspaceId()
-                        )
-                    }
-                }
-            },
+            onBackClick = navigationStateManager::navigateBack,
             featureActions = featureActions,
             onPersonalProfileClick = { navigationStateManager.navigateToProfile() }
         )
