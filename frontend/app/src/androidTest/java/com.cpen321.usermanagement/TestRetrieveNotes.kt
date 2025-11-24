@@ -39,6 +39,14 @@ import java.lang.Thread.sleep
 * 2) run the app regularly, sign in to any account
 * 3) run the test again (this time should work)
 * */
+
+/*
+* Note specifications:
+* 1st note has a tag of TAG1 and a title of DISPLAY1
+* 2nd note has a tag of TAG2 and a title of DISPLAY2
+* 3rd note has a tag of TAG3 and a title of DISPLAY3
+* 4th note has tags of TAG1 and TAG3, as well as title of DISPLAY4
+* */
 @HiltAndroidTest
 class TestRetrieveNotes {
     companion object{
@@ -127,9 +135,9 @@ class TestRetrieveNotes {
         composeRule.onNodeWithTag(searchTextboxString).performTextInput(QUERY)
         composeRule.onNodeWithTag(searchButtonString).performClick()
         waitForSearch(searchButtonString)
-        //the search results should be '3' first most similar to '1' according to the API
+        //the search results should be 'note1' asit contains '1'
         //Of course, one would have to adjust this if one is to use other inputs for notes
-        assessOrder(DISPLAY3, listOf(DISPLAY1, DISPLAY2, DISPLAY4))
+        assessOrder(DISPLAY1, listOf(DISPLAY2, DISPLAY3, DISPLAY4))
 
         Log.d("TEST RETRIEVE NOTES", "Testing Filter - All Checkbox")
         composeRule.onNodeWithTag(filterIcString).performClick()
@@ -163,6 +171,6 @@ class TestRetrieveNotes {
         composeRule.onNodeWithText(DISPLAY2).assertIsNotDisplayed()
         composeRule.onNodeWithText(DISPLAY3).assertIsDisplayed()
         composeRule.onNodeWithText(DISPLAY4).assertIsDisplayed()
-        assessOrder(DISPLAY3, listOf(DISPLAY1, DISPLAY4))
+        assessOrder(DISPLAY1, listOf(DISPLAY3, DISPLAY4))
     }
 }

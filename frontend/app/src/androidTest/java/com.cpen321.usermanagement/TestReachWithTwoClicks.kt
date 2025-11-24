@@ -81,6 +81,7 @@ class TestReachWithTwoClicks {
         val contentPlusString = composeRule.activity.getString(R.string.plusContent)
         val templatePlusString = composeRule.activity.getString(R.string.plusTemplates)
         val contentString = composeRule.activity.getString(R.string.content)
+        val createString = composeRule.activity.getString(R.string.create)
         val templateString = composeRule.activity.getString(R.string.templates)
         val chatString = composeRule.activity.getString(R.string.chat)
         val wsIcString = composeRule.activity.getString(R.string.workspaces)
@@ -93,7 +94,7 @@ class TestReachWithTwoClicks {
         waitForVm(5000)
 
         Log.d("TEST REACH W\\2", "Moving the same workspace")
-        assessRoute(listOf(templateString), PERSONAL_WS_NAME+templatePlusString)
+        assessRoute(listOf(createString), PERSONAL_WS_NAME+templatePlusString)
         assessRoute(listOf(chatString), chatString)
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(5000)
