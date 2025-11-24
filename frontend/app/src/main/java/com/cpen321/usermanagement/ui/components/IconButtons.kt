@@ -178,37 +178,35 @@ fun MembersActionButton(
 @Composable
 fun InviteActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabel: Boolean = false,
 ) {
-    val spacing = LocalSpacing.current
+    val label = if (showLabel) stringResource(R.string.invite) else null
 
-    IconButton(
+    IconWithLabel(
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        Icon(
-            name = R.drawable.ic_manage_profile,
-            contentDescription = stringResource(R.string.invite)
-        )
-    }
+        modifier = modifier,
+        iconRes = R.drawable.ic_manage_profile,
+        contentDescription = stringResource(R.string.invite),
+        label = label,
+    )
 }
 
 @Composable
 fun LeaveActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLabel: Boolean = false
 ) {
-    val spacing = LocalSpacing.current
+    val label = if (showLabel) stringResource(R.string.leave) else null
 
-    IconButton(
+    IconWithLabel(
         onClick = onClick,
-        modifier = modifier.size(spacing.extraLarge2)
-    ) {
-        Icon(
-            name = R.drawable.ic_sign_out,
-            contentDescription = stringResource(R.string.leave)
-        )
-    }
+        modifier = modifier,
+        iconRes = R.drawable.ic_sign_out,
+        contentDescription = stringResource(R.string.leave),
+        label = label,
+    )
 }
 
 @Composable

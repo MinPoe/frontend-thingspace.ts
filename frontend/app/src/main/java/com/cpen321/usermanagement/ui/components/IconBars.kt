@@ -40,9 +40,14 @@ fun WsProfileBar(
 ){
     BottomAppBar(
         actions = {
-            MembersActionButton(onClick = onMembersClick)
-            InviteActionButton(onClick = onInviteClick)
-            LeaveActionButton(onClick = onLeaveClick)
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+            MembersActionButton(onClick = onMembersClick, showLabel = true)
+            InviteActionButton(onClick = onInviteClick, showLabel = true)
+            LeaveActionButton(onClick = onLeaveClick, showLabel = true)
+            }
                   },
         modifier = modifier
     )
@@ -62,7 +67,7 @@ fun WsProfileManagerBar(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 MembersActionButton(onClick = onMembersClick, showLabel = true)
-                BanActionButton(onClick = onInviteClick, showLabel = true, labelText = stringResource(R.string.ban_member))
+                InviteActionButton(onClick = onInviteClick, showLabel = true)
                 DeleteActionButton(onClick = onDeleteClick, showLabel = true, labelText = stringResource(R.string.delete_workspace))
             }
         },
@@ -80,13 +85,15 @@ fun WorkspaceMembersManagerRow(
 ){
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxWidth(.9f)
     ){
         Button(
             onClick=onProfileClick,
-            modifier=modifier) {
+            modifier=modifier.fillMaxWidth(.8f)) {
             Text(TitleTrim.trim(profileName))}
-        BanActionButton(onClick = onBanClick)
+        BanActionButton(onClick = onBanClick, showLabel = true, labelText = stringResource(R.string.ban_member),
+            modifier = modifier)
     }
 }
 
@@ -126,11 +133,12 @@ fun WorkspaceMembersRow(
 ){
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxWidth(.9f)
     ){
         Button(
             onClick=onProfileClick,
-            modifier=modifier) {
+            modifier=modifier.fillMaxWidth()) {
             Text(TitleTrim.trim(profileName))}
     }
 }
