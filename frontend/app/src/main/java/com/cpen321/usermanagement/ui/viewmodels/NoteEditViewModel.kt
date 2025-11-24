@@ -87,7 +87,7 @@ class NoteEditViewModel @Inject constructor(
             _editState.value = _editState.value.copy(isLoading = true, loadError = null)
 
             val result = noteRepository.getNote(noteId)
-            //loading profile to interpret signature fields
+            // loading profile to interpret signature fields
             val user = profileRepository.getProfile().getOrNull() //if cannot get user will be null, if it is null, cannot sign the signature
 
             result.fold(
@@ -118,6 +118,20 @@ class NoteEditViewModel @Inject constructor(
                             )
                         }
                     }
+
+                    // Ensure title field exists as first field
+                    val finalFields = if (fieldCreationData.isEmpty() || fieldCreationData.first().label != "Title") {
+                        listOf(
+                            FieldCreationData(
+                                type = FieldType.TEXT,
+                                label = "Title",
+                                placeholder = "Enter title"
+                            )
+                        ) + fieldCreationData
+                    } else {
+                        fieldCreationData
+                    }
+
 
                     _editState.value = NoteEditState(
                         noteType = note.noteType,
@@ -171,6 +185,11 @@ class NoteEditViewModel @Inject constructor(
     }
 
     fun removeField(fieldId: String) {
+        // Don't allow removing the first field (title)
+        val fields = _editState.value.fields
+        if (fields.isNotEmpty() && fields.first().id == fieldId) {
+            return
+        }
         _editState.value = _editState.value.copy(
             fields = _editState.value.fields.filter { it.id != fieldId }
         )
