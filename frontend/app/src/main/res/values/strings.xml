@@ -77,6 +77,8 @@
     <string name="edit_note">Edit Note</string>
     <string name="edit_template">Edit Template</string>
     <string name="note_type">Note Type</string>
+    <string name="note_title">Note Title</string>
+    <string name="enter_note_title">Enter note title</string>
     <string name="add">Add</string>
     <string name="field_content">Field Content</string>
     <string name="field_configuration">Field Configuration</string>

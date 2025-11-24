@@ -206,6 +206,18 @@ fun NoteCreationBody(
 
         Spacer(modifier = Modifier.height(spacing.large))
 
+        // Title Section (first field)
+        TitleFieldSection(
+            titleField = creationState.fields.firstOrNull(),
+            onTitleUpdated = { update ->
+                creationState.fields.firstOrNull()?.let { field ->
+                    callbacks.onFieldUpdated(field.id, update)
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(spacing.large))
+
         TagsInputSection(
             tags = creationState.tags,
             onTagAdded = callbacks.onTagAdded,
@@ -216,7 +228,7 @@ fun NoteCreationBody(
 
         // Fields Section
         FieldsEditSection(
-            fields = creationState.fields,
+            fields = creationState.fields.drop(1), // Skip title field
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated,
@@ -323,6 +335,46 @@ private fun TagsList(
                     label = { Text(tag) }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun TitleFieldSection(
+    titleField: FieldCreationData?,
+    onTitleUpdated: (FieldUpdate.Content) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacing = LocalSpacing.current
+
+    if (titleField == null) return
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(spacing.medium)
+        ) {
+            Text(
+                text = stringResource(R.string.note_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(spacing.small))
+
+            OutlinedTextField(
+                value = (titleField.content as? String) ?: "",
+                onValueChange = { onTitleUpdated(FieldUpdate.Content(it)) },
+                placeholder = { Text(stringResource(R.string.enter_note_title)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
         }
     }
 }

@@ -116,6 +116,15 @@ class NoteCreationViewModel @Inject constructor(
                     }
                     fields.add(FieldCreationData(type = fieldType, label = field.label))
                 }
+                // Ensure title field exists as first field
+                if (fields.isEmpty() || fields.first().label != "Title") {
+                    fields.add(0, FieldCreationData(
+                        type = FieldType.TEXT,
+                        label = "Title",
+                        placeholder = "Enter title"
+                    ))
+                }
+
                 //Also sets tags as they are part of template content
                 _creationState.value = _creationState.value.copy(
                     fields = fields,
@@ -126,6 +135,11 @@ class NoteCreationViewModel @Inject constructor(
     }
 
     fun removeField(fieldId: String) {
+        val fields = _creationState.value.fields
+        // if fieldId is the first field (title), do nothing and exit
+        if (fields.isNotEmpty() && fields.first().id == fieldId) {
+            return
+        }
         _creationState.value = _creationState.value.copy(
             fields = _creationState.value.fields.filter { it.id != fieldId }
         )
@@ -195,7 +209,13 @@ class NoteCreationViewModel @Inject constructor(
     }
 
     private fun validateFields(): String? {
-        if (_creationState.value.fields.isEmpty()) {
+        val titleField = _creationState.value.fields.firstOrNull()
+        if (titleField == null || (titleField.content as? String).isNullOrBlank()) {
+            return "Please enter a title"
+        }
+
+        /* default title field is always created, therefore size always minimum 1 */
+        if (_creationState.value.fields.size < 2) {
             return "Please add at least one field"
         }
         if (_creationState.value.tags.isEmpty()){
@@ -288,6 +308,19 @@ class NoteCreationViewModel @Inject constructor(
             _creationState.value = _creationState.value.copy(isLoadingTemplate = true)
             getProfile() //loading profile to read the signatures correctly
             setFieldsToTemplate(noteId)
+
+            // initialize with title field if no template loaded
+            // TODO: make sure title will always exist even with template load
+            if (_creationState.value.fields.isEmpty()) {
+                val titleField = FieldCreationData(
+                    type = FieldType.TEXT,
+                    label = "Title",
+                    placeholder = "Enter title"
+                )
+                _creationState.value = _creationState.value.copy(
+                    fields = listOf(titleField)
+                )
+            }
             setNoteType(noteType)
             _creationState.value = _creationState.value.copy(isLoadingTemplate = false)
         }
