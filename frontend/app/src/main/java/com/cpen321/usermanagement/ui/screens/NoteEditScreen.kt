@@ -22,9 +22,11 @@ import com.cpen321.usermanagement.ui.components.LoadingEditContent
 import com.cpen321.usermanagement.ui.components.ErrorEditContent
 import com.cpen321.usermanagement.ui.components.CopyNoteDialog
 import com.cpen321.usermanagement.ui.components.DeleteNoteDialog
+import com.cpen321.usermanagement.ui.components.FieldsEditSection
 import com.cpen321.usermanagement.ui.components.NoteInfoRow
 import com.cpen321.usermanagement.ui.components.ShareNoteDialog
 import com.cpen321.usermanagement.ui.components.IconWithLabel
+import com.cpen321.usermanagement.ui.components.TagsEditSection
 import com.cpen321.usermanagement.ui.viewmodels.FieldCreationData
 
 data class NoteEditCallbacks(

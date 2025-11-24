@@ -1,16 +1,38 @@
-package com.cpen321.usermanagement.ui.screens
+package com.cpen321.usermanagement.ui.components
 
 import Button
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.util.Log
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -18,14 +40,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.R
-import com.cpen321.usermanagement.data.remote.dto.*
+import com.cpen321.usermanagement.data.remote.dto.NoteType
+import com.cpen321.usermanagement.data.remote.dto.User
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
+import com.cpen321.usermanagement.ui.theme.Spacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldCreationData
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
 import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun TagsEditSection(
@@ -42,12 +67,12 @@ fun TagsEditSection(
             text = stringResource(R.string.tags),
             style = MaterialTheme.typography.titleMedium
         )
-        Spacer(modifier = Modifier.height(spacing.small))
-        
+        Spacer(modifier = Modifier.Companion.height(spacing.small))
+
         // Display tags
         if (tags.isNotEmpty()) {
             FlowRow(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(spacing.small),
                 verticalArrangement = Arrangement.spacedBy(spacing.small)
             ) {
@@ -66,7 +91,7 @@ fun TagsEditSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(spacing.small))
+        Spacer(modifier = Modifier.Companion.height(spacing.small))
         Button(onClick = { showDialog = true }) {
             Text(stringResource(R.string.add_tag))
         }
@@ -104,7 +129,7 @@ private fun AddTagDialog(
                     value = tagInput,
                     onValueChange = onTagInputChange,
                     label = { Text(stringResource(R.string.enter_tag_name)) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.Companion.fillMaxWidth()
                 )
             },
             confirmButton = {
@@ -138,7 +163,7 @@ fun FieldsEditSection(
             text = stringResource(R.string.fields),
             style = MaterialTheme.typography.titleMedium
         )
-        Spacer(modifier = Modifier.height(spacing.small))
+        Spacer(modifier = Modifier.Companion.height(spacing.small))
 
         if (fields.isEmpty()) {
             Text(
@@ -155,11 +180,11 @@ fun FieldsEditSection(
                     currentUser = currentUser,
                     noteType = noteType
                 )
-                Spacer(modifier = Modifier.height(spacing.medium))
+                Spacer(modifier = Modifier.Companion.height(spacing.medium))
             }
         }
 
-        Spacer(modifier = Modifier.height(spacing.small))
+        Spacer(modifier = Modifier.Companion.height(spacing.small))
         Button(onClick = { showFieldDialog = true }) {
             Text(stringResource(R.string.add_field))
         }
@@ -187,22 +212,22 @@ private fun FieldEditor(
     val spacing = LocalSpacing.current
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.Companion.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
-        Column(modifier = Modifier.padding(spacing.medium)) {
+        Column(modifier = Modifier.Companion.padding(spacing.medium)) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Companion.CenterVertically
             ) {
                 OutlinedTextField(
                     value = field.label,
                     onValueChange = { onFieldUpdated(FieldUpdate.Label(it)) },
                     label = { Text(stringResource(R.string.label)) },
-                    modifier = Modifier.fillMaxWidth(.8f)
+                    modifier = Modifier.Companion.fillMaxWidth(.8f)
                 )
                 IconButton(onClick = onFieldRemoved) {
                     Icon(
@@ -212,16 +237,15 @@ private fun FieldEditor(
                 }
             }
 
-            Spacer(modifier = Modifier.height(spacing.small))
+            Spacer(modifier = Modifier.Companion.height(spacing.small))
 
-            if (noteType == NoteType.CONTENT){
+            if (noteType == NoteType.CONTENT) {
                 when (field.type) {
                     FieldType.TEXT -> TextFieldInput(field, onFieldUpdated)
                     FieldType.DATETIME -> DateTimeFieldInput(field, onFieldUpdated, spacing)
                     FieldType.SIGNATURE -> SignatureFieldInput(field, currentUser, onFieldUpdated)
                 }
-            }
-            else{
+            } else {
                 when (field.type) {
                     FieldType.TEXT -> Text(stringResource(R.string.text_template))
                     FieldType.DATETIME -> Text(stringResource(R.string.datetime_template))
@@ -242,7 +266,7 @@ private fun TextFieldInput(
         onValueChange = { onFieldUpdated(FieldUpdate.Content(it)) },
         label = { Text(stringResource(R.string.text_content)) },
         placeholder = { Text(stringResource(R.string.enter_text_content)) },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.Companion.fillMaxWidth(),
         minLines = 2,
         maxLines = 4
     )
@@ -299,8 +323,8 @@ private fun SignatureCheckbox(
 ) {
     Log.d("signature", "enabled: $enabled")
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        verticalAlignment = Alignment.Companion.CenterVertically,
+        modifier = Modifier.Companion
             .fillMaxWidth()
             .padding(vertical = 10.dp)
     ) {
@@ -308,12 +332,12 @@ private fun SignatureCheckbox(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             enabled = enabled,
-            modifier = Modifier.testTag(stringResource(R.string.all))
+            modifier = Modifier.Companion.testTag(stringResource(R.string.all))
         )
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier.Companion.padding(start = 8.dp)
         )
     }
 }
@@ -323,27 +347,27 @@ private fun SignatureCheckbox(
 private fun DateTimeFieldInput(
     field: FieldCreationData,
     onFieldUpdated: (FieldUpdate) -> Unit,
-    spacing: com.cpen321.usermanagement.ui.theme.Spacing
+    spacing: Spacing
 ) {
     val context = LocalContext.current
     val currentDateTime = (field.content as? LocalDateTime) ?: LocalDateTime.now()
-    
+
     // Track the selected datetime - sync with field content
     var selectedDateTime by remember(field.content) {
         mutableStateOf(currentDateTime)
     }
-    
+
     // Update selectedDateTime when field content changes externally
     LaunchedEffect(field.content) {
         if (field.content is LocalDateTime) {
             selectedDateTime = field.content
         }
     }
-    
+
     // Format the datetime for display
     val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
     val displayText = selectedDateTime.format(dateTimeFormatter)
-    
+
     // Date picker dialog - create new instance when showing to ensure current values
     val showDatePicker: () -> Unit = {
         val calendar = Calendar.getInstance().apply {
@@ -351,7 +375,7 @@ private fun DateTimeFieldInput(
             set(Calendar.MONTH, selectedDateTime.monthValue - 1) // Calendar months are 0-indexed
             set(Calendar.DAY_OF_MONTH, selectedDateTime.dayOfMonth)
         }
-        
+
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
@@ -371,14 +395,14 @@ private fun DateTimeFieldInput(
             calendar.get(Calendar.DAY_OF_MONTH)
         ).show()
     }
-    
+
     // Time picker dialog - create new instance when showing to ensure current values
     val showTimePicker: () -> Unit = {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, selectedDateTime.hour)
             set(Calendar.MINUTE, selectedDateTime.minute)
         }
-        
+
         TimePickerDialog(
             context,
             { _, hourOfDay, minute ->
@@ -399,26 +423,35 @@ private fun DateTimeFieldInput(
         ).show()
     }
 
+    DateTimeFieldLayout(displayText, spacing, showDatePicker, showTimePicker)
+}
+
+@Composable
+private fun DateTimeFieldLayout(
+    displayText:String,
+    spacing: Spacing,
+    showDatePicker:()->Unit,
+    showTimePicker:()->Unit){
     Column {
         OutlinedTextField(
             value = displayText,
             onValueChange = {},
             label = { Text(stringResource(R.string.datetime_content)) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.Companion.fillMaxWidth(),
             readOnly = true
         )
-        Spacer(modifier = Modifier.height(spacing.small))
+        Spacer(modifier = Modifier.Companion.height(spacing.small))
         Row {
             Button(
                 onClick = showDatePicker,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.Companion.weight(1f)
             ) {
                 Text(stringResource(R.string.pick_date))
             }
-            Spacer(modifier = Modifier.width(spacing.small))
+            Spacer(modifier = Modifier.Companion.width(spacing.small))
             Button(
                 onClick = showTimePicker,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.Companion.weight(1f)
             ) {
                 Text(stringResource(R.string.pick_time))
             }
@@ -430,7 +463,7 @@ private fun DateTimeFieldInput(
 private fun FieldTypeSelectionDialog(
     onDismiss: () -> Unit,
     onFieldTypeSelected: (FieldType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier.Companion
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -440,11 +473,11 @@ private fun FieldTypeSelectionDialog(
                 FieldType.values().forEach { type ->
                     TextButton(
                         onClick = { onFieldTypeSelected(type) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.Companion.fillMaxWidth()
                     ) {
                         Text(
                             text = type.name,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.Companion.fillMaxWidth()
                         )
                     }
                 }
@@ -458,120 +491,4 @@ private fun FieldTypeSelectionDialog(
         },
         modifier = modifier
     )
-}
-
-@Composable
-fun WorkspaceSelectionDialog(
-    title: String,
-    confirmText: String,
-    isProcessing: Boolean,
-    workspaces: List<Workspace>,
-    isLoadingWorkspaces: Boolean,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    var selectedWorkspaceId by remember { mutableStateOf("") }
-    val workspacePairs = remember { workspaces.map{Pair(it._id, it.profile.name)}}
-
-    AlertDialog(
-        onDismissRequest = { if (!isProcessing) onDismiss() },
-        title = { Text(title) },
-        text = {
-            WorkspaceSelectionContent(
-                isLoadingWorkspaces = isLoadingWorkspaces,
-                workspacePairs = workspacePairs,
-                selectedWorkspaceId = selectedWorkspaceId,
-                isProcessing = isProcessing,
-                onWorkspaceSelected = { selectedWorkspaceId = it }
-            )
-        },
-        confirmButton = {
-            WorkspaceSelectionConfirmButton(
-                onConfirm = { onConfirm(selectedWorkspaceId) },
-                confirmText = confirmText,
-                isProcessing = isProcessing,
-                isEnabled = selectedWorkspaceId.isNotEmpty() && !isProcessing
-            )
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isProcessing
-            ) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
-}
-
-@Composable
-private fun WorkspaceSelectionContent(
-    isLoadingWorkspaces: Boolean,
-    workspacePairs: List<Pair<String, String>>,
-    selectedWorkspaceId: String,
-    isProcessing: Boolean,
-    onWorkspaceSelected: (String) -> Unit
-) {
-    when {
-        isLoadingWorkspaces -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-        workspacePairs.isEmpty() -> {
-            Text(stringResource(R.string.create_new_workspace))
-        }
-        else -> {
-            Column {
-                Text(stringResource(R.string.select_workspace))
-                Spacer(modifier = Modifier.height(8.dp))
-                workspacePairs.forEach { (id, name) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = !isProcessing) { onWorkspaceSelected(id) }
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedWorkspaceId == id,
-                            onClick = { onWorkspaceSelected(id) },
-                            enabled = !isProcessing
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(name)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkspaceSelectionConfirmButton(
-    onConfirm: () -> Unit,
-    confirmText: String,
-    isProcessing: Boolean,
-    isEnabled: Boolean
-) {
-    val spacing = LocalSpacing.current
-    
-    Button(
-        onClick = onConfirm,
-        enabled = isEnabled
-    ) {
-        if (isProcessing) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(spacing.medium),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        } else {
-            Text(confirmText)
-        }
-    }
 }

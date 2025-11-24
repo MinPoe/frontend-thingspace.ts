@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
 import com.cpen321.usermanagement.data.remote.dto.*
+import com.cpen321.usermanagement.ui.components.FieldsEditSection
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldCreationData
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
