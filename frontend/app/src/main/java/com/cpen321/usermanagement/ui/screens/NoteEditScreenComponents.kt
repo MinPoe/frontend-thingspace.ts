@@ -1,6 +1,8 @@
 package com.cpen321.usermanagement.ui.screens
 
 import Button
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,6 +23,9 @@ import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldCreationData
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
 import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
 fun TagsEditSection(
@@ -314,13 +320,83 @@ private fun DateTimeFieldInput(
     onFieldUpdated: (FieldUpdate) -> Unit,
     spacing: com.cpen321.usermanagement.ui.theme.Spacing
 ) {
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-    val currentDateTime = (field.content as? java.time.LocalDateTime) ?: java.time.LocalDateTime.now()
+    val context = LocalContext.current
+    val currentDateTime = (field.content as? LocalDateTime) ?: LocalDateTime.now()
+    
+    // Track the selected datetime - sync with field content
+    var selectedDateTime by remember(field.content) {
+        mutableStateOf(currentDateTime)
+    }
+    
+    // Update selectedDateTime when field content changes externally
+    LaunchedEffect(field.content) {
+        if (field.content is LocalDateTime) {
+            selectedDateTime = field.content
+        }
+    }
+    
+    // Format the datetime for display
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+    val displayText = selectedDateTime.format(dateTimeFormatter)
+    
+    // Date picker dialog - create new instance when showing to ensure current values
+    val showDatePicker: () -> Unit = {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, selectedDateTime.year)
+            set(Calendar.MONTH, selectedDateTime.monthValue - 1) // Calendar months are 0-indexed
+            set(Calendar.DAY_OF_MONTH, selectedDateTime.dayOfMonth)
+        }
+        
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                // Update the selected datetime with new date, keeping the time
+                val newDateTime = LocalDateTime.of(
+                    year,
+                    month + 1, // LocalDateTime months are 1-indexed
+                    dayOfMonth,
+                    selectedDateTime.hour,
+                    selectedDateTime.minute
+                )
+                selectedDateTime = newDateTime
+                onFieldUpdated(FieldUpdate.Content(newDateTime))
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+    
+    // Time picker dialog - create new instance when showing to ensure current values
+    val showTimePicker: () -> Unit = {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, selectedDateTime.hour)
+            set(Calendar.MINUTE, selectedDateTime.minute)
+        }
+        
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                // Update the selected datetime with new time, keeping the date
+                val newDateTime = LocalDateTime.of(
+                    selectedDateTime.year,
+                    selectedDateTime.monthValue,
+                    selectedDateTime.dayOfMonth,
+                    hourOfDay,
+                    minute
+                )
+                selectedDateTime = newDateTime
+                onFieldUpdated(FieldUpdate.Content(newDateTime))
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            false // 24-hour format
+        ).show()
+    }
 
     Column {
         OutlinedTextField(
-            value = field.content?.toString() ?: "",
+            value = displayText,
             onValueChange = {},
             label = { Text(stringResource(R.string.datetime_content)) },
             modifier = Modifier.fillMaxWidth(),
@@ -329,14 +405,14 @@ private fun DateTimeFieldInput(
         Spacer(modifier = Modifier.height(spacing.small))
         Row {
             Button(
-                onClick = { showDatePicker = true },
+                onClick = showDatePicker,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(R.string.pick_date))
             }
             Spacer(modifier = Modifier.width(spacing.small))
             Button(
-                onClick = { showTimePicker = true },
+                onClick = showTimePicker,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(R.string.pick_time))
