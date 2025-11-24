@@ -56,7 +56,6 @@ data class SignatureField(
 
 enum class NoteType {
     CONTENT,
-    CHAT,
     TEMPLATE
 }
 

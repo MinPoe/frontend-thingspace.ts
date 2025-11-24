@@ -83,7 +83,6 @@ sealed class NavigationEvent {
     object NavigateToWsSelect: NavigationEvent()
 
     data class NavigateToMainTagReset(val workspaceId: String): NavigationEvent()
-    data class NavigateToChatTagReset(val workspaceId: String): NavigationEvent()
     data class NavigateToTemplateTagReset(val workspaceId: String): NavigationEvent()
 }
 
@@ -155,23 +154,13 @@ class DisplayNavRoutesWrapper(private val _navigationState: MutableStateFlow<Nav
      */
     fun navigateToChat(
         workspaceId: String,
-        selectedTags: List<String> = emptyList(),
-        allTagsSelected: Boolean = true,
-        searchQuery: String = ""
     ) {
         _navigationEvent.value = NavigationEvent.NavigateToChat(
             workspaceId = workspaceId,
-            selectedTags = selectedTags,
-            allTagsSelected = allTagsSelected,
-            searchQuery = searchQuery
         )
         _navigationState.value = _navigationState.value.copy(
             currentRoute = NavRoutes.CHAT,
             workspaceId = workspaceId,
-            selectedTags = selectedTags,
-            allTagsSelected = allTagsSelected,
-            searchQuery = searchQuery,
-            noteType = NoteType.CHAT //all display screens will have this irregularity
             //to ensure the user ends up at the correct display
         )
     }
@@ -253,21 +242,6 @@ class DisplayNavRoutesWrapper(private val _navigationState: MutableStateFlow<Nav
             allTagsSelected = true,
             searchQuery = "",
             noteType = NoteType.CONTENT
-        )
-    }
-
-    fun navigateToChatTagReset(
-        workspaceId: String,
-    ){
-        _navigationEvent.value = NavigationEvent.NavigateToChatTagReset(
-            workspaceId = workspaceId
-        )
-        _navigationState.value = _navigationState.value.copy(
-            workspaceId = workspaceId,
-            selectedTags = emptyList(),
-            allTagsSelected = true,
-            searchQuery = "",
-            noteType = NoteType.CHAT
         )
     }
 

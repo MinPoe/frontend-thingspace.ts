@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.cpen321.usermanagement.R
+import com.cpen321.usermanagement.data.remote.dto.NoteType
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
 import com.cpen321.usermanagement.ui.viewmodels.FieldType
 import com.cpen321.usermanagement.ui.viewmodels.FieldUpdate
@@ -209,7 +210,8 @@ fun NoteEditContent(
             onBackClick = callbacks.onBackClick,
             onShareClick = callbacks.onShareClick,
             onCopyClick = callbacks.onCopyClick,
-            onDeleteClick = callbacks.onDeleteClick
+            onDeleteClick = callbacks.onDeleteClick,
+            noteType = editState.noteType
         ) },
         bottomBar = { NoteEditBottomBar(
             onBackClick = callbacks.onBackClick,
@@ -231,7 +233,8 @@ private fun NoteEditTopBar(
     onBackClick: () -> Unit,
     onShareClick: () -> Unit,
     onCopyClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    noteType: NoteType
 ) {
     val shareDesc = stringResource(R.string.share)
     val copyDesc = stringResource(R.string.copy)
@@ -239,7 +242,8 @@ private fun NoteEditTopBar(
     TopAppBar(
         title = {
             Text(
-                text = stringResource(R.string.edit_note),
+                text = if(noteType== NoteType.CONTENT) stringResource(R.string.edit_note)
+                else stringResource(R.string.edit_template),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -356,7 +360,7 @@ fun NoteEditBody(
         }
 
         // Note Type Selection
-        NoteInfoRow(editState.noteType, editState.createdAtString, editState.lastEditString)
+        NoteInfoRow(editState.createdAtString, editState.lastEditString)
 
         Spacer(modifier = Modifier.height(spacing.large))
 
@@ -375,7 +379,8 @@ fun NoteEditBody(
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated,
-            currentUser = editState.user
+            currentUser = editState.user,
+            noteType = editState.noteType
         )
     }
 }

@@ -86,7 +86,7 @@ fun NoteCreationContent(
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { NoteCreationTopBar(onBackClick = callbacks.onBackClick) },
+        topBar = { NoteCreationTopBar(onBackClick = callbacks.onBackClick, noteType = creationState.noteType) },
         bottomBar = { NoteCreationBottomBar(
             onBackClick = callbacks.onBackClick,
             onCreateNote = callbacks.onCreateNote,
@@ -103,11 +103,12 @@ fun NoteCreationContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NoteCreationTopBar(onBackClick: () -> Unit) {
+private fun NoteCreationTopBar(onBackClick: () -> Unit, noteType: NoteType) {
     TopAppBar(
         title = {
             Text(
-                text = stringResource(R.string.create_note),
+                text = if(noteType == NoteType.CONTENT) stringResource(R.string.create_note)
+                else stringResource(R.string.create_template),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -203,11 +204,6 @@ fun NoteCreationBody(
             Spacer(modifier = Modifier.height(spacing.medium))
         }
 
-        // Note Type Selection
-        NoteTypeSection(
-            selectedType = creationState.noteType,
-        )
-
         Spacer(modifier = Modifier.height(spacing.large))
 
         TagsInputSection(
@@ -224,52 +220,9 @@ fun NoteCreationBody(
             onFieldAdded = callbacks.onFieldAdded,
             onFieldRemoved = callbacks.onFieldRemoved,
             onFieldUpdated = callbacks.onFieldUpdated,
-            currentUser = creationState.user
+            currentUser = creationState.user,
+            noteType = creationState.noteType
         )
-    }
-}
-
-@Composable
-private fun NoteTypeSection(
-    selectedType: NoteType,
-    modifier: Modifier = Modifier
-) {
-    val spacing = LocalSpacing.current
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.medium)
-        ) {
-            Text(
-                text = stringResource(R.string.note_type),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(spacing.small))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.small)
-            ) {
-                NoteType.values().forEach { type ->
-                    FilterChip(
-                        selected = selectedType == type,
-                        enabled = false,
-                        onClick = { },
-                        label = { Text(type.name) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
     }
 }
 

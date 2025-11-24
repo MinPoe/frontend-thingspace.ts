@@ -80,7 +80,7 @@ fun TemplateScreen(
             allTagsSelected = featureActions.state.getAllTagsSelected()
         )},
         onChatClick={
-            featureActions.navs.navigateToChatTagReset(
+            featureActions.navs.navigateToChat(
                 featureActions.state.getWorkspaceId()
             )
         },
@@ -122,11 +122,9 @@ private fun TemplateContent(
         },
         bottomBar = {
             TemplateBottomBar(
-                onCreateNoteClick = actions.onCreateNoteClick,
                 onWorkspacesClick = actions.onWorkspaceClick,
                 onChatClick = actions.onChatClick,
                 onContentClick = actions.onContentClick,
-                onTemplatesClick = { /* Already on templates screen */ },
                 modifier = modifier)
         }
     ) { paddingValues ->

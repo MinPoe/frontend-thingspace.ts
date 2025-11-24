@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.compose
 
 data class MainActions(
     val onNoteClick: (String) -> Unit,
-    val onTemplateClick: ()-> Unit,
     val onWorkspaceClick: () -> Unit,
     val onFilterClick: () -> Unit,
     val onChatClick: () -> Unit,
@@ -64,8 +63,6 @@ fun MainScreen(
     val wsname =  mainViewModel.getWorkspaceName()
 
     val actions = MainActions(
-        onTemplateClick = {  featureActions.navs.navigateToTemplateTagReset(
-            featureActions.state.getWorkspaceId())},
         onWorkspaceClick = { featureActions.ws.navigateToWsSelect()},
         onFilterClick = { featureActions.navs.navigateToFilter(
             workspaceId = featureActions.state.getWorkspaceId(),
@@ -78,9 +75,10 @@ fun MainScreen(
             allTagsSelected = featureActions.state.getAllTagsSelected(),
             searchQuery = featureActions.state.getSearchQuery()
         )},
-        onChatClick = { featureActions.navs.navigateToChatTagReset(
+        onChatClick = { featureActions.navs.navigateToChat(
             featureActions.state.getWorkspaceId()) },
-        onCreateNoteClick = { featureActions.navs.navigateToNoteCreation() },
+        onCreateNoteClick = { featureActions.navs.navigateToTemplateTagReset(
+            featureActions.state.getWorkspaceId()) },
         onNoteClick = {noteId:String -> featureActions.navs.navigateToNoteEdit(noteId)},
         onQueryChange = {query:String -> featureActions.state.setSearchQuery(query)}
     )
@@ -135,8 +133,6 @@ private fun MainContent(
                 onCreateNoteClick = actions.onCreateNoteClick,
                 onWorkspacesClick = actions.onWorkspaceClick,
                 onChatClick = actions.onChatClick,
-                onContentClick = { /* Already on content screen */ },
-                onTemplatesClick = actions.onTemplateClick,
                 modifier = modifier)
         }
     ) { paddingValues ->

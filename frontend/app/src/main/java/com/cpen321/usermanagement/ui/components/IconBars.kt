@@ -15,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cpen321.usermanagement.ui.theme.LocalSpacing
@@ -113,7 +114,7 @@ fun TemplateRow(
                 defaultElevation = spacing.extraSmall
             )) { Text(TitleTrim.trim(title),
                 modifier = modifier.padding(spacing.medium)) }
-        EditActionButton(onEditClick)
+        EditActionButton(onEditClick, showLabel = true)
     }
 }
 
@@ -148,8 +149,8 @@ fun WorkspaceRow(
        horizontalArrangement = Arrangement.Center
     ){
         Button(
-            onClick = {},
-            modifier = modifier.weight(1f, fill = false)
+            onClick = onProfileClick,
+            modifier = modifier.weight(1f, fill = false).testTag(workspaceName).fillMaxWidth(.9f)
         ) {
             Text(
                 text = TitleTrim.trim(workspaceName),
@@ -175,12 +176,6 @@ fun WorkspaceRow(
             relatedWorkspace = workspaceName,
             showLabel = true
         )
-        EditActionButton(
-            onClick = onProfileClick,
-            modifier=modifier,
-            relatedWorkspace = workspaceName,
-            showLabel = true
-        )
     }
 }
 
@@ -189,8 +184,6 @@ fun MainBottomBar(
     onCreateNoteClick: ()->Unit,
     onWorkspacesClick: ()-> Unit,
     onChatClick:()->Unit,
-    onContentClick:()->Unit,
-    onTemplatesClick: ()->Unit,
     modifier: Modifier = Modifier,
     showLabels: Boolean = true  // Set to true to show text labels with icons
 ){
@@ -208,8 +201,6 @@ fun MainBottomBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ContentNoteActionButton(onClick = onContentClick, showLabel = true)
-                TemplateActionButton(onClick = onTemplatesClick, showLabel = true)
                 ChatActionButton(onClick = onChatClick, showLabel = true)
                 WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = true)
                 CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = true)
@@ -225,8 +216,6 @@ fun MainBottomBar(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ContentNoteActionButton(onClick = onContentClick, showLabel = false)
-                TemplateActionButton(onClick = onTemplatesClick, showLabel = false)
                 ChatActionButton(onClick = onChatClick, showLabel = false)
                 WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = false)
                 CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = false)
@@ -237,11 +226,9 @@ fun MainBottomBar(
 
 @Composable
 fun TemplateBottomBar(
-    onCreateNoteClick: ()->Unit,
     onWorkspacesClick: ()-> Unit,
-    onChatClick:()->Unit,
-    onContentClick:()->Unit,
-    onTemplatesClick: ()->Unit,
+    onChatClick: ()->Unit,
+    onContentClick: ()->Unit,
     modifier: Modifier = Modifier,
     showLabels: Boolean = true  // Set to true to show text labels with icons
 ){
@@ -260,10 +247,8 @@ fun TemplateBottomBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ContentNoteActionButton(onClick = onContentClick, showLabel = true)
-                TemplateActionButton(onClick = onTemplatesClick, showLabel = true)
                 ChatActionButton(onClick = onChatClick, showLabel = true)
                 WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = true)
-                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = true)
             }
         }
     } else {
@@ -277,10 +262,8 @@ fun TemplateBottomBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ContentNoteActionButton(onClick = onContentClick, showLabel = false)
-                TemplateActionButton(onClick = onTemplatesClick, showLabel = false)
                 ChatActionButton(onClick = onChatClick, showLabel = false)
                 WorkspaceActionButton(onClick = onWorkspacesClick, showLabel = false)
-                CreateNoteActionButton(onClick = onCreateNoteClick, showLabel = false)
             }
         }
     }

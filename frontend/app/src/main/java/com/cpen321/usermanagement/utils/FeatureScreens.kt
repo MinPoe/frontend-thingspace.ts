@@ -27,10 +27,7 @@ interface INavigationActions {
     // --- Navigation methods ---
 
     fun navigateToChat(
-        workspaceId: String,
-        selectedTags: List<String> = emptyList(),
-        allTagsSelected: Boolean = true,
-        searchQuery: String = ""
+        workspaceId: String
     )
 
     fun navigateToCopy()
@@ -65,10 +62,7 @@ interface INavigationActions {
         allTagsSelected: Boolean = true,
         searchQuery: String = ""
     )
-
-
     fun navigateToMainTagReset(workspaceId: String)
-    fun navigateToChatTagReset(workspaceId: String)
     fun navigateToTemplateTagReset(workspaceId: String)
 }
 
