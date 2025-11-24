@@ -370,11 +370,7 @@ private fun DateTimeFieldInput(
 
     // Date picker dialog - create new instance when showing to ensure current values
     val showDatePicker: () -> Unit = {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.YEAR, selectedDateTime.year)
-            set(Calendar.MONTH, selectedDateTime.monthValue - 1) // Calendar months are 0-indexed
-            set(Calendar.DAY_OF_MONTH, selectedDateTime.dayOfMonth)
-        }
+        val calendar = CalendarDateHelper(selectedDateTime)
 
         DatePickerDialog(
             context,
@@ -424,6 +420,14 @@ private fun DateTimeFieldInput(
     }
 
     DateTimeFieldLayout(displayText, spacing, showDatePicker, showTimePicker)
+}
+
+private fun CalendarDateHelper(selectedDateTime:LocalDateTime): Calendar {
+    return Calendar.getInstance().apply {
+        set(Calendar.YEAR, selectedDateTime.year)
+        set(Calendar.MONTH, selectedDateTime.monthValue - 1) // Calendar months are 0-indexed
+        set(Calendar.DAY_OF_MONTH, selectedDateTime.dayOfMonth)
+    }
 }
 
 @Composable
