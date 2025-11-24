@@ -60,11 +60,11 @@ fun WorkspacesScreen(
             val onWsMainClick = {index:Int ->
                 featureActions.navs.navigateToMainTagReset(availableWs[index]._id)}
             val onWsChatClick = {index:Int ->
-                featureActions.navs.navigateToChatTagReset(availableWs[index]._id)}
+                featureActions.navs.navigateToChat(availableWs[index]._id)}
             val onWsTemplateClick = {index:Int ->
                 featureActions.navs.navigateToTemplateTagReset(availableWs[index]._id)}
             val onPersonalProfileClick = onPersonalProfileClick
-            val onPersonalChatClick={ featureActions.navs.navigateToChatTagReset(
+            val onPersonalChatClick={ featureActions.navs.navigateToChat(
                 personalWs._id) }
             val onPersonalContentClick={ featureActions.navs.navigateToMainTagReset(
                 personalWs._id) }

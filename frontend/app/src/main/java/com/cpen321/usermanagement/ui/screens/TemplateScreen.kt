@@ -80,7 +80,7 @@ fun TemplateScreen(
             allTagsSelected = featureActions.state.getAllTagsSelected()
         )},
         onChatClick={
-            featureActions.navs.navigateToChatTagReset(
+            featureActions.navs.navigateToChat(
                 featureActions.state.getWorkspaceId()
             )
         },

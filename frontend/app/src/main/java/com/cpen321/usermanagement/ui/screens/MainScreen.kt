@@ -75,7 +75,7 @@ fun MainScreen(
             allTagsSelected = featureActions.state.getAllTagsSelected(),
             searchQuery = featureActions.state.getSearchQuery()
         )},
-        onChatClick = { featureActions.navs.navigateToChatTagReset(
+        onChatClick = { featureActions.navs.navigateToChat(
             featureActions.state.getWorkspaceId()) },
         onCreateNoteClick = { featureActions.navs.navigateToTemplateTagReset(
             featureActions.state.getWorkspaceId()) },

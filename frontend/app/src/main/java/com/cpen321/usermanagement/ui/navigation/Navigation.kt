@@ -279,7 +279,6 @@ private fun routeNavigationEvent(
             handleBasicNavigation(navigationEvent, navController, basicViewModels, navigationStateManager)
         }
         is NavigationEvent.NavigateToChat,
-        is NavigationEvent.NavigateToChatTagReset,
         is NavigationEvent.NavigateToCopy,
         is NavigationEvent.NavigateToFields,
         is NavigationEvent.NavigateToFilter,
@@ -423,8 +422,7 @@ private fun handleFeatureNavigation(
     navigationStateManager: NavigationStateManager
 ) {
     when (event) {
-        is NavigationEvent.NavigateToChat,
-        is NavigationEvent.NavigateToChatTagReset -> {
+        is NavigationEvent.NavigateToChat -> {
             navController.navigate(NavRoutes.CHAT)
         }
         is NavigationEvent.NavigateToCopy -> {
@@ -582,16 +580,10 @@ class NavigationActions(private val navigationStateManager: NavigationStateManag
     INavigationActions {
     // --- Navigation delegation ---
     override fun navigateToChat(
-        workspaceId: String,
-        selectedTags: List<String>,
-        allTagsSelected: Boolean,
-        searchQuery: String
+        workspaceId: String
     ) {
         navigationStateManager.display.navigateToChat(
             workspaceId,
-            selectedTags,
-            allTagsSelected,
-            searchQuery
         )
     }
 
@@ -657,10 +649,6 @@ class NavigationActions(private val navigationStateManager: NavigationStateManag
             allTagsSelected,
             searchQuery
         )
-    }
-
-    override fun navigateToChatTagReset(workspaceId: String) {
-        navigationStateManager.display.navigateToChatTagReset(workspaceId)
     }
 
     override fun navigateToTemplateTagReset(workspaceId: String) {
@@ -801,11 +789,6 @@ private fun NavGraphBuilder.addWorkspaceRoutes(
             workspacesViewModel = wsSelectViewModel,
             onBackClick = {
                 when (navigationStateManager.state.getNoteType()) {
-                    NoteType.CHAT -> {
-                        navigationStateManager.display.navigateToChatTagReset(
-                            navigationStateManager.state.getWorkspaceId()
-                        )
-                    }
                     NoteType.CONTENT -> {
                         navigationStateManager.display.navigateToMainTagReset(
                             navigationStateManager.state.getWorkspaceId()
