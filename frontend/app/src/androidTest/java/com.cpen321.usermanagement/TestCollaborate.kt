@@ -117,6 +117,15 @@ class TestCollaborate {
         }
     }
 
+    private fun waitForTag(contentDescription:String){
+        composeRule.waitUntil(20000){
+            composeRule //Waiting for the success message to disappear
+                .onAllNodesWithTag(contentDescription)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
     private fun signIn(signInString:String, acctName:String){
         composeRule.waitForIdle()
         composeRule.onNodeWithText(signInString).performClick()
@@ -150,11 +159,11 @@ class TestCollaborate {
         val wsInviteButtonString = composeRule.activity.getString(R.string.invite_to_workspace)
         val backIcString = composeRule.activity.getString(R.string.back_icon_description)
         val chatIcString = composeRule.activity.getString(R.string.chat)
+        val sendIcString = composeRule.activity.getString(R.string.send)
         val chatTextBoxString = composeRule.activity.getString(R.string.type_message)
         val noMessagesString = composeRule.activity.getString(R.string.no_messages_yet)
         val profileIcString = composeRule.activity.getString(R.string.profile)
         val signOutString = composeRule.activity.getString(R.string.sign_out)
-        val editWsIcString =  composeRule.activity.getString(R.string.edit)
         val leaveIcString = composeRule.activity.getString(R.string.leave)
         val membersIcString = composeRule.activity.getString(R.string.members)
         val banIcString = composeRule.activity.getString(R.string.ban)
@@ -214,11 +223,11 @@ class TestCollaborate {
         Log.d("TEST COLLABORATE","Chat tests")
         Log.d("TEST COLLABORATE","Sending a non-empty chat message")
         composeRule.onNodeWithContentDescription(chatTextBoxString).performTextInput(" ")
-        composeRule.onNodeWithContentDescription(chatIcString).performClick()
+        composeRule.onNodeWithContentDescription(sendIcString).performClick()
         waitForText(noMessagesString)
         Log.d("TEST COLLABORATE","Sending a non-empty chat message")
         composeRule.onNodeWithContentDescription(chatTextBoxString).performTextInput(chatMessage)
-        composeRule.onNodeWithContentDescription(chatIcString).performClick()
+        composeRule.onNodeWithContentDescription(sendIcString).performClick()
         waitForText(chatMessage)
         composeRule.onNodeWithText(noMessagesString).assertIsNotDisplayed()
 
@@ -233,7 +242,7 @@ class TestCollaborate {
         waitForVm(2000)
 
         Log.d("TEST COLLABORATE","Enter the Workspace and see profile blurred out")
-        composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
+        composeRule.onNodeWithTag(v2Name).performClick()
         waitForText(v2Name)
         composeRule.onNodeWithText(wsDescriptionString).assertIsNotEnabled()
         composeRule.onNodeWithText(v2Name).assertIsNotEnabled()
@@ -244,15 +253,15 @@ class TestCollaborate {
         composeRule.onNodeWithText(v2Name).assertIsNotDisplayed()
 
         Log.d("TEST COLLABORATE","Re-signing in as admin")
-        composeRule.onNodeWithContentDescription(editWsIcString+MEMBER_ACCT_WS).performClick()
+        composeRule.onNodeWithTag(MEMBER_ACCT_WS).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
         waitForText(signInString)
         signIn(signInString, ACCT_NAME)
         waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForDescription(editWsIcString+v2Name)
-        composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
+        waitForTag(v2Name)
+        composeRule.onNodeWithTag(v2Name).performClick()
         waitForText(wsDescriptionString)
         composeRule.onNodeWithText(wsDescriptionString).assertIsEnabled()
 
@@ -286,7 +295,7 @@ class TestCollaborate {
         waitForVm(2000)
         composeRule.onNodeWithContentDescription(backIcString).performClick()
         waitForVm(2000)
-        composeRule.onNodeWithContentDescription(editWsIcString+ACCT_WS).performClick()
+        composeRule.onNodeWithTag(ACCT_WS).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
         waitForText(signInString)
@@ -297,15 +306,15 @@ class TestCollaborate {
         composeRule.onNodeWithText(v2Name).assertIsNotDisplayed()
 
         Log.d("TEST COLLABORATE","Final sign in as an admin - to delete the workspace")
-        composeRule.onNodeWithContentDescription(editWsIcString+MEMBER_ACCT_WS).performClick()
+        composeRule.onNodeWithTag(MEMBER_ACCT_WS).performClick()
         waitForVm(2000)
         composeRule.onNodeWithText(signOutString).performClick()
         waitForText(signInString)
         signIn(signInString, ACCT_NAME)
         waitForDescription(wsIcString)
         composeRule.onNodeWithContentDescription(wsIcString).performClick()
-        waitForDescription(editWsIcString+v2Name)
-        composeRule.onNodeWithContentDescription(editWsIcString+v2Name).performClick()
+        waitForTag(v2Name)
+        composeRule.onNodeWithTag(v2Name).performClick()
         waitForText(wsDescriptionString)
 
         Log.d("TEST COLLABORATE","Delete Test")
