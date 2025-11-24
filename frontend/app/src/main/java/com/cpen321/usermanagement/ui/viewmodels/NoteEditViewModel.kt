@@ -82,6 +82,46 @@ class NoteEditViewModel @Inject constructor(
         }
     }
 
+    private fun loadFieldCreationData(note:Note):List<FieldCreationData>{
+        val fieldCreationData = note.fields.map { field ->
+            when (field) {
+                is TextField -> FieldCreationData(
+                    id = field._id,
+                    type = FieldType.TEXT,
+                    label = field.label,
+                    placeholder = field.placeholder,
+                    content = field.content
+                )
+                is DateTimeField -> FieldCreationData(
+                    id = field._id,
+                    type = FieldType.DATETIME,
+                    label = field.label,
+                    content = field.content
+                )
+                is SignatureField -> FieldCreationData(
+                    id = field._id,
+                    type = FieldType.SIGNATURE,
+                    label = field.label,
+                    userId = field.userId,
+                    placeholder = field.userName
+                )
+            }
+        }
+
+        // Ensure title field exists as first field
+        val finalFields = if (fieldCreationData.isEmpty() || fieldCreationData.first().label != "Title") {
+            listOf(
+                FieldCreationData(
+                    type = FieldType.TEXT,
+                    label = "Title",
+                    placeholder = "Enter title"
+                )
+            ) + fieldCreationData
+        } else fieldCreationData
+
+        return finalFields
+    }
+
     fun loadNote(noteId: String) {
         viewModelScope.launch {
             _editState.value = _editState.value.copy(isLoading = true, loadError = null)
@@ -92,51 +132,12 @@ class NoteEditViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { note ->
-                    val fieldCreationData = note.fields.map { field ->
-                        when (field) {
-                            is TextField -> FieldCreationData(
-                                id = field._id,
-                                type = FieldType.TEXT,
-                                label = field.label,
-                                placeholder = field.placeholder,
-                                content = field.content
-                            )
-
-                            is DateTimeField -> FieldCreationData(
-                                id = field._id,
-                                type = FieldType.DATETIME,
-                                label = field.label,
-                                content = field.content
-                            )
-
-                            is SignatureField -> FieldCreationData(
-                                id = field._id,
-                                type = FieldType.SIGNATURE,
-                                label = field.label,
-                                userId = field.userId,
-                                placeholder = field.userName
-                            )
-                        }
-                    }
-
-                    // Ensure title field exists as first field
-                    val finalFields = if (fieldCreationData.isEmpty() || fieldCreationData.first().label != "Title") {
-                        listOf(
-                            FieldCreationData(
-                                type = FieldType.TEXT,
-                                label = "Title",
-                                placeholder = "Enter title"
-                            )
-                        ) + fieldCreationData
-                    } else {
-                        fieldCreationData
-                    }
-
+                    val finalFields = loadFieldCreationData(note)
 
                     _editState.value = NoteEditState(
                         noteType = note.noteType,
                         tags = note.tags,
-                        fields = fieldCreationData,
+                        fields = finalFields,
                         workspaces = _editState.value.workspaces,
                         isLoading = false,
                         loadError = null,
