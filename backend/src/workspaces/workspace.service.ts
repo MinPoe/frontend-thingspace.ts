@@ -467,7 +467,7 @@ export class WorkspaceService {
         
         // Check if there are new messages within the polling interval (0.8 seconds for latency)
         const currentTime = new Date();
-        const pollingInterval = 5000; // 1.3 seconds in milliseconds
+        const pollingInterval = 3000; // 3 seconds in milliseconds
         const timeThreshold = new Date(workspace.latestChatMessageTimestamp.getTime() + pollingInterval);
         
         return currentTime <= timeThreshold;
