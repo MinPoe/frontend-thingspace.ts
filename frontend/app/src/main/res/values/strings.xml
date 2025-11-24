@@ -38,7 +38,7 @@
     <string name="main_workspace_content">main workspace content</string>
     <string name="view_profile">Profile View</string>
     <string name="plusContent">&#160;- Notes</string>
-    <string name="plusTemplates">&#160;- Pick a Template</string>
+    <string name="plusTemplates">&#160;- Create from a Template</string>
     <string name="plusChat">&#160;- Chat</string>
     <!-- Icon content descriptions -->
     <string name="content">Notes</string>
