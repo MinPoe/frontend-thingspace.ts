@@ -34,6 +34,8 @@ jobs:
     
     - name: Run tests
       run: npm test
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     
     # Optional: Upload coverage to Codecov (requires CODECOV_TOKEN secret)
     # Uncomment and add CODECOV_TOKEN to repository secrets if you want coverage reports
