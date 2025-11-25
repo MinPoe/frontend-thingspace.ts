@@ -232,8 +232,9 @@ export class NotesController {
 
       // Exclude vectorData from response
       const notesWithoutVectorData = notes.map(note => {
-        const { vectorData: _vectorData, ...noteWithoutVectorData } = note;
-        return noteWithoutVectorData;
+        return Object.fromEntries(
+          Object.entries(note).filter(([key]) => key !== 'vectorData')
+        );
       });
 
       res.status(200).json({
