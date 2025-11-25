@@ -35,7 +35,7 @@ describe('Auth API – Mocked Tests (Jest Mocks)', () => {
     
     // Create app after DB connection (uses full production app)
     app = createTestApp();
-  });
+  }, 60000); // 60 second timeout for MongoDB Memory Server startup
 
   // Clean mocks every test
   afterEach(() => {
