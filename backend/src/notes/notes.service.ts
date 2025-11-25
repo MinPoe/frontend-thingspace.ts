@@ -258,7 +258,6 @@ export class NoteService {
             input: queryString.trim(),
         });
         queryEmbedding = vectorResponse.data[0].embedding as unknown as number[];
-
         
         const cosineSimilarity = (a: number[], b: number[]): number => {
             const len = Math.min(a.length, b.length);
