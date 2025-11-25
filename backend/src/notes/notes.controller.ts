@@ -232,7 +232,7 @@ export class NotesController {
 
       // Exclude vectorData from response
       const notesWithoutVectorData = notes.map(note => {
-        const { vectorData, ...noteWithoutVectorData } = note;
+        const { vectorData: _vectorData, ...noteWithoutVectorData } = note;
         return noteWithoutVectorData;
       });
 
