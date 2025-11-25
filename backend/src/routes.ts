@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { authenticateToken } from './authentication/auth.middleware';
+import { asyncHandler } from './utils/asyncHandler.util';
 import authRoutes from './authentication/auth.routes';
 import mediaRoutes from './media/media.routes';
 import usersRoutes from './users/user.routes';
@@ -12,14 +13,14 @@ const router = Router();
 
 router.use('/auth', authRoutes);
 
-router.use('/user', authenticateToken, usersRoutes);
+router.use('/user', asyncHandler(authenticateToken), usersRoutes);
 
-router.use('/media', authenticateToken, mediaRoutes);
+router.use('/media', asyncHandler(authenticateToken), mediaRoutes);
 
-router.use('/notes', authenticateToken, noteRoutes);
+router.use('/notes', asyncHandler(authenticateToken), noteRoutes);
 
-router.use('/workspace', authenticateToken, workspaceRoutes);
+router.use('/workspace', asyncHandler(authenticateToken), workspaceRoutes);
 
-router.use('/messages', authenticateToken, messageRouter);
+router.use('/messages', asyncHandler(authenticateToken), messageRouter);
 
 export default router;

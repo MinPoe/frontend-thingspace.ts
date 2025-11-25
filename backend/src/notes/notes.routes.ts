@@ -11,7 +11,7 @@ const notesController = new NotesController();
 
 router.post(
   '/',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   validateBody<CreateNoteRequest>(createNoteSchema),
   asyncHandler(notesController.createNote.bind(notesController))
 );
@@ -19,45 +19,45 @@ router.post(
 
 router.put(
   '/:id',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   validateBody<UpdateNoteRequest>(updateNoteSchema),
   asyncHandler(notesController.updateNote.bind(notesController))
 );
 
 router.delete(
   '/:id',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(notesController.deleteNote.bind(notesController))
 );
 
 
 router.get(
   '/:id/workspaces',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(notesController.getWorkspacesForNote.bind(notesController))
 )
 
 router.get(
   '/:id',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(notesController.getNote.bind(notesController))
 );
 
 router.get(
   '/',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(notesController.findNotes.bind(notesController))
 );
 
 router.post(
   '/:id/share',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(notesController.shareNoteToWorkspace.bind(notesController))
 );
 
 router.post(
   '/:id/copy',
-  authenticateToken,
+  asyncHandler(authenticateToken),
   asyncHandler(notesController.copyNoteToWorkspace.bind(notesController))
 );
 
