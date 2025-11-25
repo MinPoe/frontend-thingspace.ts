@@ -1,4 +1,4 @@
-import './express.d.ts';
+/// <reference path="./express.d.ts" />
 import 'dotenv/config';
 import express from 'express';
 import path from 'path';
