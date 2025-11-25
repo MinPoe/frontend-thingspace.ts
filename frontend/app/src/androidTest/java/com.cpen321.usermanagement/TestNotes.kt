@@ -45,8 +45,6 @@ class TestNotes {
         const val updatedContent = "Updated content"
     }
 
-    
-
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 
@@ -58,9 +56,7 @@ class TestNotes {
         sleep(millis)
         composeRule.waitForIdle()
     }
-
-
-
+    
     private fun signIn(signInString: String, acctName: String) {
         composeRule.waitForIdle()
         composeRule.onNodeWithText(signInString).performClick()
